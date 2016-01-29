@@ -1,0 +1,28 @@
+The project will have the following major deliverables:
+
+1. Prototype (Data Quality Verifier, DQV)
+It will be a stand alone application. 
+The purpose of the DQV application will be 
+1.1 to verify that the experiment setup does not miss any data
+1.2 to verify the quality of the data during collection utilizing the set of quantitive QC functions
+1.3 to provide visualization for each slice during data colelction for the qualitative QC
+1.4 to verify the quality of the data after all data is collected and processing on the data is completed (?)
+
+The DQV will be invoked when experiment starts, and stopped at the end of experiment to do the tasks 1.1, 1.2 and 1.3.
+The DQV will be triggered by some event when data is processed to do the task 1.4.
+Any calculated quality result will be added to the hd5 file with corresponding tag. 
+
+The DQV will accept exceptions. In cases when data is expected to have quality issues (ex. folded image (?), or image taken in motion) the DQV will accept exceptions settings. In the first version the verification will be omitted for the relevant parameters if the exception is applied. In later versions a different quantitive QC functions and limit values can be implemented for specific exceptions.
+
+2. Set of quantitive QC functions
+This part of the project requires research and then implementation of functions that measure quality of the data based on the research.
+Links to research resources to investigate:
+2.1 http://cbs.fas.harvard.edu/usr/mcmains/CBS_MRI_Quality_Control_Workshop.pdf
+2.2 http://cbs.fas.harvard.edu/science/core-facilities/neuroimaging/information-investigators/qc
+
+3. Set of tables with limit values
+The limit values define whether the data is of good or poor quality. The values will be related to the quantitive QC functions.
+In the first version the values will be set based on research/tests with the trial data sets. In later versions the limit values can be learned by implementing a learning mechanism.
+
+
+The deliverables 1, and (2, 3) can progress in parallel.
