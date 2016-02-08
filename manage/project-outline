@@ -3,14 +3,16 @@ The project will have the following major deliverables:
 1. Prototype (Data Quality Verifier, DQV)
 It will be a stand alone application. 
 The purpose of the DQV application will be 
-1.1 to verify that the experiment setup does not miss any data
+1.1 to verify experiment setup (i.e. all required setup data is entered and the values are acceptable)
 1.2 to verify the quality of the data during collection utilizing the set of quantitive QC functions
 1.3 to provide visualization for each slice during data colelction for the qualitative QC
 1.4 to verify the quality of the data after all data is collected and processing on the data is completed (?)
 
-The DQV will be invoked when experiment starts, and stopped at the end of experiment to do the tasks 1.1, 1.2 and 1.3.
+The DQV will be invoked when experiment starts, and do the tasks 1.2 and 1.3 when data is available.
 The DQV will be triggered by some event when data is processed to do the task 1.4.
-Any calculated quality result will be added to the hd5 file with corresponding tag. 
+Any calculated quality result will be recorded. If the data file is in hd5 format, any calculated quality result will be added to file with corresponding tag.
+If the data file format supports only raw data, the quality results will be stored in a separate file with a name corresponding to the data file.
+The experiment user will receive visual feedback on the data quality. 
 
 The DQV will accept exceptions. In cases when data is expected to have quality issues (ex. folded image (?), or image taken in motion) the DQV will accept exceptions settings. In the first version the verification will be omitted for the relevant parameters if the exception is applied. In later versions a different quantitive QC functions and limit values can be implemented for specific exceptions.
 
