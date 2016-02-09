@@ -1,0 +1,3 @@
+'directory' = '/local/username/DQ/test/data'
+'file_pattern' = '.txt'
+'number_files' = 2
