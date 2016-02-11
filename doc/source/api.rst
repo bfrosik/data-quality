@@ -4,7 +4,7 @@ API reference
 This section contains the API reference and usage information
 for `DQuality <https://github.com/bfrosik/data-quality>`_.
 
-.. rubric:: **Quality Modules:**
+.. rubric:: **DQuality Modules:**
 
 .. toctree::
 
