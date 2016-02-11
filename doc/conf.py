@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-# DMagic documentation build configuration file, created by
+# DQuality documentation build configuration file, created by
 # sphinx-quickstart on Fri Mar 13 16:29:32 2015.
 #
 # This file is execfile()d with the current directory set to its
@@ -65,8 +65,8 @@ master_doc = 'index'
 
 # General information about the project.
 Argonne = u'Argonne National Laboratory'
-project = u'DMagic'
-copyright = u'2013-2015, ' + Argonne
+project = u'DQuality'
+copyright = u'2013-2016, ' + Argonne
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
