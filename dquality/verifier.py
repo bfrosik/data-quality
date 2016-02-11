@@ -57,6 +57,7 @@ The application monitors given directory for new/modified files of the given pat
 For each of detected file several new processes are started, each process performing specific quality calculations.
 
 The results will be sent to an EPICS PV (printed on screen for now)
+
 """
 
 from multiprocessing import Process, Queue
@@ -88,6 +89,24 @@ class result:
         self.error = error
 
 def validateMeansignalIntensity(file, process_id):
+    """
+    what this function does?
+     
+    Parameters
+    ----------
+    file : str
+        File Name
+    
+    process_id : int
+        Unique process id
+        
+    globus : str
+        None, remote, personal
+
+    Returns
+    -------
+    None        
+    """
     #do calculations, and obtain quality
     quality_id = 1
     quality = 7.0
@@ -98,6 +117,24 @@ def validateMeansignalIntensity(file, process_id):
     resultsQueue.put(result1)
 
 def validateSignalIntensityStandardDeviation(file, process_id):
+    """
+    what this function does?
+     
+    Parameters
+    ----------
+    file : str
+        File Name
+    
+    process_id : int
+        Unique process id
+        
+    globus : str
+        None, remote, personal
+
+    Returns
+    -------
+    None        
+    """
     #do calculations, and obtain quality
     quality = 3
     quality_id = 2
@@ -108,11 +145,47 @@ def validateSignalIntensityStandardDeviation(file, process_id):
     resultsQueue.put(result2)
 
 def verifyFileQuality(file, function, process_id):
+    """
+    what this function does?
+     
+    Parameters
+    ----------
+    file : str
+        File Name
+    
+    process_id : int
+        Unique process id
+        
+    globus : str
+        None, remote, personal
+
+    Returns
+    -------
+    None        
+    """
     p = Process(target=function, args=(file, process_id,))
     processes[process_id] = p
     p.start()
 
 def monitorDir(directory, pattern):
+    """
+    what this function does?
+     
+    Parameters
+    ----------
+    file : str
+        File Name
+    
+    process_id : int
+        Unique process id
+        
+    globus : str
+        None, remote, personal
+
+    Returns
+    -------
+    None        
+    """
     class EventHandler(pyinotify.ProcessEvent):
         def process_IN_CLOSE_WRITE(self, event):
             if event.pathname.endswith(pattern):
@@ -126,6 +199,24 @@ def monitorDir(directory, pattern):
     return notifier
 
 if __name__ == '__main__':
+    """
+    what this function does?
+     
+    Parameters
+    ----------
+    file : str
+        File Name
+    
+    process_id : int
+        Unique process id
+        
+    globus : str
+        None, remote, personal
+
+    Returns
+    -------
+    None        
+    """
     numberverifiers = 2 # number of verification functions to call for each data file
     process_id = 0
     notifier = monitorDir(config['directory'], config['file_pattern'])
