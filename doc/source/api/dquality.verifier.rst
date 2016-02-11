@@ -1,4 +1,3 @@
-
 :mod:`dquality.verifier`
 ========================
 
