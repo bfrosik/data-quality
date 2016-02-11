@@ -1,5 +1,2 @@
-setuptools
-suds
-ipdb
-validate_email
-pyinotify
+sphinxcontrib-bibtex
+
