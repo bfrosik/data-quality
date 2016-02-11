@@ -46,4 +46,4 @@
 # POSSIBILITY OF SUCH DAMAGE.                                             #
 # #########################################################################
 
-from dquality import *
+from verifier import *
