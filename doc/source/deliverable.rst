@@ -1,3 +1,8 @@
+.. image:: img/DQV_flow_diagram.png
+   :width: 320px
+   :alt: DQuality
+
+
 ===========
 Deliverable 
 ===========

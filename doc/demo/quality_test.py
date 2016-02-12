@@ -47,74 +47,7 @@
 # #########################################################################
 
 """
-Module containing an example on how to use DMagic to setup an experiment for 
-automatic data distribution to users via Globus sharing the personal and the
-remote endpoints.
-
+Example module to use DQuality with  .... 
 """
-
-import pytz
-import datetime
-import sys
-
-# set ~/globus.ini and ~/scheduling.ini to match your configuration
-import dmagic.scheduling as sch
-import dmagic.globus as gb
-
-# pring the current Globus settings
-gb.dm_settings()
-
-# set the experiment date 
-# now = datetime.date.today()
-
-now = datetime.datetime(2014, 10, 18, 10, 10, 30).replace(tzinfo=pytz.timezone('US/Central'))
-print "\n\nToday's date: ", now
-
-# find the experiment starting date
-exp_start = sch.find_experiment_start(now)
-print "Experiment starting date/time: ", exp_start
-
-# create a unique experiment ID using GUP and beamtime request (BR) numbers as: 
-# g + GUP# + r + BR#
-#exp_id = sch.create_experiment_id(now)
-             
-# create an experiment ID using the PI last name: 
-exp_id = sch.find_pi_last_name(now)
-
-print "Experiment ID: ", exp_id
-
-# create a directory to store the raw data as: 
-# \local_folder\YYYY-MM\gGUP#rBR#\  or
-# \local_folder\YYYY-MM\PI_last_name\  
-directory = gb.dm_create_directory(exp_start, exp_id)
-
-# find the user running now
-users = sch.find_users(now)
-
-# print user information
-sch.print_users(users)
-
-# share the data directory in the personal end point with the users. 
-# users will receive an e-mail with a drop-box style link to access the data
-cmd = gb.dm_share(directory, users, 'personal')
-for share in cmd: 
-    print share
-    #os.system(share)
-
-# upload the raw data to the remote Globus server set in globus.ini (i.e. petrel)
-# upload creates a folder YYYY-MM then copy the raw data from the Globus Personal
-# endpoint to the remote Globus server
-cmd1, cmd2 = gb.dm_upload(directory)
-print cmd1
-print cmd2
-#os.system(cmd1)
-#os.system(cmd2)
-
-# share the raw data directory on the Globus server with the users. 
-# users will receive an e-mail with a drop-box style link to access the data
-cmd = gb.dm_share(directory, users, 'remote')
-for share in cmd: 
-    print share
-    #os.system(share)
 
 
