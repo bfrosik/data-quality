@@ -69,18 +69,18 @@ from configobj import ConfigObj
 __author__ = "Barbara Frosik"
 __copyright__ = "Copyright (c) 2016, UChicago Argonne, LLC."
 __docformat__ = 'restructuredtext en'
-__all__ = ['validateMeansignalIntensity',
-           'validateSignalIntensityStandardDeviation',
-           'verifyFileQuality',
-           'monitorDir']
+__all__ = ['validate_mean_signal_intensity',
+           'validate_signal_intensity_standard_deviation',
+           'verify_file_quality',
+           'monitor_dir']
 
 config = ConfigObj('config.ini')
 processes = {}
-newFiles = Queue()
-resultsQueue = Queue()
+files = Queue()
+results = Queue()
 interrupted = False
 
-class result:
+class Result:
     def __init__(self, file, res, process_id, quality_id, error):
         self.file = file
         self.res = res
@@ -88,20 +88,22 @@ class result:
         self.quality_id = quality_id
         self.error = error
 
-def validateMeansignalIntensity(file, process_id):
+def validate_mean_signal_intensity(file, process_id):
     """
-    what this function does?
+    Currently a stub function.
+    This is one of the validation methods. It has a "quality_id" property that identifies this validation step.
+    This function calculates mean signal intensity from the data included in a "file" parameter.
+    The result is compared with a threshhold values to determine the quality of the data.
+    The "file" parameter, result, the comparison result, "process_id" parameter, and quality_id values are saved in a new Result object.
+    This object is then enqueued into global "results" queue.
      
     Parameters
     ----------
     file : str
-        File Name
+        File Name including path
     
     process_id : int
-        Unique process id
-        
-    globus : str
-        None, remote, personal
+        Unique process id assigned by a calling function
 
     Returns
     -------
@@ -112,24 +114,26 @@ def validateMeansignalIntensity(file, process_id):
     quality = 7.0
     #error = quality > 10.2
     error = False
-    result1 = result(file, quality, process_id, quality_id, error)
+    result1 = Result(file, quality, process_id, quality_id, error)
     time.sleep(10)
-    resultsQueue.put(result1)
+    results.put(result1)
 
-def validateSignalIntensityStandardDeviation(file, process_id):
+def validate_signal_intensity_standard_deviation(file, process_id):
     """
-    what this function does?
+    Currently a stub function.
+    This is one of the validation methods. It has a "quality_id" property that identifies this validation step.
+    This function calculates signal intensity standard deviation from the data included in a "file" parameter.
+    The result is compared with a threshhold values to determine the quality of the data.
+    The "file" parameter, result, the comparison result, "process_id" parameter, and quality_id values are saved in a new Result object.
+    This object is then enqueued into global "results" queue.
      
     Parameters
     ----------
     file : str
-        File Name
+        File Name including path
     
     process_id : int
-        Unique process id
-        
-    globus : str
-        None, remote, personal
+        Unique process id assigned by a calling function
 
     Returns
     -------
@@ -140,25 +144,27 @@ def validateSignalIntensityStandardDeviation(file, process_id):
     quality_id = 2
     #error = quality < 4
     error = False
-    result2 = result(file, quality, process_id, quality_id, error)
+    result2 = Result(file, quality, process_id, quality_id, error)
     time.sleep(10)
-    resultsQueue.put(result2)
+    results.put(result2)
 
-def verifyFileQuality(file, function, process_id):
+def verify_file_quality(file, function, process_id):
     """
-    what this function does?
+    This method creates a new process that is associated with the "function" parameter.
+    The created process is stored in global "processes" dictionary with the key "process_id" parameter.
+    The process is started.
      
     Parameters
     ----------
     file : str
-        File Name
+        File Name including path
     
-    process_id : int
-        Unique process id
-        
-    globus : str
-        None, remote, personal
+    function : function
+        Function that will be executed when process starts.
 
+    process_id : int
+        Unique process id assigned by calling method
+        
     Returns
     -------
     None        
@@ -167,21 +173,21 @@ def verifyFileQuality(file, function, process_id):
     processes[process_id] = p
     p.start()
 
-def monitorDir(directory, pattern):
+def monitor_dir(directory, pattern):
     """
-    what this function does?
+    This method monitors a directory given by the "directory" parameter.
+    It creates a notifier object. The notifier is registered to await the "CLOSE_WRITE" event on a new file
+    that matches the "pattern" parameter. If there is no such event, it yelds control on timeout, defaulted to 1 second.
+    It returns the created notifier.
      
     Parameters
     ----------
     file : str
-        File Name
+        File Name including path
     
-    process_id : int
-        Unique process id
+    pattern : str
+        A pattern of file extension 
         
-    globus : str
-        None, remote, personal
-
     Returns
     -------
     None        
@@ -189,7 +195,7 @@ def monitorDir(directory, pattern):
     class EventHandler(pyinotify.ProcessEvent):
         def process_IN_CLOSE_WRITE(self, event):
             if event.pathname.endswith(pattern):
-                newFiles.put(event.pathname)
+                files.put(event.pathname)
 
     wm = WatchManager()
     mask = pyinotify.IN_CLOSE_WRITE
@@ -200,18 +206,26 @@ def monitorDir(directory, pattern):
 
 if __name__ == '__main__':
     """
-    what this function does?
+    This is the main function called when the application starts. 
+    It reads the configuration for the directory to monitor, for pattern that represents a file extension to look for, 
+    and for a number of files that are expected for the experiment. 
+    The number of files configuration parameter is added for experiments that generate multiple files.
+    In some cases the experiment data is collected into a single file, which is organized with data sets.
+    
+    The function calls monitor_dir function that sets up the monitoring and returns notifier.
+    After the monitoring is initialized, it starts a loop that reads the global "files" queue and then the global "results" queue.
+    If there is any new file, the file is removed from the queue, and the data in the file is validated by a sequence of validation
+    methods.
+    If there is any new result, the result is removed from the queue, corresponding process is terminated, and the result is 
+    presented. (currently printed on console, later will be pushed into an EPICS process variable)
+    
+    The loop is interrupted when all expected processes produced results. The number of expected processes is determined by
+    number of files and number of validation functions.
+    
      
     Parameters
     ----------
-    file : str
-        File Name
-    
-    process_id : int
-        Unique process id
-        
-    globus : str
-        None, remote, personal
+    None
 
     Returns
     -------
@@ -219,8 +233,8 @@ if __name__ == '__main__':
     """
     numberverifiers = 2 # number of verification functions to call for each data file
     process_id = 0
-    notifier = monitorDir(config['directory'], config['file_pattern'])
-    numExpectedResults = int(config['number_files']) * numberverifiers
+    notifier = monitor_dir(config['directory'], config['file_pattern'])
+    numresults = int(config['number_files']) * numberverifiers
     while not interrupted:
 
         # The notifier will put a new file into a newFiles queue if one was detected
@@ -229,26 +243,24 @@ if __name__ == '__main__':
             notifier.read_events()
 
         # checking the newFiles queue for new entries and starting verification processes for each new file
-        while not newFiles.empty():
-            newFile = newFiles.get()
+        while not files.empty():
+            newFile = files.get()
             process_id = process_id + 1
-            verifyFileQuality(newFile, validateMeansignalIntensity, process_id)
+            verify_file_quality(newFile, validate_mean_signal_intensity, process_id)
             process_id = process_id + 1
-            verifyFileQuality(newFile, validateSignalIntensityStandardDeviation, process_id)
+            verify_file_quality(newFile, validate_signal_intensity_standard_deviation, process_id)
 
         # checking the result queue and printing result
         # later the result will be passed to an EPICS process variable
-        while not resultsQueue.empty():
-            res = resultsQueue.get()
+        while not results.empty():
+            res = results.get()
             pr = processes[res.process_id]
             pr.terminate()
             del processes[res.process_id]
-            numExpectedResults = numExpectedResults -1
+            numresults = numresults -1
             print ('result: file name, result, quality id, error: ', res.file, res.res, res.quality_id, res.error)
-            if res.error:
-                interrupted = True
 
-        if numExpectedResults is 0:
+        if numresults is 0:
             interrupted = True
 
     notifier.stop()
