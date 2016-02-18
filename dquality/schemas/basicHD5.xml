@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<!--
+This structure mirrors the hd5 file tree. The "folder" represents a hd5 type folder, where "tag" represents a leaf.  
+-->
+
+<data>
+    <folder name="exchange">
+        <tag>data</tag>
+        <tag>data_dark</tag>
+        <tag>data_white</tag>
+        <tag>theta</tag>
+    </folder>
+</data>
+

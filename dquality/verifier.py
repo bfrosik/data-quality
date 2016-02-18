@@ -50,21 +50,27 @@
 This application assumes there is a 'config.ini' file that contains parameters required to run the application:
 
 'directory' - directory that will be monitored
-'file_pattern' - a file extension (i.e 'hd5' or 'txt')
 'number_files' - number of files expected to be collected for the experiment
+'schema_type' - type of schema the file will be verified against
+'schema' - name of a xml file that defines mandatory elements
+'file_patterns' - a list offile extensions (i.e 'hd5' or 'txt')
 
 The application monitors given directory for new/modified files of the given pattern.
-For each of detected file several new processes are started, each process performing specific quality calculations.
+Each of the detected file is verified according to schema configuration and for each of the file several new processes are started, each process performing specific quality calculations.
 
 The results will be sent to an EPICS PV (printed on screen for now)
 
 """
 
+import os
+import sys
 from multiprocessing import Process, Queue
 import time
 import pyinotify
 from pyinotify import WatchManager
 from configobj import ConfigObj
+
+from schemaVerifier import verify_schema
 
 __author__ = "Barbara Frosik"
 __copyright__ = "Copyright (c) 2016, UChicago Argonne, LLC."
@@ -72,13 +78,15 @@ __docformat__ = 'restructuredtext en'
 __all__ = ['validate_mean_signal_intensity',
            'validate_signal_intensity_standard_deviation',
            'verify_file_quality',
-           'monitor_dir']
+           'monitor_dir',
+           'cleanup']
 
 config = ConfigObj('config.ini')
 processes = {}
 files = Queue()
 results = Queue()
 interrupted = False
+INTERRUPT = 'interrupt'
 
 class Result:
     def __init__(self, file, res, process_id, quality_id, error):
@@ -173,7 +181,7 @@ def verify_file_quality(file, function, process_id):
     processes[process_id] = p
     p.start()
 
-def monitor_dir(directory, pattern):
+def monitor_dir(directory, patterns):
     """
     This method monitors a directory given by the "directory" parameter.
     It creates a notifier object. The notifier is registered to await the "CLOSE_WRITE" event on a new file
@@ -185,8 +193,8 @@ def monitor_dir(directory, pattern):
     file : str
         File Name including path
     
-    pattern : str
-        A pattern of file extension 
+    patterns : list
+        A list of strings representing file extension 
         
     Returns
     -------
@@ -194,8 +202,16 @@ def monitor_dir(directory, pattern):
     """
     class EventHandler(pyinotify.ProcessEvent):
         def process_IN_CLOSE_WRITE(self, event):
-            if event.pathname.endswith(pattern):
-                files.put(event.pathname)
+            for pattern in patterns.as_list('extensions'):
+                file = event.pathname
+                if file.endswith(pattern):
+                    # before any data verification check the data structure against given schema
+                    if verify_schema(file):
+                        files.put(event.pathname)
+                        break
+                    else:
+                        files.put(INTERRUPT)
+                        break
 
     wm = WatchManager()
     mask = pyinotify.IN_CLOSE_WRITE
@@ -203,6 +219,22 @@ def monitor_dir(directory, pattern):
     notifier = pyinotify.Notifier(wm, handler, timeout=1)
     wdd = wm.add_watch(directory, mask, rec=False)
     return notifier
+
+def cleanup():
+    """
+    This method is called at the exit. If any process is still active it will be terminated.
+     
+    Parameters
+    ----------
+    None
+        
+    Returns
+    -------
+    None        
+    """
+    for process in processes.itervalues():
+        process.terminate()
+
 
 if __name__ == '__main__':
     """
@@ -233,22 +265,31 @@ if __name__ == '__main__':
     """
     numberverifiers = 2 # number of verification functions to call for each data file
     process_id = 0
-    notifier = monitor_dir(config['directory'], config['file_pattern'])
+    # check if directory exists
+    directory = config['directory']
+    if not os.path.isdir(directory):
+        print ('configuration error: directory ' + directory + ' does not exist')
+        sys.exit()
+    notifier = monitor_dir(directory, config['file_patterns'])
     numresults = int(config['number_files']) * numberverifiers
     while not interrupted:
 
         # The notifier will put a new file into a newFiles queue if one was detected
         notifier.process_events()
         if notifier.check_events():
-            notifier.read_events()
+             notifier.read_events()
 
         # checking the newFiles queue for new entries and starting verification processes for each new file
         while not files.empty():
-            newFile = files.get()
-            process_id = process_id + 1
-            verify_file_quality(newFile, validate_mean_signal_intensity, process_id)
-            process_id = process_id + 1
-            verify_file_quality(newFile, validate_signal_intensity_standard_deviation, process_id)
+            file = files.get()
+            if file == INTERRUPT:
+                # the schema verification may detect incorrect file structure and thus request to exit.
+                interrupted = True
+            else:
+                process_id = process_id + 1
+                verify_file_quality(file, validate_mean_signal_intensity, process_id)
+                process_id = process_id + 1
+                verify_file_quality(file, validate_signal_intensity_standard_deviation, process_id)
 
         # checking the result queue and printing result
         # later the result will be passed to an EPICS process variable
@@ -263,5 +304,7 @@ if __name__ == '__main__':
         if numresults is 0:
             interrupted = True
 
+    cleanup()
     notifier.stop()
+    print ('finished')
 
