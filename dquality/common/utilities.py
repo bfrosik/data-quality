@@ -47,115 +47,109 @@
 # #########################################################################
 
 """
-This file contains verification functions related to the file structure.
-It reads configuration parameters "schema_type" and 'schema' to determine first which kind of file verification is requested, and a schema that defines mandatory parameters.
-If any of the parameters is not configured, it is assumed no file structure verification is requested.
+This file is a suite of utility functions.
 
 """
 
 import h5py
-import xml.etree.ElementTree as et
-from configobj import ConfigObj
 
 __author__ = "Barbara Frosik"
 __copyright__ = "Copyright (c) 2016, UChicago Argonne, LLC."
 __docformat__ = 'restructuredtext en'
-__all__ = ['verify_schema_hd5',
-           'verify_schema']
+__all__ = ['get_data',
+           'copy_list',
+           'key_list',
+           'report_items']
 
-config = ConfigObj('config.ini')
-
-def verify_schema_hd5(file, schema):
+def get_data(file):
     """
-    This method is used when a file of hd5 type is given. 
-    All tags from the hd5 file are added in the filetags list.
-    Then the schema is evaluated for tags. With each tag discovered it checks whether there is matching tag in the filetags list.
-    If a tag is missing, the function exits with False.
-    Otherwise, it will return True.
-     
+   This function takes a file of HD5 format, traverses through tags, finds "shape" data sets and returns the sets in a
+   dictionary.
+
     Parameters
     ----------
     file : str
-        File Name including path
-    
-    schema : str
-        Schema file name
+        File Name
 
     Returns
     -------
-    True if verified
-    False if not verified
-        
+    data : dictionary
+        A dictionary of data sets with the tag keys.
+
     """
-
-    class Result:
-        def __init__(self):
-            self.result = True
-        def missing_tag(self):
-            self.result = False
-        def is_verified(self):
-            return self.result
-
-    result = Result()
-    filetags = []
-
+    data = {}
     def func(name, dset):
+        if not hasattr(dset,'shape'): return # not array, can't be image
         if isinstance(dset, h5py.Dataset):
-            filetags.append(dset.name)
+                data[dset.name] = dset
 
     file_h5 = h5py.File(file, 'r')
     file_h5.visititems(func)
+    return data
 
-    def children(root, path):
-        for child in root:
-            if result.is_verified():
-                if child.tag == 'folder':
-                    children(child, path+child.attrib['name']+'/')
-                else:
-                    tag = path+child.text
-                    if tag not in filetags:
-                        print ('tag ' + tag + ' not found')
-                        result.missing_tag()
-
-    tree = et.parse(schema)
-    root = tree.getroot()
-    children(root, '/')
-    return result.is_verified()
-
-def verify_schema(file):
+def copy_list(list):
     """
-    This method reads configuration parameter 'schema-type'. If not configured, the function returns True, 
-    as no verification is needed.
-    In case the type is set, the follow up logic determines, what type of verification should be applied.
-    Currently, the HD5 type is supported.
-    The function then reads the schema file from config. If not configured, the function returns True, as 
-    no verification is needed.
-    Otherwise, it will call the appropriate verification function and will return the result.
-     
+   This function takes a list and returns a hardcopy.
+
     Parameters
     ----------
-    file : str
-        File Name including path
-    
+    list : list
+        A list
+
     Returns
     -------
-    True if verified
-    False if not verified
-        
+    lisle : list
+        A hard copy of list parametyer.
+
     """
+    listcopy = []
+    for item in list:
+        listcopy.append(item)
+    return listcopy
 
-    try:
-        type = config['schema_type']
-        if type == 'hd5':
-            try:
-                schema = config['schema']
-                return verify_schema_hd5(file, schema)
-            except KeyError:
-                return True
-            except:
-                print ('configuration error: schema file ' + schema + ' does not exist')
-                return False
+def key_list(dict):
+    """
+   This function takes a dictionary and returns a new list of keys.
 
+    Parameters
+    ----------
+    dict : dictionary
+        A dictionary
 
-    except KeyError:
-        return True
+    Returns
+    -------
+    lisle : list
+        A new list of keys in dictionary.
+
+    """
+    list = []
+    for key in dict:
+        list.append(key)
+    return list
+
+def report_items(list, text1, text2):
+    """
+   This function takes a list and strings. If the list is not empty it prints the two string parameters as a title,
+   and prints formatted output for each item in a list.
+
+    Parameters
+    ----------
+    list : list
+        A list of items
+
+    text1 : str
+        A title that will be printed if the list is not empty
+
+    text2 : str
+        An optional part of title that will be printed if the list is not empty
+
+    Returns
+    -------
+    None.
+
+    """
+    if len(list) > 0:
+        print (text1 + text2)
+        for item in list:
+            print ('    - ' + item)
+
