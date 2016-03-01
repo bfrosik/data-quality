@@ -102,11 +102,10 @@ def report_structure_hd5(file, schema):
                 report_items(attrib_list, 'the following attributes are missing in tag ', tag)
 
     required_tags = {}
-    with open('schemas/basicHD5.json') as data_file:
+    with open(schema) as data_file:
         required_tags = json.loads(data_file.read()).get('required_tags')
 
     tag_list = key_list(required_tags)
-    file = '/local/bfrosik/DQ/test/data/test_01.h5'
     file_h5 = h5py.File(file, 'r')
     file_h5.visititems(func)
     report_items(tag_list, 'the following tags are missing: ', '')
