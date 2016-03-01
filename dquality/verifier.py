@@ -71,6 +71,7 @@ import pyinotify
 from pyinotify import WatchManager
 from configobj import ConfigObj
 
+from pvVerifier import verify_pv
 from structureVerifier import verify_structure
 from common.qaulityChecks import Data, validate_mean_signal_intensity, validate_signal_intensity_standard_deviation, \
     validate_voxel_based_SNR, validate_slice_based_SNR
@@ -198,6 +199,10 @@ if __name__ == '__main__':
     -------
     None        
     """
+    if not verify_pv():
+        # the function willl print report if error found
+        sys.exit(-1)
+        
     numberverifiers = 2 # number of verification functions to call for each data file
     process_id = 0
     #The verifier can be configured to verify file or to monitor a directory and verify a new file on close save.
