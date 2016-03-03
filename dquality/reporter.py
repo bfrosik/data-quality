@@ -64,8 +64,8 @@ import h5py
 from multiprocessing import Process, Queue
 from configobj import ConfigObj
 
-from structureVerifier import verify_structure
-from common.qaulityChecks import Data, validate_mean_signal_intensity, validate_signal_intensity_standard_deviation, validate_voxel_based_SNR, validate_slice_based_SNR
+from structureverifier import verify_structure
+from common.qaulitychecks import Data, validate_mean_signal_intensity, validate_signal_intensity_standard_deviation, validate_voxel_based_SNR, validate_slice_based_SNR
 from common.utilities import get_data
 
 
