@@ -49,17 +49,14 @@
 """
 This application assumes there is a 'config.ini' file that contains parameters required to run the application:
 
-'pv_file' - a file that includes mandatory process variables and their attributes
-
-The application verifies that each of the PV listed in a file is set, and the values are set according to the file
-attributes.
-
-The results will be reported in a file (printed on screen for now). An error will be reported back to UI via PV.
+'file' - hd5 file
+'dependencies' - a file that includes dependencies between hd5 tags
 
 """
 
 import sys
 import json
+import h5py
 from configobj import ConfigObj
 
 __author__ = "Barbara Frosik"
@@ -186,24 +183,81 @@ def state(value, limit):
     else:
         return value == False
 
+class TagValue:
+    value = 0
+    def __init__(self, tag):
+        self.tag = tag
+    def set_value(self,value):
+        self.value = value
+    def get_value(self):
+        return self.value
 
-def verify_pv():
+def find_value(tag, dset):
+    tag_def = tag.split()
+    if len(tag_def) == 1:
+        return dset.value
+    else:
+        if tag_def[1] == 'dim':
+            axis = tag_def[2]
+            return dset.shape[int(axis)]
+
+function_mapper = {'less_than':lt, 'less_or_equal':le, 'equal':eq, 'greater_or_equal':ge, 'greater_than':gt, 'state':state}
+
+def verify_list(file, list, relation):
+    print ('next list')
+    # create dictionary of tag : tag with parameters for fast lookup
+    anchor_tag = TagValue(list[0])
+    tags = {}
+    for long_tag in list:
+        tags[long_tag.split()[0]] = TagValue(long_tag)
+
+    def func(name, dset):
+        if len(list) != 0 and isinstance(dset, h5py.Dataset):
+            tag = dset.name
+            try:
+                full_tag = tags[tag].tag
+                list.remove(full_tag)
+                value = find_value(full_tag, dset)
+                tags[tag].set_value(value)
+                if full_tag == anchor_tag.tag:
+                    anchor_tag.set_value(value)
+                    del tags[tag]
+
+            except KeyError:
+                pass
+
+    file_h5 = h5py.File(file, 'r')
+    file_h5.visititems(func)
+
+    res = True
+    for tag in tags:
+        if not function_mapper[relation](tags.get(tag).get_value(), anchor_tag.get_value()):
+            print ('the ' + tag + ' value is ' + str(tags.get(tag).get_value()) + ' but should be ' + relation + ' ' + str(anchor_tag.get_value()))
+            res = False
+
+    return res
+
+def verify_dependencies():
     """
-    This function reads the json 'pv_file' from the config.ini.
-    This file contains dictionary with keys of mandatory process variables.
-    The values is a dictionary of attributes, each attribute being either description, or
-    a verification operation. The verification operation attribute has an operation as a key,
-    and the value is the limit of the PV.
+    This function reads the json 'dependencies' file from the config.ini.
+    This file contains dictionary with keys of relations between tags.
+    The value is a list of lists. The relation applies to the tags in inner list respectively. For example if the
+    relation is "equal", all tags in each inner list must be equal,The outer list hold the lists that app;y the relation.
+    A first element in a inner list is an "anchor" element, so all elements are compared to it. This is important for
+    the "les_than" type of relation, when the order of parameters is important.
+
     The allowed keys are:
     "less_than" - the PV value must be less than attribute value
     "less_or_equal" - the PV value must be less than or equal attribute value
     "equal" - the PV value must be equal to attribute value
     "greater_or_equal" - the PV value must be greater than or equal attribute value
     "greater_than" - the PV value must be greater than attribute value
-    "state" - to support boolean PVs. The defined value must be "True" or "False".
 
-    Any missing PV (i.e. it can't be read) is an error that is reported (printed for now).
-    Any PV value that is out of limit is an error that is reported (printed for now)
+    The tag in a 'dependencies' file can be an hd5 tag, or can have appended keyword "dim" and an numeric value
+    indicating axis. If the tag is simple hd5 tag, the verifier compares the value of this tag. If it has the
+    "dim" keyword appended, the verifier compares a specified dimension.
+
+    Any vakue that does not agree with the configured relation is reported (printed for now).
     The function returns True if no error was found and False otherwise.
 
     Parameters
@@ -214,33 +268,29 @@ def verify_pv():
     -------
     boolean
     """
-    function_mapper = {'less_than':lt, 'less_or_equal':le, 'equal':eq, 'greater_or_equal':ge, 'greater_than':gt, 'state':state}
     res = True
 
     try:
-        file = config['pv_file']
+        file = config['dependencies']
         with open(file) as data_file:
-            required_pvs = json.loads(data_file.read()).get('required_pvs')
+            dependencies = json.loads(data_file.read())
 
     except KeyError:
-        print ('config error: pv_file not configured')
+        print ('config error: dependencies not configured')
         sys.exit(-1)
 
-    for pv in required_pvs:
-        # possible the read pv needs try statement
-        pv_value = read_pv(pv)
-        if pv_value is None:
-            res = False
-            print ('PV ' + pv + ' cannot be read.')
-        else:
-            pv_attr = required_pvs[pv]
-            for attr in pv_attr:
-                if attr == 'description':
-                    descriprtion = pv_attr['description']
-                else:
-                    if function_mapper[attr](pv_value, pv_attr[attr]) == False:
-                        res = False
-                        print ('PV ' + pv + ' has value out of range. The value is ' + str(pv_value)  + ' but should be ' + attr + ' ' + str(pv_attr[attr]))
+    try:
+        file = config['file']
+    except KeyError:
+        print ('config error: neither directory or file configured')
+        sys.exit(-1)
+
+    i = 0
+    for relation in dependencies:
+        batch = dependencies[relation]
+        for tag_list in batch:
+            res = verify_list(file, tag_list, relation)
+
     return res
 
 if __name__ == '__main__':
@@ -257,8 +307,6 @@ if __name__ == '__main__':
     -------
     None
     """
-    verify_pv()
-
-    print ('finished')
+    verify_dependencies()
 
 
