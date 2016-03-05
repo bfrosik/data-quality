@@ -47,8 +47,8 @@
 # #########################################################################
 
 """
-You must create in your home directory `config.ini <https://github.com/bfrosik/data-quality/blob/master/dquality/config.ini>`__ file and set the "*file*" section.
-You must create in your home directory `pv.json <https://github.com/bfrosik/data-quality/blob/master/dquality/schemas/dependencies.json>`__. 
+You must create in your home directory `config.ini <https://github.com/bfrosik/data-quality/blob/master/dquality/config.ini>`__ file and set the "*file*" section, with "*file*" as an hd5 file that is verified.
+You must create in your home directory `pv.json <https://github.com/bfrosik/data-quality/blob/master/dquality/schemas/dependencies.json>`__. The tags listed in the "*dependencies*" file are found in the hd5 file, and the values compared. If a relation specified in "*dependencies*" file is not verified, the tag is reported, and the verification fails.
 """
 
 import sys
@@ -157,29 +157,6 @@ def gt(value, limit):
     """
     return value > limit
 
-def state(value, limit):
-    """
-    This function takes boolean "value" parameter and string "limit" parameter that can be either 'True' or 'False'.
-    The limit is converted to string and compared with the value. The function returns True if the boolean values are
-    equal, False otherwise.
-
-    Parameters
-    ----------
-    value : numeric
-        value
-
-    limit : str
-        limit value
-
-    Returns
-    -------
-    boolean
-    """
-    if limit == 'True':
-        return value == True
-    else:
-        return value == False
-
 class TagValue:
     value = 0
     def __init__(self, tag):
@@ -190,6 +167,26 @@ class TagValue:
         return self.value
 
 def find_value(tag, dset):
+    """
+    This function takes tag parameter and a corresponding dataset from the hd5 file. The tag can be a simple hd5 member
+    tag or extended tag. This function assumes that the extended tag is a string containing hd5 tag, a word indicating 
+    the tag category (i.e. "dim" meaning dimension), and a parameter (i.e. numeric index). 
+    In the case of a simple hd5 tag the function returns a value of this member. In the second case the function returns
+    decoded value, in the case of "dim" category, it returns the indexed dimension.
+
+    Parameters
+    ----------
+    tag : str
+        a simple hd5 tag or extended
+
+    dset : dataset
+        hd5 dataset corresonding to the tag parameter
+
+    Returns
+    -------
+    value of decoded tag
+    """
+    
     tag_def = tag.split()
     if len(tag_def) == 1:
         return dset.value
@@ -201,7 +198,36 @@ def find_value(tag, dset):
 function_mapper = {'less_than':lt, 'less_or_equal':le, 'equal':eq, 'greater_or_equal':ge, 'greater_than':gt, 'state':state}
 
 def verify_list(file, list, relation):
-    print ('next list')
+    """
+    This function takes an hd5 file, a list of tags (can be extended) and a relation between the list members.
+    First the method creates a tags dictionary from the list of tags. The key is a simple hd5 tag, and the value is
+    a newly created TagValue instance that contains extended tag (or simple tag if simple tag was in the list), and
+    a placeholder for the value.
+    The first tag from the list is retained as an anchor.
+    
+    The function travers through all tags in the given file. If the tag name is found in the tags dictionary, the
+    find_value method is called to retrieve a defined valueu referenced by the tag. The value is then added to the
+    TagValue instance for this tag.
+    
+    When all tags are processed the function iterates over the tags dictionary to find if the relation between anchor 
+    value and other values can be verified. If any relation is not true, a report is printed for this tag, and the function
+    will return False. Otherwise the function returns True.
+
+    Parameters
+    ----------
+    file : file
+        an hd5 file to be verified
+
+    list : list 
+        list of extended or simple hd5 tags
+        
+    relation : str
+        a string specifying the relation between tags in the list
+
+    Returns
+    -------
+    boolean
+    """
     # create dictionary of tag : tag with parameters for fast lookup
     anchor_tag = TagValue(list[0])
     tags = {}
