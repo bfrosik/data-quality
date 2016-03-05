@@ -12,6 +12,7 @@ for `DQuality <https://github.com/bfrosik/data-quality>`_.
    api/dquality.pvverifier
    api/dquality.reporter
    api/dquality.structureverifier
+   api/dquality.dependenciesverifier
 
 .. automodule:: dquality
    :members:

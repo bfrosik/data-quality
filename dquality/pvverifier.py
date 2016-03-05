@@ -60,7 +60,8 @@ from configobj import ConfigObj
 __author__ = "Barbara Frosik"
 __copyright__ = "Copyright (c) 2016, UChicago Argonne, LLC."
 __docformat__ = 'restructuredtext en'
-__all__ = ['verify_pv']
+__all__ = ['state',
+           'verify_pv']
 
 config = ConfigObj('config.ini')
 

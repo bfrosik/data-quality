@@ -59,7 +59,9 @@ from configobj import ConfigObj
 __author__ = "Barbara Frosik"
 __copyright__ = "Copyright (c) 2016, UChicago Argonne, LLC."
 __docformat__ = 'restructuredtext en'
-__all__ = ['verify_pv']
+__all__ = ['find_value',
+           'verify_list',
+           'verify_dependencies']
 
 config = ConfigObj('config.ini')
 
@@ -195,7 +197,7 @@ def find_value(tag, dset):
             axis = tag_def[2]
             return dset.shape[int(axis)]
 
-function_mapper = {'less_than':lt, 'less_or_equal':le, 'equal':eq, 'greater_or_equal':ge, 'greater_than':gt, 'state':state}
+function_mapper = {'less_than':lt, 'less_or_equal':le, 'equal':eq, 'greater_or_equal':ge, 'greater_than':gt}
 
 def verify_list(file, list, relation):
     """
