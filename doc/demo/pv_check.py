@@ -45,9 +45,14 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE         #
 # POSSIBILITY OF SUCH DAMAGE.                                             #
 # #########################################################################
+"""
+This is the main function called when the application starts.
+It reads the configuration for the file defining mandatory process variables.
+It calls the verify_pv function that does the verification.
+"""
+import dquality.pvverifier as dq 
 
-"""
-Example module to use DQuality with  .... 
-"""
+dq.verify_pv()
+print ('finished')
 
 

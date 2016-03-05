@@ -47,11 +47,8 @@
 # #########################################################################
 
 """
-This application assumes there is a 'config.ini' file that contains parameters required to run the application:
-
-'file' - hd5 file
-'dependencies' - a file that includes dependencies between hd5 tags
-
+You must create in your home directory `config.ini <https://github.com/bfrosik/data-quality/blob/master/dquality/config.ini>`__ file and set the "*file*" section.
+You must create in your home directory `pv.json <https://github.com/bfrosik/data-quality/blob/master/dquality/schemas/dependencies.json>`__. 
 """
 
 import sys

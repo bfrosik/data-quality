@@ -1,7 +1,7 @@
-:mod:`dquality.verifier`
+:mod:`dquality.reporter`
 ========================
 
-.. automodule:: dquality.verifier
+.. automodule:: dquality.reporter
    :members:
    :show-inheritance:
    :undoc-members:
@@ -10,6 +10,5 @@
 
    .. autosummary::
    
-      verify_data_quality
-      monitor_dir
-      cleanup
+      verify_data_quality_report
+      cleanup_report

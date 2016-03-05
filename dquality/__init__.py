@@ -46,4 +46,4 @@
 # POSSIBILITY OF SUCH DAMAGE.                                             #
 # #########################################################################
 
-from verifier import *
+from pvverifier import *

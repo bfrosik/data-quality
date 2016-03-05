@@ -47,13 +47,9 @@
 # #########################################################################
 
 """
-This application assumes there is a 'config.ini' file that contains parameters required to run the application:
+You must create in your home directory `config.ini <https://github.com/bfrosik/data-quality/blob/master/dquality/config.ini>`__ file and set the "*definitions for reporter*" section.
 
-'file' - a file that will be checked for attributes correctness and for data quality
-'verification_type' - type of schema the file will be verified against
-'schema' - name of a json file that defines mandatory elements in file structure
-
-The application verifies given file according to schema configuration and starts new processes, each process performing specific quality calculations.
+This module verifies a given file according to schema configuration and starts new processes, each process performing specific quality calculations.
 
 The results will be reported in a file (printed on screen for now)
 
@@ -65,22 +61,22 @@ from multiprocessing import Process, Queue
 from configobj import ConfigObj
 
 from structureverifier import verify_structure
-from common.qaulitychecks import Data, validate_mean_signal_intensity, validate_signal_intensity_standard_deviation, validate_voxel_based_SNR, validate_slice_based_SNR
+from common.qualitychecks import Data, validate_mean_signal_intensity, validate_signal_intensity_standard_deviation, validate_voxel_based_SNR, validate_slice_based_SNR
 from common.utilities import get_data
 
 
 __author__ = "Barbara Frosik"
 __copyright__ = "Copyright (c) 2016, UChicago Argonne, LLC."
 __docformat__ = 'restructuredtext en'
-__all__ = ['verify_data_quality',
-           'cleanup']
+__all__ = ['verify_data_quality_report',
+           'cleanup_report']
 
 config = ConfigObj('config.ini')
 processes = {}
 results = Queue()
 interrupted = False
 
-def verify_data_quality(file, function, process_id):
+def verify_data_quality_report(file, function, process_id):
     """
     This method creates a new process that is associated with the "function" parameter.
     The created process is stored in global "processes" dictionary with the key "process_id" parameter.
@@ -105,7 +101,7 @@ def verify_data_quality(file, function, process_id):
     processes[process_id] = p
     p.start()
 
-def cleanup():
+def cleanup_report():
     """
     This method is called at the exit. If any process is still active it will be terminated.
      
@@ -153,9 +149,9 @@ if __name__ == '__main__':
 
     data = Data(file, get_data(file))
     process_id = process_id + 1
-    verify_data_quality(data, validate_mean_signal_intensity, process_id)
+    verify_data_quality_report(data, validate_mean_signal_intensity, process_id)
     process_id = process_id + 1
-    verify_data_quality(data, validate_signal_intensity_standard_deviation, process_id)
+    verify_data_quality_report(data, validate_signal_intensity_standard_deviation, process_id)
 
     while not interrupted:
         # checking the result queue and printing result
@@ -171,7 +167,7 @@ if __name__ == '__main__':
         if numresults is 0:
             interrupted = True
 
-    cleanup()
+    cleanup_report()
 
     print ('finished')
 

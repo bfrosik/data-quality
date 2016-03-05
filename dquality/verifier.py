@@ -47,19 +47,13 @@
 # #########################################################################
 
 """
-This application assumes there is a 'config.ini' file that contains parameters required to run the application:
-
-'directory' - directory that will be monitored
-'number_files' - number of files expected to be collected for the experiment
-'verification_type' - type of schema the file will be verified against
-'schema' - name of a json file that defines mandatory elements in file structure
-'file_patterns' - a list of file extensions (i.e 'hd5' or 'txt')
+This module requires the "*definitions for verifier*" section of `config.ini <https://github.com/bfrosik/data-quality/blob/master/dquality/config.ini>`__ file to be set.
 
 The application monitors given directory for new/modified files of the given pattern.
 Each of the detected file is verified according to schema configuration and for each of the file several new processes
 are started, each process performing specific quality calculations.
 
-The results will be sent to an EPICS PV (printed on screen for now)
+The results will be sent to an EPICS PV (printed on screen for now).
 
 """
 
@@ -73,7 +67,7 @@ from configobj import ConfigObj
 
 from pvverifier import verify_pv
 from structureverifier import verify_structure
-from common.qaulitychecks import Data, validate_mean_signal_intensity, validate_signal_intensity_standard_deviation, \
+from common.qualitychecks import Data, validate_mean_signal_intensity, validate_signal_intensity_standard_deviation, \
     validate_voxel_based_SNR, validate_slice_based_SNR
 from common.utilities import get_data
 

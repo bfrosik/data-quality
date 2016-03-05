@@ -47,14 +47,9 @@
 # #########################################################################
 
 """
-This application assumes there is a 'config.ini' file that contains parameters required to run the application:
-
-'pv_file' - a file that includes mandatory process variables and their attributes
-
-The application verifies that each of the PV listed in a file is set, and the values are set according to the file
-attributes.
-
-The results will be reported in a file (printed on screen for now). An error will be reported back to UI via PV.
+You must create in your home directory `config.ini <https://github.com/bfrosik/data-quality/blob/master/dquality/config.ini>`__ file and set the "*definitions for pvVerifier*" section.
+You must create in your home directory `pv.json <https://github.com/bfrosik/data-quality/blob/master/dquality/schemas/pvs.json>`__. 
+This module verifies that each of the PV listed in a file is set, and the values are set according to `pv.json <https://github.com/bfrosik/data-quality/blob/master/dquality/schemas/pvs.json>`__. The results will be reported in a file (printed on screen for now). An error will be reported back to UI via PV.
 
 """
 
@@ -189,7 +184,8 @@ def state(value, limit):
 
 def verify_pv():
     """
-    This function reads the json 'pv_file' from the config.ini.
+    This function reads the `pv.json <https://github.com/bfrosik/data-quality/blob/master/dquality/schemas/pvs.json>`__ 
+    as set in the `config.ini <https://github.com/bfrosik/data-quality/blob/master/dquality/config.ini>`__ file.
     This file contains dictionary with keys of mandatory process variables.
     The values is a dictionary of attributes, each attribute being either description, or
     a verification operation. The verification operation attribute has an operation as a key,
