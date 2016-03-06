@@ -55,7 +55,7 @@ This module verifies that each of the PV listed in a file is set, and the values
 import sys
 import json
 from configobj import ConfigObj
-from epics import PV
+#from epics import PV
 
 __author__ = "Barbara Frosik"
 __copyright__ = "Copyright (c) 2016, UChicago Argonne, LLC."

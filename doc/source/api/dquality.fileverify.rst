@@ -1,7 +1,7 @@
-:mod:`dquality.structureverifier`
-=================================
+:mod:`dquality.fileverify`
+==========================
 
-.. automodule:: dquality.structureverifier
+.. automodule:: dquality.fileverify
    :members:
    :show-inheritance:
    :undoc-members:
