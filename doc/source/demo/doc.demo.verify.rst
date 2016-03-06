@@ -9,6 +9,7 @@ This section contains examples on how to implement various data quality tasks.
 
    doc.demo.pv_check
    doc.demo.hdf_check
+   doc.demo.dependency_check
 
 .. automodule:: dquality
    :members:

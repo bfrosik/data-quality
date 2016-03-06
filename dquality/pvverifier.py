@@ -54,18 +54,14 @@ This module verifies that each of the PV listed in a file is set, and the values
 
 import sys
 import json
+#from epics import PV
 from configobj import ConfigObj
-from epics import PV
+from common.utilities import lt, le, eq, ge, gt
 
 __author__ = "Barbara Frosik"
 __copyright__ = "Copyright (c) 2016, UChicago Argonne, LLC."
 __docformat__ = 'restructuredtext en'
-__all__ = ['lt',
-           'le',
-           'eq',
-           'ge',
-           'gt',
-           'state',
+__all__ = ['state',
            'verify_pv',
            'read_pv']
 
@@ -88,96 +84,6 @@ def read_pv(pv_str):
     pv = PV(pv_str).get()
     
     return pv
-
-def lt(value, limit):
-    """
-    This function returns True if value parameter is less than limit parameter, False otherwise..
-
-    Parameters
-    ----------
-    value : numeric
-        value
-
-    limit : numeric
-        limit
-
-    Returns
-    -------
-    boolean
-    """
-    return value < limit
-
-def le(value, limit):
-    """
-    This function returns True if value parameter is less than or equal to limit parameter, False otherwise..
-
-    Parameters
-    ----------
-    value : numeric
-        value
-
-    limit : numeric
-        limit
-
-    Returns
-    -------
-    boolean
-    """
-    return value <= limit
-
-def eq(value, limit):
-    """
-    This function returns True if value parameter is equal to limit parameter, False otherwise..
-
-    Parameters
-    ----------
-    value : numeric
-        value
-
-    limit : numeric
-        limit
-
-    Returns
-    -------
-    boolean
-    """
-    return value == limit
-
-def ge(value, limit):
-    """
-    This function returns True if value parameter is greater than or equal to limit parameter, False otherwise..
-
-    Parameters
-    ----------
-    value : numeric
-        value
-
-    limit : numeric
-        limit
-
-    Returns
-    -------
-    boolean
-    """
-    return value >= limit
-
-def gt(value, limit):
-    """
-    This function returns True if value parameter is greater than limit parameter, False otherwise..
-
-    Parameters
-    ----------
-    value : numeric
-        value
-
-    limit : numeric
-        limit
-
-    Returns
-    -------
-    boolean
-    """
-    return value > limit
 
 def state(value, limit):
     """
