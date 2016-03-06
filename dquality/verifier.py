@@ -65,7 +65,7 @@ import pyinotify
 from pyinotify import WatchManager
 from configobj import ConfigObj
 
-from pvverifier import verify_pv
+from pv import verify
 from file import structure
 from common.qualitychecks import Data, validate_mean_signal_intensity, validate_signal_intensity_standard_deviation, \
     validate_voxel_based_SNR, validate_slice_based_SNR
@@ -195,7 +195,7 @@ def verify_live():
     -------
     None        
     """
-    if not verify_pv():
+    if not verify():
         # the function willl print report if error found
         sys.exit(-1)
         

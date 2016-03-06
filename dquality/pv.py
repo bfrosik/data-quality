@@ -61,14 +61,14 @@ from common.utilities import lt, le, eq, ge, gt
 __author__ = "Barbara Frosik"
 __copyright__ = "Copyright (c) 2016, UChicago Argonne, LLC."
 __docformat__ = 'restructuredtext en'
-__all__ = ['state',
-           'verify_pv',
-           'read_pv']
+__all__ = ['verify',
+           'read',
+           'state']
 
 config = ConfigObj('config.ini')
 
 
-def read_pv(pv_str):
+def read(pv_str):
     """
     This function returns a Process Variable (PV) value or None if the PV does not exist.
 
@@ -109,7 +109,7 @@ def state(value, limit):
         return value == False
 
 
-def verify_pv():
+def verify():
     """
     This function reads the `pv.json <https://github.com/bfrosik/data-quality/blob/master/dquality/schemas/pvs.json>`__ 
     as set in the `config.ini <https://github.com/bfrosik/data-quality/blob/master/dquality/config.ini>`__ file.
@@ -152,7 +152,7 @@ def verify_pv():
 
     for pv in required_pvs:
         # possible the read pv needs try statement
-        pv_value = read_pv(pv)
+        pv_value = read(pv)
 
         if pv_value is None:
             res = False

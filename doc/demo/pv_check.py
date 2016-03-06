@@ -52,9 +52,9 @@ in the pvs.jason configuration file are satisfied.
 This test can be done at the beginning of a scan to confirm mandatory process 
 variables are accessible and their values are within acceptable range.
 """
-import dquality.pvverifier as dq 
+import dquality.pv as pv 
 
-if dq.verify_pv():
+if pv.verify():
     print ('All PVs listed in pvs.json exist and meet conditions')
 else:
     print ('Some of the PVs listed in pvs.json do not exist or do not meet conditions')

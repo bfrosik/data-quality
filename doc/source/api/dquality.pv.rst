@@ -1,7 +1,7 @@
-:mod:`dquality.pvverifier`
-==========================
+:mod:`dquality.pv`
+==================
 
-.. automodule:: dquality.pvverifier
+.. automodule:: dquality.pv
    :members:
    :show-inheritance:
    :undoc-members:
@@ -10,5 +10,6 @@
 
    .. autosummary::
    
+      verify
       state
-      verify_pv
+

@@ -56,7 +56,6 @@ import json
 import h5py
 from configobj import ConfigObj
 from common.utilities import lt, le, eq, ge, gt
-from pvverifier import read_pv
 
 __author__ = "Barbara Frosik"
 __copyright__ = "Copyright (c) 2016, UChicago Argonne, LLC."

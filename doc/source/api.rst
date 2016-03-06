@@ -9,7 +9,7 @@ for `DQuality <https://github.com/bfrosik/data-quality>`_.
 .. toctree::
 
    api/dquality.verifier
-   api/dquality.pvverifier
+   api/dquality.pv
    api/dquality.reporter
    api/dquality.file
    api/dquality.dependency
