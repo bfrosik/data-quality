@@ -10,5 +10,6 @@
 
    .. autosummary::
    
+      verify
       tags
-      structure
+      layout

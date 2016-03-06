@@ -10,6 +10,7 @@
 
    .. autosummary::
    
+      verify_live
       verify_data_quality
       monitor_dir
       cleanup
