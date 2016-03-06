@@ -60,60 +60,34 @@ The results will be sent to an EPICS PV (printed on screen for now).
 import h5py
 import os
 import sys
-from multiprocessing import Process, Queue
 import pyinotify
-from pyinotify import WatchManager
+
 from configobj import ConfigObj
-
-from pv import verify
-from file import structure
-from common.qualitychecks import Data, validate_mean_signal_intensity, validate_signal_intensity_standard_deviation, \
-    validate_voxel_based_SNR, validate_slice_based_SNR
+from pyinotify import WatchManager
 from common.utilities import get_data
+from multiprocessing import Process, Queue
+from common.qualitychecks import Data, validate_mean_signal_intensity
+from common.qualitychecks import validate_signal_intensity_standard_deviation
+from common.qualitychecks import validate_voxel_based_SNR, validate_slice_based_SNR
 
+from pv import verify as pv_verify
+from data import quality as d_quality
+from file import verify as f_verify
 
 __author__ = "Barbara Frosik"
 __copyright__ = "Copyright (c) 2016, UChicago Argonne, LLC."
 __docformat__ = 'restructuredtext en'
-__all__ = ['verify_live',
-           'verify_data_quality',
-           'monitor_dir',
+__all__ = ['verify',
+           'directory',
            'cleanup']
 
 config = ConfigObj('config.ini')
 processes = {}
 files = Queue()
 results = Queue()
-interrupted = False
 INTERRUPT = 'interrupt'
 
-def verify_data_quality(file, function, process_id):
-    """
-    This method creates a new process that is associated with the "*function*" parameter.
-    The created process is stored in global "*processes*" dictionary with the key "*process_id*" parameter.
-    The process is started.
-     
-    Parameters
-    ----------
-    file : str
-        File Name including path
-    
-    function : function
-        Function that will be executed when process starts.
-
-    process_id : int
-        Unique process id assigned by calling method
-        
-    Returns
-    -------
-    None        
-    """
-    print function
-    p = Process(target=function, args=(file, process_id, results,))
-    processes[process_id] = p
-    p.start()
-
-def monitor_dir(directory, patterns):
+def directory(directory, patterns):
     """
     This method monitors a directory given by the "*directory*" parameter.
     It creates a notifier object. The notifier is registered to await the "*CLOSE_WRITE*" event on a new file
@@ -138,7 +112,7 @@ def monitor_dir(directory, patterns):
                 file = event.pathname
                 if file.endswith(pattern):
                     # before any data verification check the data structure against given schema
-                    if structure(file):
+                    if f_verify(file):
                         files.put(event.pathname)
                         break
                     else:
@@ -168,7 +142,7 @@ def cleanup():
         process.terminate()
         notifier.stop()
 
-def verify_live():
+def verify():
     """
     This is the main function called when the verifier application starts.
     It reads the configuration for the directory to monitor, for pattern that represents a file extension to look for, 
@@ -176,7 +150,7 @@ def verify_live():
     The number of files configuration parameter is added for experiments that generate multiple files.
     In some cases the experiment data is collected into a single file, which is organized with data sets.
     
-    The function calls monitor_dir function that sets up the monitoring and returns notifier.
+    The function calls directory function that sets up the monitoring and returns notifier.
     After the monitoring is initialized, it starts a loop that reads the global "*files*" queue and then the global "*results*" queue.
     If there is any new file, the file is removed from the queue, and the data in the file is validated by a sequence of validation
     methods.
@@ -195,8 +169,11 @@ def verify_live():
     -------
     None        
     """
-    if not verify():
-        # the function willl print report if error found
+    interrupted = False
+
+    if not pv_verify():
+        print "***"
+        # the function will print report if error found
         sys.exit(-1)
         
     numberverifiers = 2 # number of verification functions to call for each data file
@@ -204,11 +181,11 @@ def verify_live():
     #The verifier can be configured to verify file or to monitor a directory and verify a new file on close save.
     try:
         # check if directory exists
-        directory = config['directory']
-        if not os.path.isdir(directory):
-            print ('configuration error: directory ' + directory + ' does not exist')
+        folder = config['directory']
+        if not os.path.isdir(folder):
+            print ('configuration error: directory ' + folder + ' does not exist')
             sys.exit()
-        notifier = monitor_dir(directory, config['file_patterns'])
+        notifier = directory(folder, config['file_patterns'])
         numresults = int(config['number_files']) * numberverifiers
     except KeyError:
         print ('config error: directory not configured')
@@ -229,9 +206,9 @@ def verify_live():
             else:
                 data = Data(file, get_data(file))
                 process_id = process_id + 1
-                verify_data_quality(data, validate_mean_signal_intensity, process_id)
+                d_quality(data, validate_mean_signal_intensity, process_id)
                 process_id = process_id + 1
-                verify_data_quality(data, validate_signal_intensity_standard_deviation, process_id)
+                d_quality(data, validate_signal_intensity_standard_deviation, process_id)
 
         # checking the result queue and printing result
         # later the result will be passed to an EPICS process variable

@@ -11,7 +11,7 @@ for `DQuality <https://github.com/bfrosik/data-quality>`_.
    api/dquality.pv
    api/dquality.file
    api/dquality.data
-   api/dquality.verifier
+   api/dquality.monitor
    api/dquality.dependency
 
 .. automodule:: dquality

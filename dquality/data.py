@@ -71,17 +71,17 @@ __author__ = "Barbara Frosik"
 __copyright__ = "Copyright (c) 2016, UChicago Argonne, LLC."
 __docformat__ = 'restructuredtext en'
 __all__ = ['verify',
+           'quality',
            'cleanup']
 
 config = ConfigObj('config.ini')
 processes = {}
 results = Queue()
-interrupted = False
 
-def verify(file, function, process_id):
+def quality(file, function, process_id):
     """
-    This method creates a new process that is associated with the "function" parameter.
-    The created process is stored in global "processes" dictionary with the key "process_id" parameter.
+    This method creates a new process that is associated with the "*function*" parameter.
+    The created process is stored in global "*processes*" dictionary with the key "*process_id*" parameter.
     The process is started.
      
     Parameters
@@ -118,7 +118,7 @@ def cleanup():
     for process in processes.itervalues():
         process.terminate()
 
-if __name__ == '__main__':
+def verify():
     """
     This is the main function called when the application starts. 
     It reads the configuration for the file to report on. When the file is found, it is verified for its structure, i.e. whether
@@ -139,6 +139,8 @@ if __name__ == '__main__':
     -------
     None        
     """
+    interrupted = False
+    
     numberverifiers = 2 # number of verification functions to call for each data file
     numresults = numberverifiers
     process_id = 0
@@ -151,9 +153,9 @@ if __name__ == '__main__':
 
     data = Data(file, get_data(file))
     process_id = process_id + 1
-    verify(data, validate_mean_signal_intensity, process_id)
+    quality(data, validate_mean_signal_intensity, process_id)
     process_id = process_id + 1
-    verify(data, validate_signal_intensity_standard_deviation, process_id)
+    quality(data, validate_signal_intensity_standard_deviation, process_id)
 
     while not interrupted:
         # checking the result queue and printing result

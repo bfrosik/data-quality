@@ -1,5 +1,5 @@
-HDF File Check
-==============
+HDF File
+========
 
 
 This module requires the "*schema*" section of the

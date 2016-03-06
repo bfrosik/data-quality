@@ -1,11 +1,12 @@
 Examples
 ========
 
-This section contains code examples for various DQuality tasks.
+This section contains various DQuality examples.
 
 .. toctree::
 
-   demo/doc.demo.verify
+   demo/doc.demo.verify_pv
+   demo/doc.demo.verify_file
 
 .. automodule:: dquality
    :members:
