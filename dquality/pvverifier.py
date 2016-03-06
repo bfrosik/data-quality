@@ -47,8 +47,7 @@
 # #########################################################################
 
 """
-You must create in your home directory `config.ini <https://github.com/bfrosik/data-quality/blob/master/dquality/config.ini>`__ file and set the "*definitions for pvVerifier*" section.
-You must create in your home directory `pv.json <https://github.com/bfrosik/data-quality/blob/master/dquality/schemas/pvs.json>`__. 
+You must create in your home directory `config.ini <https://github.com/bfrosik/data-quality/blob/master/dquality/config.ini>`__ file and set the "*definitions for pvVerifier*" section and `pv.json <https://github.com/bfrosik/data-quality/blob/master/dquality/schemas/pvs.json>`__ containing the list of PVs with their acceptable value range. 
 This module verifies that each of the PV listed in a file is set, and the values are set according to `pv.json <https://github.com/bfrosik/data-quality/blob/master/dquality/schemas/pvs.json>`__. The results will be reported in a file (printed on screen for now). An error will be reported back to UI via PV.
 
 """
@@ -56,18 +55,39 @@ This module verifies that each of the PV listed in a file is set, and the values
 import sys
 import json
 from configobj import ConfigObj
+from epics import PV
 
 __author__ = "Barbara Frosik"
 __copyright__ = "Copyright (c) 2016, UChicago Argonne, LLC."
 __docformat__ = 'restructuredtext en'
-__all__ = ['state',
-           'verify_pv']
+__all__ = ['lt',
+           'le',
+           'eq',
+           'ge',
+           'gt',
+           'state',
+           'verify_pv',
+           'read_pv']
 
 config = ConfigObj('config.ini')
 
 
-def read_pv(pv):
-    return False
+def read_pv(pv_str):
+    """
+    This function returns a Process Variable (PV) value or None if the PV does not exist.
+
+    Parameters
+    ----------
+    value : str
+        name of the PV
+
+    Returns
+    -------
+    PV value
+    """
+    pv = PV(pv_str).get()
+    
+    return pv
 
 def lt(value, limit):
     """
@@ -161,7 +181,7 @@ def gt(value, limit):
 
 def state(value, limit):
     """
-    This function takes boolean "value" parameter and string "limit" parameter that can be either 'True' or 'False'.
+    This function takes boolean "*value*" parameter and string "limit" parameter that can be either "*True*" or "*False*".
     The limit is converted to string and compared with the value. The function returns True if the boolean values are
     equal, False otherwise.
 
@@ -192,12 +212,13 @@ def verify_pv():
     a verification operation. The verification operation attribute has an operation as a key,
     and the value is the limit of the PV.
     The allowed keys are:
-    "less_than" - the PV value must be less than attribute value
-    "less_or_equal" - the PV value must be less than or equal attribute value
-    "equal" - the PV value must be equal to attribute value
-    "greater_or_equal" - the PV value must be greater than or equal attribute value
-    "greater_than" - the PV value must be greater than attribute value
-    "state" - to support boolean PVs. The defined value must be "True" or "False".
+    
+    - "*less_than*" - the PV value must be less than attribute value
+    - "*less_or_equal*" - the PV value must be less than or equal attribute value
+    - "*equal*" - the PV value must be equal to attribute value
+    - "*greater_or_equal*" - the PV value must be greater than or equal attribute value
+    - "*greater_than*" - the PV value must be greater than attribute value
+    - "*state*" - to support boolean PVs. The defined value must be "True" or "False".
 
     Any missing PV (i.e. it can't be read) is an error that is reported (printed for now).
     Any PV value that is out of limit is an error that is reported (printed for now)
@@ -226,6 +247,7 @@ def verify_pv():
     for pv in required_pvs:
         # possible the read pv needs try statement
         pv_value = read_pv(pv)
+
         if pv_value is None:
             res = False
             print ('PV ' + pv + ' cannot be read.')
@@ -239,23 +261,5 @@ def verify_pv():
                         res = False
                         print ('PV ' + pv + ' has value out of range. The value is ' + str(pv_value)  + ' but should be ' + attr + ' ' + str(pv_attr[attr]))
     return res
-
-if __name__ == '__main__':
-    """
-    This is the main function called when the application starts.
-    It reads the configuration for the file defining mandatory process variables.
-    It calls the verify_pv function that does the verification.
-
-    Parameters
-    ----------
-    None
-
-    Returns
-    -------
-    None
-    """
-    verify_pv()
-
-    print ('finished')
 
 

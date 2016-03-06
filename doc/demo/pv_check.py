@@ -46,13 +46,17 @@
 # POSSIBILITY OF SUCH DAMAGE.                                             #
 # #########################################################################
 """
-This is the main function called when the application starts.
-It reads the configuration for the file defining mandatory process variables.
-It calls the verify_pv function that does the verification.
+This example shows how to verify that the list of PV/PV value conditions listed
+in the pvs.jason configuration file are satisfied.
+
+This test can be done at the beginning of a scan to confirm mandatory process 
+variables are accessible and their values are within acceptable range.
 """
 import dquality.pvverifier as dq 
 
-dq.verify_pv()
-print ('finished')
+if dq.verify_pv():
+    print ('All PVs listed in pvs.json exist and meet conditions')
+else:
+    print ('Some of the PVs listed in pvs.json do not exist or do not meet conditions')
 
 
