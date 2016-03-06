@@ -71,6 +71,7 @@ docs/build
 ##############
 test.py
 main.py
+*.h5
 
 # Distribution / packaging #
 ############################
