@@ -47,8 +47,8 @@
 # #########################################################################
 
 """
-You must create in your home directory `config.ini <https://github.com/bfrosik/data-quality/blob/master/dquality/config.ini>`__ file and set the "*file*" section, with "*file*" as an hd5 file that is verified.
-You must create in your home directory `pv.json <https://github.com/bfrosik/data-quality/blob/master/dquality/schemas/dependencies.json>`__. The tags listed in the "*dependencies*" file are found in the hd5 file, and the values compared. If a relation specified in "*dependencies*" file is not verified, the tag is reported, and the verification fails.
+You must create in your home directory `config.ini <https://github.com/bfrosik/data-quality/blob/master/dquality/config.ini>`__ file and set the "*definitions for pvVerifier*" section and `pv.json <https://github.com/bfrosik/data-quality/blob/master/dquality/schemas/pvs.json>`__ containing the list of PVs with their acceptable value range. 
+This module verifies that each of the PV listed in a file is set, and the values are set according to `pv.json <https://github.com/bfrosik/data-quality/blob/master/dquality/schemas/pvs.json>`__. The results will be reported in a file (printed on screen for now). An error will be reported back to UI via PV.
 """
 
 import sys

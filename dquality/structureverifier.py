@@ -53,21 +53,42 @@ If any of the parameters is not configured, it is assumed no file structure veri
 
 """
 
-import os.path
 import h5py
 import json
-from configobj import ConfigObj
+import os.path
 from common.utilities import copy_list, key_list, report_items
+from configobj import ConfigObj
 
 __author__ = "Barbara Frosik"
 __copyright__ = "Copyright (c) 2016, UChicago Argonne, LLC."
 __docformat__ = 'restructuredtext en'
-__all__ = ['verify_real_time_hd5',
-           'verify_structure']
+__all__ = ['tags',
+           'structure',
+           'verify']
 
 config = ConfigObj('config.ini')
 
-def report_structure_hd5(file, schema):
+def structure(file, schema):
+    """
+    This method is used when a file of hdf type is given. 
+    All tags and array dimensions are verified against a schema.
+    (see `basicHDF.json <https://github.com/bfrosik/data-quality/blob/master/dquality/schemas/basicHDF.json>`__ 
+    example file).
+     
+    Parameters
+    ----------
+    file : str
+        File Name including path
+    
+    schema : str
+        Schema file name
+
+    Returns
+    -------
+    True if verified
+    False if not verified
+        
+    """
     def check_dim(dset, attr):
         required_dim = attr.get('dim')
         required_dim_copy = copy_list(required_dim)
@@ -77,9 +98,9 @@ def report_structure_hd5(file, schema):
                 try:
                     required_dim_copy.remove(dim[i])
                 except ValueError:
-                    print ('the dataset '  + dset.name + '  dimentions are: ' + str(dset.shape) + ' but should be ' + str(required_dim))
+                    print ('the dataset '  + dset.name + ' dimention ' + str(i) + ' is wrong: it is [' + str(dset.shape[i]) + '] but should be [' + str(required_dim[i]) + ']')
         else:
-            print ('the dataset '  + dset.name + '  dimentions are: ' + str(dset.shape) + ' but should be ' + str(required_dim))
+            print ('the dataset '  + dset.name + ' dimentions: ' + str(dset.shape) + ' but should be ' + str(required_dim))
 
     def func(name, dset):
         if isinstance(dset, h5py.Dataset):
@@ -110,10 +131,10 @@ def report_structure_hd5(file, schema):
     file_h5.visititems(func)
     report_items(tag_list, 'the following tags are missing: ', '')
 
-def verify_real_time_hd5(file, schema):
+def tags(file, schema):
     """
-    This method is used when a file of hd5 type is given. 
-    All tags from the hd5 file are added in the filetags list.
+    This method is used when a file of hdf type is given. 
+    All tags from the hdf file are added in the filetags list.
     Then the schema is evaluated for tags. With each tag discovered it checks whether there is matching tag in the filetags list.
     If a tag is missing, the function exits with False.
     Otherwise, it will return True.
@@ -133,7 +154,7 @@ def verify_real_time_hd5(file, schema):
         
     """
 
-    with open('schemas/basicHD5.json') as data_file:
+    with open('schemas/basicHDF.json') as data_file:
         required_tags = json.loads(data_file.read()).get('required_tags')
 
     tag_list = key_list(required_tags)
@@ -164,47 +185,29 @@ def verify_real_time_hd5(file, schema):
 
     return result.is_verified()
 
-def verify_structure(file):
-    """
-    This method reads configuration parameter 'schema-type'. If not configured, the function returns True, 
-    as no verification is needed.
-    In case the type is set, the follow up logic determines, what type of verification should be applied.
-    Currently, the HD5 type is supported.
-    The function then reads the schema file from config. If not configured, the function returns True, as 
-    no verification is needed.
-    Otherwise, it will call the appropriate verification function and will return the result.
-     
-    Parameters
-    ----------
-    file : str
-        File Name including path
-    
-    Returns
-    -------
-    True if verified
-    False if not verified
-        
-    """
+def verify(file):
     try:
         type = config['verification_type']
-        if type == 'report_hd5':
+        print ('Verification type: ' + type)
+        if type == 'hdf_structure':
             try:
                 schema = config['schema']
                 if not os.path.isfile(schema):
                     print ('configuration error: schema file ' + schema + ' does not exist')
                     return False
-                return report_structure_hd5(file, schema)
+                return structure(file, schema)
             except KeyError:
                 return True
-        if type == 'real_time_hd5':
+        if type == 'hdf_tags':
             try:
                 schema = config['schema']
                 if not os.path.isfile(schema):
                     print ('configuration error: schema file ' + schema + ' does not exist')
                     return False
-                return verify_real_time_hd5(file, schema)
+                return tags(file, schema)
             except KeyError:
                 return True
 
     except KeyError:
         return True
+

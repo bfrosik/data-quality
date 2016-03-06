@@ -66,7 +66,7 @@ from pyinotify import WatchManager
 from configobj import ConfigObj
 
 from pvverifier import verify_pv
-from structureverifier import verify_structure
+from structureverifier import verify
 from common.qualitychecks import Data, validate_mean_signal_intensity, validate_signal_intensity_standard_deviation, \
     validate_voxel_based_SNR, validate_slice_based_SNR
 from common.utilities import get_data
@@ -75,7 +75,8 @@ from common.utilities import get_data
 __author__ = "Barbara Frosik"
 __copyright__ = "Copyright (c) 2016, UChicago Argonne, LLC."
 __docformat__ = 'restructuredtext en'
-__all__ = ['verify_data_quality',
+__all__ = ['verify_live',
+           'verify_data_quality',
            'monitor_dir',
            'cleanup']
 
@@ -88,8 +89,8 @@ INTERRUPT = 'interrupt'
 
 def verify_data_quality(file, function, process_id):
     """
-    This method creates a new process that is associated with the "function" parameter.
-    The created process is stored in global "processes" dictionary with the key "process_id" parameter.
+    This method creates a new process that is associated with the "*function*" parameter.
+    The created process is stored in global "*processes*" dictionary with the key "*process_id*" parameter.
     The process is started.
      
     Parameters
@@ -107,15 +108,16 @@ def verify_data_quality(file, function, process_id):
     -------
     None        
     """
+    print function
     p = Process(target=function, args=(file, process_id, results,))
     processes[process_id] = p
     p.start()
 
 def monitor_dir(directory, patterns):
     """
-    This method monitors a directory given by the "directory" parameter.
-    It creates a notifier object. The notifier is registered to await the "CLOSE_WRITE" event on a new file
-    that matches the "pattern" parameter. If there is no such event, it yields control on timeout, defaulted to 1 second.
+    This method monitors a directory given by the "*directory*" parameter.
+    It creates a notifier object. The notifier is registered to await the "*CLOSE_WRITE*" event on a new file
+    that matches the "*pattern*" parameter. If there is no such event, it yields control on timeout, defaulted to 1 second.
     It returns the created notifier.
      
     Parameters
@@ -136,7 +138,7 @@ def monitor_dir(directory, patterns):
                 file = event.pathname
                 if file.endswith(pattern):
                     # before any data verification check the data structure against given schema
-                    if verify_structure(file):
+                    if verify(file):
                         files.put(event.pathname)
                         break
                     else:
@@ -166,7 +168,7 @@ def cleanup():
         process.terminate()
         notifier.stop()
 
-if __name__ == '__main__':
+def verify_live():
     """
     This is the main function called when the verifier application starts.
     It reads the configuration for the directory to monitor, for pattern that represents a file extension to look for, 
@@ -175,7 +177,7 @@ if __name__ == '__main__':
     In some cases the experiment data is collected into a single file, which is organized with data sets.
     
     The function calls monitor_dir function that sets up the monitoring and returns notifier.
-    After the monitoring is initialized, it starts a loop that reads the global "files" queue and then the global "results" queue.
+    After the monitoring is initialized, it starts a loop that reads the global "*files*" queue and then the global "*results*" queue.
     If there is any new file, the file is removed from the queue, and the data in the file is validated by a sequence of validation
     methods.
     If there is any new result, the result is removed from the queue, corresponding process is terminated, and the result is 

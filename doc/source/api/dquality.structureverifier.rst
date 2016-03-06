@@ -10,5 +10,5 @@
 
    .. autosummary::
    
-      verify_real_time_hd5
-      verify_structure
+      tags
+      structure

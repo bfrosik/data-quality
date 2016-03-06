@@ -8,6 +8,7 @@ This section contains examples on how to implement various data quality tasks.
 .. toctree::
 
    doc.demo.pv_check
+   doc.demo.hdf_check
 
 .. automodule:: dquality
    :members:

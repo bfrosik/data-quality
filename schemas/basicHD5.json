@@ -1,9 +1,0 @@
-{
-"required_tags":{"/exchange/data" : {"dim":[910,2048,2048], "axes":"theta:y:x", "units":"counts1", "badattr":"n"},
-                 "/exchange/data_dark" : {"dim":[9,2048,2048], "axes":"theta_dark:y:x", "units":"counts"},
-                 "/exchange/data_white" : {"dim":[9,2048,2048], "axes":"theta_white:y:x", "units":"counts"},
-                 "badtag" : {},
-                 "/exchange/theta" : {"dim":[910], "units":"degrees"}
-                }
-}
-
