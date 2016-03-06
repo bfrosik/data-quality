@@ -186,6 +186,19 @@ def tags(file, schema):
     return result.is_verified()
 
 def layout(file):
+    """
+    This is the main function called when the structureverifier application starts.
+    It reads the configuration file for "*verification_type*" to verify "*hdf_structure*" or "*hdf_tags*"  
+     
+    Parameters
+    ----------
+    file : str
+        File Name including path
+
+    Returns
+    -------
+    boolean        
+    """
     try:
         type = config['verification_type']
         print ('Verification type: ' + type)
