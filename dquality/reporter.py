@@ -142,7 +142,7 @@ if __name__ == '__main__':
     process_id = 0
     try:
         file = config['file']
-        verify_structure(file)
+        verify(file)
     except KeyError:
         print ('config error: neither directory or file configured')
         sys.exit(-1)
