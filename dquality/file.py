@@ -62,9 +62,9 @@ from configobj import ConfigObj
 __author__ = "Barbara Frosik"
 __copyright__ = "Copyright (c) 2016, UChicago Argonne, LLC."
 __docformat__ = 'restructuredtext en'
-__all__ = ['tags',
-           'structure',
-           'layout']
+__all__ = ['verify',
+           'tags',
+           'structure']
 
 config = ConfigObj('config.ini')
 
@@ -185,7 +185,7 @@ def tags(file, schema):
 
     return result.is_verified()
 
-def layout(file):
+def verify(file):
     """
     This is the main function called when the structureverifier application starts.
     It reads the configuration file for "*verification_type*" to verify "*hdf_structure*" or "*hdf_tags*"  

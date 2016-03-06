@@ -1,7 +1,7 @@
-:mod:`dquality.fileverify`
-==========================
+:mod:`dquality.file`
+====================
 
-.. automodule:: dquality.fileverify
+.. automodule:: dquality.file
    :members:
    :show-inheritance:
    :undoc-members:
@@ -10,6 +10,6 @@
 
    .. autosummary::
    
+      verify
       structure
       tags
-      layout

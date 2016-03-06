@@ -66,7 +66,7 @@ from pyinotify import WatchManager
 from configobj import ConfigObj
 
 from pvverifier import verify_pv
-from fileverify import structure
+from file import structure
 from common.qualitychecks import Data, validate_mean_signal_intensity, validate_signal_intensity_standard_deviation, \
     validate_voxel_based_SNR, validate_slice_based_SNR
 from common.utilities import get_data

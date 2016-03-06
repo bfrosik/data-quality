@@ -60,7 +60,7 @@ import h5py
 from multiprocessing import Process, Queue
 from configobj import ConfigObj
 
-from fileverify import layout
+from file import verify
 from common.qualitychecks import Data, validate_mean_signal_intensity, validate_signal_intensity_standard_deviation, validate_voxel_based_SNR, validate_slice_based_SNR
 from common.utilities import get_data
 
@@ -142,7 +142,7 @@ if __name__ == '__main__':
     process_id = 0
     try:
         file = config['file']
-        layout(file)
+        verify(file)
     except KeyError:
         print ('config error: neither directory or file configured')
         sys.exit(-1)
