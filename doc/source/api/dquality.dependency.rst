@@ -9,6 +9,6 @@
    .. rubric:: **Functions:**
 
    .. autosummary::
-      find_value
-      verify_list
       verify
+      verify_list
+      find_value

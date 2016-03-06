@@ -60,9 +60,9 @@ from common.utilities import lt, le, eq, ge, gt
 __author__ = "Barbara Frosik"
 __copyright__ = "Copyright (c) 2016, UChicago Argonne, LLC."
 __docformat__ = 'restructuredtext en'
-__all__ = ['find_value',
+__all__ = ['verify',
            'verify_list',
-           'verify']
+           'find_value']
 
 config = ConfigObj('config.ini')
 

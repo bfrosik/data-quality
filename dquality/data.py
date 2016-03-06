@@ -60,23 +60,25 @@ import h5py
 from multiprocessing import Process, Queue
 from configobj import ConfigObj
 
-from file import verify
-from common.qualitychecks import Data, validate_mean_signal_intensity, validate_signal_intensity_standard_deviation, validate_voxel_based_SNR, validate_slice_based_SNR
+from file import verify as f_verify
+from common.qualitychecks import Data, validate_mean_signal_intensity 
+from common.qualitychecks import validate_signal_intensity_standard_deviation
+from common.qualitychecks import validate_voxel_based_SNR, validate_slice_based_SNR
 from common.utilities import get_data
 
 
 __author__ = "Barbara Frosik"
 __copyright__ = "Copyright (c) 2016, UChicago Argonne, LLC."
 __docformat__ = 'restructuredtext en'
-__all__ = ['verify_data_quality_report',
-           'cleanup_report']
+__all__ = ['verify',
+           'cleanup']
 
 config = ConfigObj('config.ini')
 processes = {}
 results = Queue()
 interrupted = False
 
-def verify_data_quality_report(file, function, process_id):
+def verify(file, function, process_id):
     """
     This method creates a new process that is associated with the "function" parameter.
     The created process is stored in global "processes" dictionary with the key "process_id" parameter.
@@ -101,7 +103,7 @@ def verify_data_quality_report(file, function, process_id):
     processes[process_id] = p
     p.start()
 
-def cleanup_report():
+def cleanup():
     """
     This method is called at the exit. If any process is still active it will be terminated.
      
@@ -142,16 +144,16 @@ if __name__ == '__main__':
     process_id = 0
     try:
         file = config['file']
-        verify(file)
+        f_verify(file)
     except KeyError:
         print ('config error: neither directory or file configured')
         sys.exit(-1)
 
     data = Data(file, get_data(file))
     process_id = process_id + 1
-    verify_data_quality_report(data, validate_mean_signal_intensity, process_id)
+    verify(data, validate_mean_signal_intensity, process_id)
     process_id = process_id + 1
-    verify_data_quality_report(data, validate_signal_intensity_standard_deviation, process_id)
+    verify(data, validate_signal_intensity_standard_deviation, process_id)
 
     while not interrupted:
         # checking the result queue and printing result
@@ -167,7 +169,7 @@ if __name__ == '__main__':
         if numresults is 0:
             interrupted = True
 
-    cleanup_report()
+    cleanup()
 
     print ('finished')
 

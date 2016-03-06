@@ -8,10 +8,10 @@ for `DQuality <https://github.com/bfrosik/data-quality>`_.
 
 .. toctree::
 
-   api/dquality.verifier
    api/dquality.pv
-   api/dquality.reporter
    api/dquality.file
+   api/dquality.data
+   api/dquality.verifier
    api/dquality.dependency
 
 .. automodule:: dquality
