@@ -64,7 +64,7 @@ __copyright__ = "Copyright (c) 2016, UChicago Argonne, LLC."
 __docformat__ = 'restructuredtext en'
 __all__ = ['tags',
            'structure',
-           'verify']
+           'layout']
 
 config = ConfigObj('config.ini')
 
@@ -185,7 +185,7 @@ def tags(file, schema):
 
     return result.is_verified()
 
-def verify(file):
+def layout(file):
     try:
         type = config['verification_type']
         print ('Verification type: ' + type)
