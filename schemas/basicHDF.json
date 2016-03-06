@@ -2,7 +2,8 @@
 "required_tags":{"/exchange/data" : {"dim":[722,2049,2449], "axes":"theta:y:x", "units":"counts"},
                  "/exchange/data_dark" : {"dim":[8,2048,2448], "axes":"theta_dark:y:x", "units":"counts"},
                  "/exchange/data_white" : {"dim":[20,2048,2448], "axes":"theta_white:y:x", "units":"counts"},
-                 "/exchange/theta" : {"dim":[721], "units":"degrees"}
+                 "/exchange/theta" : {"dim":[721], "units":"degrees"},
+                 "/exchange/missing" : {"dim":[721], "units":"degrees"}
                 }
 }
 
