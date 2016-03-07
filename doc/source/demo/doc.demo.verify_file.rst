@@ -9,7 +9,7 @@ This section contains examples on how to implement various data quality tasks.
 
    doc.demo.hdf_check
    doc.demo.monitor_check
-   doc.demo.data_check
+   doc.demo.dquality_check
    doc.demo.dependency_check
 
 .. automodule:: dquality
