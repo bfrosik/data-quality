@@ -47,6 +47,8 @@
 # #########################################################################
 
 """
+Please make sure the installation :ref:`pre-requisite-reference-label` are met.
+
 This file contains verification functions related to the file structure.
 It reads configuration parameters "*schema_type*" and "*schema*" to determine first which kind of file verification is requested, and a schema that defines mandatory parameters.
 If any of the parameters is not configured, it is assumed no file structure verification is requested.

@@ -47,7 +47,7 @@
 # #########################################################################
 
 """
-This module requires the "*definitions for verifier*" section of `config.ini <https://github.com/bfrosik/data-quality/blob/master/dquality/config.ini>`__ file to be set.
+Please make sure the installation :ref:`pre-requisite-reference-label` are met.
 
 The application monitors given directory for new/modified files of the given pattern.
 Each of the detected file is verified according to schema configuration and for each of the file several new processes

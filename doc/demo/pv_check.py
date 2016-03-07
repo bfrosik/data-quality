@@ -46,7 +46,9 @@
 # POSSIBILITY OF SUCH DAMAGE.                                             #
 # #########################################################################
 """
-This example shows how to verify that the list of PV/PV value conditions listed
+Please make sure the installation :ref:`pre-requisite-reference-label` are met.
+
+This example shows how to verify that the list of PV/PV-value conditions listed
 in the pvs.jason configuration file are satisfied.
 
 This test can be done at the beginning of a scan to confirm mandatory process 

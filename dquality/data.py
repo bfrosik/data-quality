@@ -47,7 +47,7 @@
 # #########################################################################
 
 """
-You must create in your home directory `config.ini <https://github.com/bfrosik/data-quality/blob/master/dquality/config.ini>`__ file and set the "*definitions for reporter*" section.
+Please make sure the installation :ref:`pre-requisite-reference-label` are met.
 
 This module verifies a given file according to schema configuration and starts new processes, each process performing specific quality calculations.
 

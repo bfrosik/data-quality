@@ -46,6 +46,8 @@
 # POSSIBILITY OF SUCH DAMAGE.                                             #
 # #########################################################################
 """
+Please make sure the installation :ref:`pre-requisite-reference-label` are met.
+
 This example shows how to verify an HDF file structure.
 """
 from dquality.structureverifier import layout  

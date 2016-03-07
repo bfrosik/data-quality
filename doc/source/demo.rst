@@ -1,7 +1,8 @@
 Examples
 ========
 
-This section contains various DQuality examples.
+This section contains various DQuality examples. Please make sure the installation :ref:`pre-requisite-reference-label` are met.
+
 
 .. toctree::
 

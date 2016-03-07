@@ -47,8 +47,11 @@
 # #########################################################################
 
 """
-You must create in your home directory `config.ini <https://github.com/bfrosik/data-quality/blob/master/dquality/config.ini>`__ file and set the "*definitions for pvVerifier*" section and `pv.json <https://github.com/bfrosik/data-quality/blob/master/dquality/schemas/pvs.json>`__ containing the list of PVs with their acceptable value range. 
-This module verifies that each of the PV listed in a file is set, and the values are set according to `pv.json <https://github.com/bfrosik/data-quality/blob/master/dquality/schemas/pvs.json>`__. The results will be reported in a file (printed on screen for now). An error will be reported back to UI via PV.
+Please make sure the installation :ref:`pre-requisite-reference-label` are met.
+
+This module verifies that each of the PVs listed in the configuration file exist and their values are set within the predefined range.
+
+The results will be reported in a file (printed on screen for now). An error will be reported back to UI via PV.
 """
 
 import sys

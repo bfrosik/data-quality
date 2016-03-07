@@ -16,12 +16,12 @@ This guide is maintained on
    :maxdepth: 1
    
    source/about
-   source/deliverable
    source/install
-   source/devguide
    source/api
    source/demo
+   source/devguide
    source/faq
+   source/credits
 
 
 Indices and tables

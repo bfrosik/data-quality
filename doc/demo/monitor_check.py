@@ -46,6 +46,8 @@
 # POSSIBILITY OF SUCH DAMAGE.                                             #
 # #########################################################################
 """
+Please make sure the installation :ref:`pre-requisite-reference-label` are met.
+
 This example shows how to verify file newly created in a monitored folder.
 
 This test can be done at during data collection to confirm mandatory process 
