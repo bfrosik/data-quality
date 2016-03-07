@@ -98,9 +98,9 @@ def structure(file, schema):
                 try:
                     required_dim_copy.remove(dim[i])
                 except ValueError:
-                    print ('the dataset '  + dset.name + ' dimention ' + str(i) + ' is wrong: it is [' + str(dset.shape[i]) + '] but should be [' + str(required_dim[i]) + ']')
+                    print ('The dataset '  + dset.name + ' dimension ' + str(i) + ' is wrong: it is [' + str(dset.shape[i]) + '] but should be [' + str(required_dim[i]) + ']')
         else:
-            print ('the dataset '  + dset.name + ' dimentions: ' + str(dset.shape) + ' but should be ' + str(required_dim))
+            print ('The dataset '  + dset.name + ' dimensions: ' + str(dset.shape) + ' but should be ' + str(required_dim))
 
     def func(name, dset):
         if isinstance(dset, h5py.Dataset):
