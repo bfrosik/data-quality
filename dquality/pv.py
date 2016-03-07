@@ -58,7 +58,7 @@ The results will be reported in a file (printed on screen for now). An error wil
 import sys
 import json
 
-#from epics import PV
+from epics import PV
 from configobj import ConfigObj
 from common.utilities import lt, le, eq, ge, gt
 
