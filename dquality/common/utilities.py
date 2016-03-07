@@ -56,10 +56,105 @@ import h5py
 __author__ = "Barbara Frosik"
 __copyright__ = "Copyright (c) 2016, UChicago Argonne, LLC."
 __docformat__ = 'restructuredtext en'
-__all__ = ['get_data',
+__all__ = ['lt',
+           'le',
+           'eq',
+           'ge',
+           'gt',
+           'get_data',
            'copy_list',
            'key_list',
            'report_items']
+
+def lt(value, limit):
+    """
+    This function returns True if value parameter is less than limit parameter, False otherwise..
+
+    Parameters
+    ----------
+    value : numeric
+        value
+
+    limit : numeric
+        limit
+
+    Returns
+    -------
+    boolean
+    """
+    return value < limit
+
+def le(value, limit):
+    """
+    This function returns True if value parameter is less than or equal to limit parameter, False otherwise..
+
+    Parameters
+    ----------
+    value : numeric
+        value
+
+    limit : numeric
+        limit
+
+    Returns
+    -------
+    boolean
+    """
+    return value <= limit
+
+def eq(value, limit):
+    """
+    This function returns True if value parameter is equal to limit parameter, False otherwise..
+
+    Parameters
+    ----------
+    value : numeric
+        value
+
+    limit : numeric
+        limit
+
+    Returns
+    -------
+    boolean
+    """
+    return value == limit
+
+def ge(value, limit):
+    """
+    This function returns True if value parameter is greater than or equal to limit parameter, False otherwise..
+
+    Parameters
+    ----------
+    value : numeric
+        value
+
+    limit : numeric
+        limit
+
+    Returns
+    -------
+    boolean
+    """
+    return value >= limit
+
+def gt(value, limit):
+    """
+    This function returns True if value parameter is greater than limit parameter, False otherwise..
+
+    Parameters
+    ----------
+    value : numeric
+        value
+
+    limit : numeric
+        limit
+
+    Returns
+    -------
+    boolean
+    """
+    return value > limit
 
 def get_data(file):
     """

@@ -45,5 +45,19 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE         #
 # POSSIBILITY OF SUCH DAMAGE.                                             #
 # #########################################################################
+"""
+Please make sure the installation :ref:`pre-requisite-reference-label` are met.
 
-from __future__ import (absolute_import, division, print_function,                        unicode_literals)from dquality import *
+This example shows how to verify file newly created in a monitored folder.
+
+This test can be done at during data collection to confirm mandatory process 
+variables are accessible and their values are within acceptable range.
+"""
+import dquality.monitor as monitor 
+
+if monitor.verify():
+    print ('All PVs listed in pvs.json exist and meet conditions')
+else:
+    print ('Some of the PVs listed in pvs.json do not exist or do not meet conditions')
+
+

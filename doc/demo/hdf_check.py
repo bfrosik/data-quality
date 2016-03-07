@@ -45,5 +45,15 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE         #
 # POSSIBILITY OF SUCH DAMAGE.                                             #
 # #########################################################################
+"""
+Please make sure the installation :ref:`pre-requisite-reference-label` are met.
 
-from __future__ import (absolute_import, division, print_function,                        unicode_literals)from dquality import *
+This example shows how to verify an HDF file structure.
+"""
+from dquality.structureverifier import layout  
+
+if layout('test.h5'):
+    print ('All PVs listed in pvs.json exist and meet conditions')
+else:
+    print ('Some of the PVs listed in pvs.json do not exist or do not meet conditions')
+        

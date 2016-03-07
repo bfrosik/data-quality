@@ -47,121 +47,27 @@
 # #########################################################################
 
 """
-This application assumes there is a 'config.ini' file that contains parameters required to run the application:
+Please make sure the installation :ref:`pre-requisite-reference-label` are met.
 
-'file' - hd5 file that is verified
-'dependencies' - a file that includes dependencies between hd5 tags
+This module verifies that each of the PVs listed in the configuration file exist and their values are set within the predefined range.
 
-The tags listed in the 'dependencies' file are found in the hd5 file, and the values compared. If a relation specified in
-'dependencies' file is not verified, the tag is reported, and the verification fails.
-
+The results will be reported in a file (printed on screen for now). An error will be reported back to UI via PV.
 """
 
 import sys
 import json
 import h5py
 from configobj import ConfigObj
+from common.utilities import lt, le, eq, ge, gt
 
 __author__ = "Barbara Frosik"
 __copyright__ = "Copyright (c) 2016, UChicago Argonne, LLC."
 __docformat__ = 'restructuredtext en'
-__all__ = ['verify_pv']
+__all__ = ['verify',
+           'verify_list',
+           'find_value']
 
 config = ConfigObj('config.ini')
-
-
-def read_pv(pv):
-    return False
-
-def lt(value, limit):
-    """
-    This function returns True if value parameter is less than limit parameter, False otherwise..
-
-    Parameters
-    ----------
-    value : numeric
-        value
-
-    limit : numeric
-        limit
-
-    Returns
-    -------
-    boolean
-    """
-    return value < limit
-
-def le(value, limit):
-    """
-    This function returns True if value parameter is less than or equal to limit parameter, False otherwise..
-
-    Parameters
-    ----------
-    value : numeric
-        value
-
-    limit : numeric
-        limit
-
-    Returns
-    -------
-    boolean
-    """
-    return value <= limit
-
-def eq(value, limit):
-    """
-    This function returns True if value parameter is equal to limit parameter, False otherwise..
-
-    Parameters
-    ----------
-    value : numeric
-        value
-
-    limit : numeric
-        limit
-
-    Returns
-    -------
-    boolean
-    """
-    return value == limit
-
-def ge(value, limit):
-    """
-    This function returns True if value parameter is greater than or equal to limit parameter, False otherwise..
-
-    Parameters
-    ----------
-    value : numeric
-        value
-
-    limit : numeric
-        limit
-
-    Returns
-    -------
-    boolean
-    """
-    return value >= limit
-
-def gt(value, limit):
-    """
-    This function returns True if value parameter is greater than limit parameter, False otherwise..
-
-    Parameters
-    ----------
-    value : numeric
-        value
-
-    limit : numeric
-        limit
-
-    Returns
-    -------
-    boolean
-    """
-    return value > limit
 
 class TagValue:
     value = 0
@@ -176,7 +82,7 @@ def find_value(tag, dset):
     """
     This function takes tag parameter and a corresponding dataset from the hd5 file. The tag can be a simple hd5 member
     tag or extended tag. This function assumes that the extended tag is a string containing hd5 tag, a word indicating 
-    the tag category (i.e. "dim" meaning dimension), and a parameter (i.e. numeric index). 
+    the tag category (i.e. "*dim*" meaning dimension), and a parameter (i.e. numeric index). 
     In the case of a simple hd5 tag the function returns a value of this member. In the second case the function returns
     decoded value, in the case of "dim" category, it returns the indexed dimension.
 
@@ -201,7 +107,7 @@ def find_value(tag, dset):
             axis = tag_def[2]
             return dset.shape[int(axis)]
 
-function_mapper = {'less_than':lt, 'less_or_equal':le, 'equal':eq, 'greater_or_equal':ge, 'greater_than':gt, 'state':state}
+function_mapper = {'less_than':lt, 'less_or_equal':le, 'equal':eq, 'greater_or_equal':ge, 'greater_than':gt}
 
 def verify_list(file, list, relation):
     """
@@ -266,25 +172,27 @@ def verify_list(file, list, relation):
 
     return res
 
-def verify_dependencies():
+def verify():
     """
-    This function reads the json 'dependencies' file from the config.ini.
+    This function reads the json "*dependencies*" file from the 
+    `config.ini <https://github.com/bfrosik/data-quality/blob/master/dquality/config.ini>`__ file.
     This file contains dictionary with keys of relations between tags.
     The value is a list of lists. The relation applies to the tags in inner list respectively. For example if the
-    relation is "equal", all tags in each inner list must be equal,The outer list hold the lists that app;y the relation.
-    A first element in a inner list is an "anchor" element, so all elements are compared to it. This is important for
-    the "les_than" type of relation, when the order of parameters is important.
+    relation is "*equal*", all tags in each inner list must be equal,The outer list hold the lists that apply the relation.
+    A first element in a inner list is an "*anchor*" element, so all elements are compared to it. This is important for
+    the "*less_than*" type of relation, when the order of parameters is important.
 
     The allowed keys are:
-    "less_than" - the PV value must be less than attribute value
-    "less_or_equal" - the PV value must be less than or equal attribute value
-    "equal" - the PV value must be equal to attribute value
-    "greater_or_equal" - the PV value must be greater than or equal attribute value
-    "greater_than" - the PV value must be greater than attribute value
+    
+    - "*less_than*" - the PV value must be less than attribute value
+    - "*less_or_equal*" - the PV value must be less than or equal attribute value
+    - "*equal*" - the PV value must be equal to attribute value
+    - "*greater_or_equal*" - the PV value must be greater than or equal attribute value
+    - "*greater_than*" - the PV value must be greater than attribute value
 
-    The tag in a 'dependencies' file can be an hd5 tag, or can have appended keyword "dim" and an numeric value
+    The tag in a "*dependencies*" file can be an hd5 tag, or can have appended keyword "*dim*" and an numeric value
     indicating axis. If the tag is simple hd5 tag, the verifier compares the value of this tag. If it has the
-    "dim" keyword appended, the verifier compares a specified dimension.
+    "*dim*" keyword appended, the verifier compares a specified dimension.
 
     Any vakue that does not agree with the configured relation is reported (printed for now).
     The function returns True if no error was found and False otherwise.
@@ -321,21 +229,4 @@ def verify_dependencies():
             res = verify_list(file, tag_list, relation)
 
     return res
-
-if __name__ == '__main__':
-    """
-    This is the main function called when the application starts.
-    It reads the configuration for the file defining mandatory process variables.
-    It calls the verify_pv function that does the verification.
-
-    Parameters
-    ----------
-    None
-
-    Returns
-    -------
-    None
-    """
-    verify_dependencies()
-
 

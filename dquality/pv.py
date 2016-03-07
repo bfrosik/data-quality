@@ -47,12 +47,9 @@
 # #########################################################################
 
 """
-This application assumes there is a 'config.ini' file that contains parameters required to run the application:
+Please make sure the installation :ref:`pre-requisite-reference-label` are met.
 
-'pv_file' - a file that includes mandatory process variables and their attributes
-
-The application verifies that each of the PV listed in a file is set, and the values are set according to the file
-attributes.
+This module verifies that each of the PVs listed in the configuration file exist and their values are set within the predefined range.
 
 The results will be reported in a file (printed on screen for now). An error will be reported back to UI via PV.
 
@@ -60,112 +57,41 @@ The results will be reported in a file (printed on screen for now). An error wil
 
 import sys
 import json
+
+#from epics import PV
 from configobj import ConfigObj
+from common.utilities import lt, le, eq, ge, gt
 
 __author__ = "Barbara Frosik"
 __copyright__ = "Copyright (c) 2016, UChicago Argonne, LLC."
 __docformat__ = 'restructuredtext en'
-__all__ = ['verify_pv']
+__all__ = ['verify',
+           'read',
+           'state']
 
 config = ConfigObj('config.ini')
 
 
-def read_pv(pv):
-    return False
-
-def lt(value, limit):
+def read(pv_str):
     """
-    This function returns True if value parameter is less than limit parameter, False otherwise..
+    This function returns a Process Variable (PV) value or None if the PV does not exist.
 
     Parameters
     ----------
-    value : numeric
-        value
-
-    limit : numeric
-        limit
+    value : str
+        name of the PV
 
     Returns
     -------
-    boolean
+    PV value
     """
-    return value < limit
-
-def le(value, limit):
-    """
-    This function returns True if value parameter is less than or equal to limit parameter, False otherwise..
-
-    Parameters
-    ----------
-    value : numeric
-        value
-
-    limit : numeric
-        limit
-
-    Returns
-    -------
-    boolean
-    """
-    return value <= limit
-
-def eq(value, limit):
-    """
-    This function returns True if value parameter is equal to limit parameter, False otherwise..
-
-    Parameters
-    ----------
-    value : numeric
-        value
-
-    limit : numeric
-        limit
-
-    Returns
-    -------
-    boolean
-    """
-    return value == limit
-
-def ge(value, limit):
-    """
-    This function returns True if value parameter is greater than or equal to limit parameter, False otherwise..
-
-    Parameters
-    ----------
-    value : numeric
-        value
-
-    limit : numeric
-        limit
-
-    Returns
-    -------
-    boolean
-    """
-    return value >= limit
-
-def gt(value, limit):
-    """
-    This function returns True if value parameter is greater than limit parameter, False otherwise..
-
-    Parameters
-    ----------
-    value : numeric
-        value
-
-    limit : numeric
-        limit
-
-    Returns
-    -------
-    boolean
-    """
-    return value > limit
+    pv = PV(pv_str).get()
+    
+    return pv
 
 def state(value, limit):
     """
-    This function takes boolean "value" parameter and string "limit" parameter that can be either 'True' or 'False'.
+    This function takes boolean "*value*" parameter and string "limit" parameter that can be either "*True*" or "*False*".
     The limit is converted to string and compared with the value. The function returns True if the boolean values are
     equal, False otherwise.
 
@@ -187,20 +113,22 @@ def state(value, limit):
         return value == False
 
 
-def verify_pv():
+def verify():
     """
-    This function reads the json 'pv_file' from the config.ini.
+    This function reads the `pv.json <https://github.com/bfrosik/data-quality/blob/master/dquality/schemas/pvs.json>`__ 
+    as set in the `config.ini <https://github.com/bfrosik/data-quality/blob/master/dquality/config.ini>`__ file.
     This file contains dictionary with keys of mandatory process variables.
     The values is a dictionary of attributes, each attribute being either description, or
     a verification operation. The verification operation attribute has an operation as a key,
     and the value is the limit of the PV.
     The allowed keys are:
-    "less_than" - the PV value must be less than attribute value
-    "less_or_equal" - the PV value must be less than or equal attribute value
-    "equal" - the PV value must be equal to attribute value
-    "greater_or_equal" - the PV value must be greater than or equal attribute value
-    "greater_than" - the PV value must be greater than attribute value
-    "state" - to support boolean PVs. The defined value must be "True" or "False".
+    
+    - "*less_than*" - the PV value must be less than attribute value
+    - "*less_or_equal*" - the PV value must be less than or equal attribute value
+    - "*equal*" - the PV value must be equal to attribute value
+    - "*greater_or_equal*" - the PV value must be greater than or equal attribute value
+    - "*greater_than*" - the PV value must be greater than attribute value
+    - "*state*" - to support boolean PVs. The defined value must be "True" or "False".
 
     Any missing PV (i.e. it can't be read) is an error that is reported (printed for now).
     Any PV value that is out of limit is an error that is reported (printed for now)
@@ -228,7 +156,8 @@ def verify_pv():
 
     for pv in required_pvs:
         # possible the read pv needs try statement
-        pv_value = read_pv(pv)
+        pv_value = read(pv)
+
         if pv_value is None:
             res = False
             print ('PV ' + pv + ' cannot be read.')
@@ -242,23 +171,5 @@ def verify_pv():
                         res = False
                         print ('PV ' + pv + ' has value out of range. The value is ' + str(pv_value)  + ' but should be ' + attr + ' ' + str(pv_attr[attr]))
     return res
-
-if __name__ == '__main__':
-    """
-    This is the main function called when the application starts.
-    It reads the configuration for the file defining mandatory process variables.
-    It calls the verify_pv function that does the verification.
-
-    Parameters
-    ----------
-    None
-
-    Returns
-    -------
-    None
-    """
-    verify_pv()
-
-    print ('finished')
 
 

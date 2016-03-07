@@ -45,5 +45,12 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE         #
 # POSSIBILITY OF SUCH DAMAGE.                                             #
 # #########################################################################
+"""
+Please make sure the installation :ref:`pre-requisite-reference-label` are met.
 
-from __future__ import (absolute_import, division, print_function,                        unicode_literals)from dquality import *
+This example shows how to verify the quality of an HDF file.
+"""
+from dquality.data import verify  
+
+verify()
+        

@@ -1,8 +1,0 @@
-{
-"required_pvs":{"PV_123" : {"greater_than":100.0, "less_than":"120.0", "description":"measurement instrument source current"},
-                 "PV_876" : {"greater_or_equal":100.0, "less_or_equal":"120.0", "description":"measurement instrument source current"},
-                 "PV_456" : {"equal":7.0, "description":"measurement instrument source energy"},
-                 "PV_789" : {"state":"True", "description":"measurement instrument detector"}
-                }
-}
-
