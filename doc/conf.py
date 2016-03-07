@@ -311,7 +311,8 @@ class Mock(object):
     def __getattr__(cls, name):        return Mock()    def __mul__(self, other):        return Mock()    def __rmul__(self, other):        return Mock()    def __pow__(self, other):        return Mock()    def __div__(self, other):        return Mock()    def __add__(self, other):        return Mock()    def __radd__(self, other):        return Mock()            
 
 MOCK_MODULES = [
-    'h5py', 'multiprocessing', 'pyinotify', 'configobj', 'epics', 'json', 'sys', 'os']
+    'h5py', 'multiprocessing', 'pyinotify', 'configobj', 'epics', 'json',
+    'numpy']
 
 for mod_name in MOCK_MODULES:
     sys.modules[mod_name] = Mock()
