@@ -50,9 +50,17 @@ Please make sure the installation :ref:`pre-requisite-reference-label` are met.
 
 This example shows how to verify an HDF file structure.
 """
-from dquality.structureverifier import layout  
+import os
+from os.path import expanduser
+from configobj import ConfigObj
+from dquality.file import verify  
 
-if layout('test.h5'):
+home = expanduser("~")
+config = os.path.join(home, 'dqconfig.ini')
+conf = ConfigObj(config)
+file = conf['dependencies']
+
+if verify(file):
     print ('All PVs listed in pvs.json exist and meet conditions')
 else:
     print ('Some of the PVs listed in pvs.json do not exist or do not meet conditions')

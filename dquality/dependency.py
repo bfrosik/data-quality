@@ -54,9 +54,11 @@ This module verifies that each of the PVs listed in the configuration file exist
 The results will be reported in a file (printed on screen for now). An error will be reported back to UI via PV.
 """
 
+import os
 import sys
 import json
 import h5py
+from os.path import expanduser
 from configobj import ConfigObj
 from common.utilities import lt, le, eq, ge, gt
 
@@ -67,7 +69,9 @@ __all__ = ['verify',
            'verify_list',
            'find_value']
 
-config = ConfigObj('config.ini')
+home = expanduser("~")
+config = os.path.join(home, 'dqconfig.ini')
+conf = ConfigObj(config)
 
 class TagValue:
     value = 0
@@ -175,7 +179,7 @@ def verify_list(file, list, relation):
 def verify():
     """
     This function reads the json "*dependencies*" file from the 
-    `config.ini <https://github.com/bfrosik/data-quality/blob/master/dquality/config.ini>`__ file.
+    `dqconfig.ini <https://github.com/bfrosik/data-quality/blob/master/dquality/dqconfig.ini>`__ file.
     This file contains dictionary with keys of relations between tags.
     The value is a list of lists. The relation applies to the tags in inner list respectively. For example if the
     relation is "*equal*", all tags in each inner list must be equal,The outer list hold the lists that apply the relation.
@@ -208,7 +212,7 @@ def verify():
     res = True
 
     try:
-        file = config['dependencies']
+        file = os.path.join(home, conf['dependencies'])
         with open(file) as data_file:
             dependencies = json.loads(data_file.read())
 
@@ -217,7 +221,7 @@ def verify():
         sys.exit(-1)
 
     try:
-        file = config['file']
+        file = os.path.join(home, conf['file'])
     except KeyError:
         print ('config error: neither directory or file configured')
         sys.exit(-1)

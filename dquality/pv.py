@@ -55,10 +55,12 @@ The results will be reported in a file (printed on screen for now). An error wil
 
 """
 
+import os
 import sys
 import json
 
 from epics import PV
+from os.path import expanduser
 from configobj import ConfigObj
 from common.utilities import lt, le, eq, ge, gt
 
@@ -69,8 +71,9 @@ __all__ = ['verify',
            'read',
            'state']
 
-config = ConfigObj('config.ini')
-
+home = expanduser("~")
+config = os.path.join(home, 'dqconfig.ini')
+conf = ConfigObj(config)
 
 def read(pv_str):
     """
@@ -115,8 +118,8 @@ def state(value, limit):
 
 def verify():
     """
-    This function reads the `pv.json <https://github.com/bfrosik/data-quality/blob/master/dquality/schemas/pvs.json>`__ 
-    as set in the `config.ini <https://github.com/bfrosik/data-quality/blob/master/dquality/config.ini>`__ file.
+    This function reads the `pv.json <https://github.com/bfrosik/data-quality/blob/master/dquality/dqschemas/pvs.json>`__ 
+    as set in the `dqconfig.ini <https://github.com/bfrosik/data-quality/blob/master/dquality/dqconfig.ini>`__ file.
     This file contains dictionary with keys of mandatory process variables.
     The values is a dictionary of attributes, each attribute being either description, or
     a verification operation. The verification operation attribute has an operation as a key,
@@ -144,9 +147,9 @@ def verify():
     """
     function_mapper = {'less_than':lt, 'less_or_equal':le, 'equal':eq, 'greater_or_equal':ge, 'greater_than':gt, 'state':state}
     res = True
+    file = os.path.join(home, conf['pv_file'])
 
     try:
-        file = config['pv_file']
         with open(file) as data_file:
             required_pvs = json.loads(data_file.read()).get('required_pvs')
 

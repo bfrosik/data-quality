@@ -58,6 +58,7 @@ If any of the parameters is not configured, it is assumed no file structure veri
 import h5py
 import json
 import os.path
+from os.path import expanduser
 from common.utilities import copy_list, key_list, report_items
 from configobj import ConfigObj
 
@@ -68,7 +69,9 @@ __all__ = ['verify',
            'tags',
            'structure']
 
-config = ConfigObj('config.ini')
+home = expanduser("~")
+config = os.path.join(home, 'dqconfig.ini')
+conf = ConfigObj(config)
 
 def structure(file, schema):
     """
@@ -155,8 +158,8 @@ def tags(file, schema):
     False if not verified
         
     """
-
-    with open('schemas/basicHDF.json') as data_file:
+    file = conf['schema']
+    with open(file) as data_file:
         required_tags = json.loads(data_file.read()).get('required_tags')
 
     tag_list = key_list(required_tags)
@@ -201,21 +204,30 @@ def verify(file):
     -------
     boolean        
     """
+
     try:
-        type = config['verification_type']
+        type = conf['verification_type']
+        print "********************"
+        print type
+        print "********************"
         print ('Verification type: ' + type)
         if type == 'hdf_structure':
             try:
-                schema = config['schema']
+                schema = os.path.join(home, conf['schema'])
+                print "********************"
+                print schema
+                print "********************"
                 if not os.path.isfile(schema):
                     print ('configuration error: schema file ' + schema + ' does not exist')
                     return False
+                print file
+                print schema    
                 return structure(file, schema)
             except KeyError:
                 return True
         if type == 'hdf_tags':
             try:
-                schema = config['schema']
+                schema = os.path.join(home, conf['schema'])
                 if not os.path.isfile(schema):
                     print ('configuration error: schema file ' + schema + ' does not exist')
                     return False

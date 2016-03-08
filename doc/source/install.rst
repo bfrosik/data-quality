@@ -7,20 +7,22 @@ This section covers the basics of how to download and install `DQuality <https:/
 .. contents:: Contents:
    :local:
 
-
 .. _pre-requisite-reference-label:
 
 Pre-requisites 
 ==============
 
-Before testing `DQuality <https://github.com/bfrosik/data-quality>`_  on your data you need to create in your home directory a `config.ini <https://github.com/bfrosik/data-quality/blob/master/dquality/config.ini>`__ file to match your system.
+Before testing `DQuality <https://github.com/bfrosik/data-quality>`_  on your data files you need to create in your home directory the following files:
+    
+- :download:`dqconfig.ini <config/dqconfig.ini>`
 
-You must also create in your home directory a "*schema*" folder containing the following files:
+You must also create in your home directory a "*dqschemas*" folder containing the following files:
 
-- `pv.json <https://github.com/bfrosik/data-quality/blob/master/dquality/schemas/pvs.json>`__ containing the list of Process variable (PV) of your beamline PVs with their acceptable value range.
-- `basicHDF.json <https://github.com/bfrosik/data-quality/blob/master/dquality/schemas/ 	basicHD5.json>`__ containing the list valid HDF file tags, attributes and array dimentions. 
-- `dependencies.json <https://github.com/bfrosik/data-quality/blob/master/dquality/schemas/dependencies.json>`__ containing the list of valid relation among data sets in the same HDF file.
+- :download:`dqschemas/pvs.json.json <config/dqschemas/pvs.json>` containing the list of Process variable (PV) of your beamline PVs with their acceptable value range.
 
+- :download:`dqschemas/basicHDF.json <config/dqschemas/basicHDF.json>` containing the list valid HDF file tags, attributes and array dimentions.
+
+- :download:`dqschemas/dependencies.json <config/dqschemas/dependencies.json>` containing the list of valid relation among data sets in the same HDF file.
 
 Installing from source
 ======================

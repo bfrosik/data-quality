@@ -55,11 +55,13 @@ The results will be reported in a file (printed on screen for now)
 
 """
 
+import os
 import sys
 import h5py
 from multiprocessing import Process, Queue
 from configobj import ConfigObj
 
+from os.path import expanduser
 from file import verify as f_verify
 from common.qualitychecks import Data, validate_mean_signal_intensity 
 from common.qualitychecks import validate_signal_intensity_standard_deviation
@@ -74,7 +76,10 @@ __all__ = ['verify',
            'quality',
            'cleanup']
 
-config = ConfigObj('config.ini')
+home = expanduser("~")
+config = os.path.join(home, 'dqconfig.ini')
+conf = ConfigObj(config)
+
 processes = {}
 results = Queue()
 
@@ -118,7 +123,7 @@ def cleanup():
     for process in processes.itervalues():
         process.terminate()
 
-def verify():
+def verify(file):
     """
     This is the main function called when the application starts. 
     It reads the configuration for the file to report on. When the file is found, it is verified for its structure, i.e. whether
@@ -144,8 +149,8 @@ def verify():
     numberverifiers = 2 # number of verification functions to call for each data file
     numresults = numberverifiers
     process_id = 0
+
     try:
-        file = config['file']
         f_verify(file)
     except KeyError:
         print ('config error: neither directory or file configured')

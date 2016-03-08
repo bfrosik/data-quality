@@ -62,6 +62,7 @@ import os
 import sys
 import pyinotify
 
+from os.path import expanduser
 from configobj import ConfigObj
 from pyinotify import WatchManager
 from common.utilities import get_data
@@ -81,7 +82,10 @@ __all__ = ['verify',
            'directory',
            'cleanup']
 
-config = ConfigObj('config.ini')
+home = expanduser("~")
+config = os.path.join(home, 'dqconfig.ini')
+conf = ConfigObj(config)
+
 processes = {}
 files = Queue()
 results = Queue()
@@ -181,12 +185,12 @@ def verify():
     #The verifier can be configured to verify file or to monitor a directory and verify a new file on close save.
     try:
         # check if directory exists
-        folder = config['directory']
+        folder = conf['directory']
         if not os.path.isdir(folder):
             print ('configuration error: directory ' + folder + ' does not exist')
             sys.exit()
         notifier = directory(folder, config['file_patterns'])
-        numresults = int(config['number_files']) * numberverifiers
+        numresults = int(conf['number_files']) * numberverifiers
     except KeyError:
         print ('config error: directory not configured')
         sys.exit(-1)
