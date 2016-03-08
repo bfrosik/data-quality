@@ -77,7 +77,7 @@ def structure(file, schema):
     """
     This method is used when a file of hdf type is given. 
     All tags and array dimensions are verified against a schema.
-    (see `basicHDF.json <https://github.com/bfrosik/data-quality/blob/master/dquality/schemas/basicHDF.json>`__ 
+    (see :download:`dqschemas/basicHDF.json <../config/dqschemas/basicHDF.json>` 
     example file).
      
     Parameters
