@@ -4,10 +4,11 @@
    :width: 320px
    :alt: DQuality
 
-
+|
 
 `DQuality <https://github.com/bfrosik/data-quality>`_ is an open-sourced Python
-toolbox to perform data quality assessment at the Advanced Photon Source.
+package to perform data integrity and quality assessment at the Advanced
+Photon Source.
 
 This guide is maintained on 
 `GitHub <https://github.com/bfrosik/data-quality/tree/master/doc>`_.
@@ -19,7 +20,6 @@ This guide is maintained on
    source/install
    source/api
    source/demo
-   source/devguide
    source/faq
    source/credits
 
