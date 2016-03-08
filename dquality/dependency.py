@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*-
 
 # #########################################################################
-# Copyright (c) 2015, UChicago Argonne, LLC. All rights reserved.         #
+# Copyright (c) 2016, UChicago Argonne, LLC. All rights reserved.         #
 #                                                                         #
-# Copyright 2015. UChicago Argonne, LLC. This software was produced       #
+# Copyright 2016. UChicago Argonne, LLC. This software was produced       #
 # under U.S. Government contract DE-AC02-06CH11357 for Argonne National   #
 # Laboratory (ANL), which is operated by UChicago Argonne, LLC for the    #
 # U.S. Department of Energy. The U.S. Government has rights to use,       #
@@ -49,9 +49,11 @@
 """
 Please make sure the installation :ref:`pre-requisite-reference-label` are met.
 
-This module verifies that each of the PVs listed in the configuration file exist and their values are set within the predefined range.
+This module verifies that each of the PVs listed in the configuration file
+exist and their values are set within the predefined range.
 
-The results will be reported in a file (printed on screen for now). An error will be reported back to UI via PV.
+The results will be reported in a file (printed on screen for now).
+An error will be reported back to UI via PV.
 """
 
 import os
@@ -73,22 +75,30 @@ home = expanduser("~")
 config = os.path.join(home, 'dqconfig.ini')
 conf = ConfigObj(config)
 
+
 class TagValue:
     value = 0
+
     def __init__(self, tag):
         self.tag = tag
-    def set_value(self,value):
+
+    def set_value(self, value):
         self.value = value
+
     def get_value(self):
         return self.value
 
+
 def find_value(tag, dset):
     """
-    This function takes tag parameter and a corresponding dataset from the hd5 file. The tag can be a simple hd5 member
-    tag or extended tag. This function assumes that the extended tag is a string containing hd5 tag, a word indicating 
-    the tag category (i.e. "*dim*" meaning dimension), and a parameter (i.e. numeric index). 
-    In the case of a simple hd5 tag the function returns a value of this member. In the second case the function returns
-    decoded value, in the case of "dim" category, it returns the indexed dimension.
+    This function takes tag parameter and a corresponding dataset from
+    the hd5 file. The tag can be a simple hd5 member tag or extended tag.
+    This function assumes that the extended tag is a string containing
+    hd5 tag, a word indicating the tag category (i.e. "*dim*" meaning
+    dimension), and a parameter (i.e. numeric index). In the case of a
+    simple hd5 tag the function returns a value of this member.
+    In the second case the function returns decoded value, in the
+    case of "dim" category, it returns the indexed dimension.
 
     Parameters
     ----------
@@ -102,7 +112,7 @@ def find_value(tag, dset):
     -------
     value of decoded tag
     """
-    
+
     tag_def = tag.split()
     if len(tag_def) == 1:
         return dset.value
@@ -111,32 +121,39 @@ def find_value(tag, dset):
             axis = tag_def[2]
             return dset.shape[int(axis)]
 
-function_mapper = {'less_than':lt, 'less_or_equal':le, 'equal':eq, 'greater_or_equal':ge, 'greater_than':gt}
+function_mapper = {'less_than': lt, 'less_or_equal': le,
+                   'equal': eq, 'greater_or_equal': ge, 'greater_than': gt}
+
 
 def verify_list(file, list, relation):
     """
-    This function takes an hd5 file, a list of tags (can be extended) and a relation between the list members.
-    First the method creates a tags dictionary from the list of tags. The key is a simple hd5 tag, and the value is
-    a newly created TagValue instance that contains extended tag (or simple tag if simple tag was in the list), and
-    a placeholder for the value.
-    The first tag from the list is retained as an anchor.
-    
-    The function travers through all tags in the given file. If the tag name is found in the tags dictionary, the
-    find_value method is called to retrieve a defined valueu referenced by the tag. The value is then added to the
-    TagValue instance for this tag.
-    
-    When all tags are processed the function iterates over the tags dictionary to find if the relation between anchor 
-    value and other values can be verified. If any relation is not true, a report is printed for this tag, and the function
-    will return False. Otherwise the function returns True.
+    This function takes an hd5 file, a list of tags (can be extended)
+    and a relation between the list members. First the method creates
+    a tags dictionary from the list of tags. The key is a simple hd5
+    tag, and the value is a newly created TagValue instance that
+    contains extended tag (or simple tag if simple tag was in the
+    list), and a placeholder for the value. The first tag from the
+    list is retained as an anchor.
+
+    The function travers through all tags in the given file. If the
+    tag name is found in the tags dictionary, the ```find_value```
+    method is called to retrieve a defined valueu referenced by the
+    tag. The value is then added to the TagValue instance for this tag.
+
+    When all tags are processed the function iterates over the tags
+    dictionary to find if the relation between anchor value and other
+    values can be verified. If any relation is not true, a report is
+    printed for this tag, and the function will return ```False```.
+    Otherwise the function returns ```True```.
 
     Parameters
     ----------
     file : file
         an hd5 file to be verified
 
-    list : list 
+    list : list
         list of extended or simple hd5 tags
-        
+
     relation : str
         a string specifying the relation between tags in the list
 
@@ -170,36 +187,48 @@ def verify_list(file, list, relation):
 
     res = True
     for tag in tags:
-        if not function_mapper[relation](tags.get(tag).get_value(), anchor_tag.get_value()):
-            print ('the ' + tag + ' value is ' + str(tags.get(tag).get_value()) + ' but should be ' + relation + ' ' + str(anchor_tag.get_value()))
+        if not function_mapper[relation](
+                tags.get(tag).get_value(),
+                anchor_tag.get_value()):
+            print('the ' + tag + ' value is ' +
+                  str(tags.get(tag).get_value()) +
+                  ' but should be ' + relation +
+                  ' ' + str(anchor_tag.get_value()))
             res = False
 
     return res
+
 
 def verify():
     """
     This function reads the json "*dependencies*" file from the 
     :download:`dqconfig.ini <../config/dqconfig.ini>` file.
     This file contains dictionary with keys of relations between tags.
-    The value is a list of lists. The relation applies to the tags in inner list respectively. For example if the
-    relation is "*equal*", all tags in each inner list must be equal,The outer list hold the lists that apply the relation.
-    A first element in a inner list is an "*anchor*" element, so all elements are compared to it. This is important for
-    the "*less_than*" type of relation, when the order of parameters is important.
+    The value is a list of lists. The relation applies to the tags in
+    inner list respectively. For example if the relation is "*equal*",
+    all tags in each inner list must be equal,The outer list hold the
+    lists that apply the relation. A first element in a inner list is
+    an "*anchor*" element, so all elements are compared to it. This
+    is important for the "*less_than*" type of relation, when the
+    order of parameters is important.
 
     The allowed keys are:
-    
+
     - "*less_than*" - the PV value must be less than attribute value
     - "*less_or_equal*" - the PV value must be less than or equal attribute value
     - "*equal*" - the PV value must be equal to attribute value
     - "*greater_or_equal*" - the PV value must be greater than or equal attribute value
     - "*greater_than*" - the PV value must be greater than attribute value
 
-    The tag in a "*dependencies*" file can be an hd5 tag, or can have appended keyword "*dim*" and an numeric value
-    indicating axis. If the tag is simple hd5 tag, the verifier compares the value of this tag. If it has the
-    "*dim*" keyword appended, the verifier compares a specified dimension.
+    The tag in a "*dependencies*" file can be an hd5 tag, or can have
+    appended keyword "*dim*" and an numeric value indicating axis. If
+    the tag is simple hd5 tag, the verifier compares the value of this tag.
+    If it has the "*dim*" keyword appended, the verifier compares a
+    specified dimension.
 
-    Any vakue that does not agree with the configured relation is reported (printed for now).
-    The function returns True if no error was found and False otherwise.
+    Any vakue that does not agree with the configured relation is
+    reported (printed for now). The function returns True if no error
+    was found and False otherwise.
 
     Parameters
     ----------
@@ -217,13 +246,13 @@ def verify():
             dependencies = json.loads(data_file.read())
 
     except KeyError:
-        print ('config error: dependencies not configured')
+        print('config error: dependencies not configured')
         sys.exit(-1)
 
     try:
         file = os.path.join(home, conf['file'])
     except KeyError:
-        print ('config error: neither directory or file configured')
+        print('config error: neither directory or file configured')
         sys.exit(-1)
 
     i = 0
@@ -233,4 +262,3 @@ def verify():
             res = verify_list(file, tag_list, relation)
 
     return res
-
