@@ -50,12 +50,12 @@ Please make sure the installation :ref:`pre-requisite-reference-label` are met.
 
 This example shows how to verify an HDF file dependencies.
 """
-import os.path
 from dquality.dependency import verify
 
+
 if verify():
-    print ('All PVs listed in pvs.json exist and meet conditions')
+    print ('All dependecies are satisfied')
 else:
-    print ('Some of the PVs listed in pvs.json do not exist or do not meet conditions')
+    print ('Some dependecies are not satisfied')
 
 

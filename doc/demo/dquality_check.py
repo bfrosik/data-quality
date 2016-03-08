@@ -50,7 +50,15 @@ Please make sure the installation :ref:`pre-requisite-reference-label` are met.
 
 This example shows how to verify the quality of an HDF file.
 """
+import os
+from os.path import expanduser
+from configobj import ConfigObj
 from dquality.data import verify  
 
-verify()
+home = expanduser("~")
+config = os.path.join(home, 'dqconfig.ini')
+conf = ConfigObj(config)
+file = conf['file']
+
+verify(file)
         

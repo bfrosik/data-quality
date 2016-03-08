@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*-
 
 # #########################################################################
-# Copyright (c) 2015, UChicago Argonne, LLC. All rights reserved.         #
+# Copyright (c) 2016, UChicago Argonne, LLC. All rights reserved.         #
 #                                                                         #
-# Copyright 2015. UChicago Argonne, LLC. This software was produced       #
+# Copyright 2016. UChicago Argonne, LLC. This software was produced       #
 # under U.S. Government contract DE-AC02-06CH11357 for Argonne National   #
 # Laboratory (ANL), which is operated by UChicago Argonne, LLC for the    #
 # U.S. Department of Energy. The U.S. Government has rights to use,       #
@@ -49,21 +49,25 @@
 """
 Please make sure the installation :ref:`pre-requisite-reference-label` are met.
 
-This module verifies a given file according to schema configuration and starts new processes, each process performing specific quality calculations.
+This module verifies a given file according to schema configuration and
+starts new processes, each process performing specific quality calculations.
 
 The results will be reported in a file (printed on screen for now)
 
 """
 
+import os
 import sys
 import h5py
 from multiprocessing import Process, Queue
 from configobj import ConfigObj
 
+from os.path import expanduser
 from file import verify as f_verify
-from common.qualitychecks import Data, validate_mean_signal_intensity 
+from common.qualitychecks import Data, validate_mean_signal_intensity
 from common.qualitychecks import validate_signal_intensity_standard_deviation
-from common.qualitychecks import validate_voxel_based_SNR, validate_slice_based_SNR
+from common.qualitychecks import (validate_voxel_based_SNR,
+                                  validate_slice_based_SNR)
 from common.utilities import get_data
 
 
@@ -74,81 +78,91 @@ __all__ = ['verify',
            'quality',
            'cleanup']
 
-config = ConfigObj('config.ini')
+home = expanduser("~")
+config = os.path.join(home, 'dqconfig.ini')
+conf = ConfigObj(config)
+
 processes = {}
 results = Queue()
 
+
 def quality(file, function, process_id):
     """
-    This method creates a new process that is associated with the "*function*" parameter.
-    The created process is stored in global "*processes*" dictionary with the key "*process_id*" parameter.
+    This method creates a new process that is associated with the
+    "*function*" parameter. The created process is stored in global
+    "*processes*" dictionary with the key "*process_id*" parameter.
     The process is started.
-     
+
     Parameters
     ----------
     file : str
         File Name including path
-    
+
     function : function
         Function that will be executed when process starts.
 
     process_id : int
         Unique process id assigned by calling method
-        
+
     Returns
     -------
-    None        
+    None
     """
     p = Process(target=function, args=(file, process_id, results,))
     processes[process_id] = p
     p.start()
 
+
 def cleanup():
     """
-    This method is called at the exit. If any process is still active it will be terminated.
-     
+    This method is called at the exit. If any process is still active
+    it will be terminated.
+
     Parameters
     ----------
     None
-        
+
     Returns
     -------
-    None        
+    None
     """
     for process in processes.itervalues():
         process.terminate()
 
-def verify():
+def verify(file):
     """
-    This is the main function called when the application starts. 
-    It reads the configuration for the file to report on. When the file is found, it is verified for its structure, i.e. whether
-    all tags are included, dimenstions are correct, etc. The content to check is configured in config.ini.
+    This is the main function called when the application starts.
+    It reads the configuration for the file to report on. When the
+    file is found, it is verified for its structure, i.e. whether
+    all tags are included, dimenstions are correct, etc. The content
+    to check is configured in config.ini.
 
     The data in the file is validated by a sequence of validation methods.
-    If there is any new result, the result is removed from the queue, corresponding process is terminated, and the result is 
-    added to a report.
-    
+    If there is any new result, the result is removed from the queue,
+    corresponding process is terminated, and the result is added to a report.
+
     The loop is interrupted when all expected processes produced results.
-    
-     
+
+
     Parameters
     ----------
     None
 
     Returns
     -------
-    None        
+    None
     """
     interrupted = False
-    
-    numberverifiers = 2 # number of verification functions to call for each data file
+
+    # number of verification functions to call for each data file
+    numberverifiers = 2
     numresults = numberverifiers
     process_id = 0
+
     try:
-        file = config['file']
         f_verify(file)
     except KeyError:
-        print ('config error: neither directory or file configured')
+        print('config error: neither directory or file configured')
         sys.exit(-1)
 
     data = Data(file, get_data(file))
@@ -165,13 +179,13 @@ def verify():
             pr = processes[res.process_id]
             pr.terminate()
             del processes[res.process_id]
-            numresults = numresults -1
-            print ('result: file name, result, quality id, error: ', res.file, res.res, res.quality_id, res.error)
+            numresults = numresults - 1
+            print('result: file name, result, quality id, error: ',
+                  res.file, res.res, res.quality_id, res.error)
 
         if numresults is 0:
             interrupted = True
 
     cleanup()
 
-    print ('finished')
-
+    print('finished')
