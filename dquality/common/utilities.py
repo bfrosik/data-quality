@@ -66,9 +66,11 @@ __all__ = ['lt',
            'key_list',
            'report_items']
 
+
 def lt(value, limit):
     """
-    This function returns True if value parameter is less than limit parameter, False otherwise..
+    This function returns True if value parameter is less than limit
+    parameter, False otherwise.
 
     Parameters
     ----------
@@ -84,9 +86,11 @@ def lt(value, limit):
     """
     return value < limit
 
+
 def le(value, limit):
     """
-    This function returns True if value parameter is less than or equal to limit parameter, False otherwise..
+    This function returns True if value parameter is less than or
+    equal to limit parameter, False otherwise.
 
     Parameters
     ----------
@@ -102,9 +106,11 @@ def le(value, limit):
     """
     return value <= limit
 
+
 def eq(value, limit):
     """
-    This function returns True if value parameter is equal to limit parameter, False otherwise..
+    This function returns True if value parameter is equal to
+    limit parameter, False otherwise.
 
     Parameters
     ----------
@@ -120,9 +126,11 @@ def eq(value, limit):
     """
     return value == limit
 
+
 def ge(value, limit):
     """
-    This function returns True if value parameter is greater than or equal to limit parameter, False otherwise..
+    This function returns True if value parameter is greater
+    than or equal to limit parameter, False otherwise.
 
     Parameters
     ----------
@@ -138,9 +146,11 @@ def ge(value, limit):
     """
     return value >= limit
 
+
 def gt(value, limit):
     """
-    This function returns True if value parameter is greater than limit parameter, False otherwise..
+    This function returns True if value parameter is greater than
+    limit parameter, False otherwise.
 
     Parameters
     ----------
@@ -156,10 +166,11 @@ def gt(value, limit):
     """
     return value > limit
 
+
 def get_data(file):
     """
-   This function takes a file of HD5 format, traverses through tags, finds "shape" data sets and returns the sets in a
-   dictionary.
+   This function takes a file of HD5 format, traverses through tags,
+   finds "shape" data sets and returns the sets in a dictionary.
 
     Parameters
     ----------
@@ -169,18 +180,20 @@ def get_data(file):
     Returns
     -------
     data : dictionary
-        A dictionary of data sets with the tag keys.
-
+        A dictionary of data sets with the tag keys
     """
     data = {}
+
     def func(name, dset):
-        if not hasattr(dset,'shape'): return # not array, can't be image
+        if not hasattr(dset, 'shape'):
+            return  # not array, can't be image
         if isinstance(dset, h5py.Dataset):
-                data[dset.name] = dset
+            data[dset.name] = dset
 
     file_h5 = h5py.File(file, 'r')
     file_h5.visititems(func)
     return data
+
 
 def copy_list(list):
     """
@@ -194,13 +207,13 @@ def copy_list(list):
     Returns
     -------
     lisle : list
-        A hard copy of list parametyer.
-
+        A hard copy of list parametyer
     """
     listcopy = []
     for item in list:
         listcopy.append(item)
     return listcopy
+
 
 def key_list(dict):
     """
@@ -214,17 +227,18 @@ def key_list(dict):
     Returns
     -------
     lisle : list
-        A new list of keys in dictionary.
-
+        A new list of keys in dictionary
     """
     list = []
     for key in dict:
         list.append(key)
     return list
 
+
 def report_items(list, text1, text2):
     """
-   This function takes a list and strings. If the list is not empty it prints the two string parameters as a title,
+   This function takes a list and strings. If the list is not
+   empty it prints the two string parameters as a title,
    and prints formatted output for each item in a list.
 
     Parameters
@@ -236,15 +250,14 @@ def report_items(list, text1, text2):
         A title that will be printed if the list is not empty
 
     text2 : str
-        An optional part of title that will be printed if the list is not empty
+        An optional part of title that will be printed if
+        the list is not empty
 
     Returns
     -------
-    None.
-
+    None
     """
     if len(list) > 0:
-        print (text1 + text2)
+        print(text1 + text2)
         for item in list:
-            print ('    - ' + item)
-
+            print('    - ' + item)

@@ -50,8 +50,10 @@
 Please make sure the installation :ref:`pre-requisite-reference-label` are met.
 
 This file contains verification functions related to the file structure.
-It reads configuration parameters "*schema_type*" and "*schema*" to determine first which kind of file verification is requested, and a schema that defines mandatory parameters.
-If any of the parameters is not configured, it is assumed no file structure verification is requested.
+It reads configuration parameters "*schema_type*" and "*schema*" to
+determine first which kind of file verification is requested, and a
+schema that defines mandatory parameters. If any of the parameters is
+not configured, it is assumed no file structure verification is requested.
 
 """
 
@@ -70,18 +72,19 @@ __all__ = ['verify',
 
 config = ConfigObj('config.ini')
 
+
 def structure(file, schema):
     """
-    This method is used when a file of hdf type is given. 
+    This method is used when a file of hdf type is given.
     All tags and array dimensions are verified against a schema.
-    (see `basicHDF.json <https://github.com/bfrosik/data-quality/blob/master/dquality/schemas/basicHDF.json>`__ 
+    (see `basicHDF.json <https://github.com/bfrosik/data-quality/blob/master/dquality/schemas/basicHDF.json>`__
     example file).
-     
+
     Parameters
     ----------
     file : str
         File Name including path
-    
+
     schema : str
         Schema file name
 
@@ -89,7 +92,7 @@ def structure(file, schema):
     -------
     True if verified
     False if not verified
-        
+
     """
     def check_dim(dset, attr):
         required_dim = attr.get('dim')
@@ -100,9 +103,14 @@ def structure(file, schema):
                 try:
                     required_dim_copy.remove(dim[i])
                 except ValueError:
-                    print ('The dataset '  + dset.name + ' dimension ' + str(i) + ' is wrong: it is [' + str(dset.shape[i]) + '] but should be [' + str(required_dim[i]) + ']')
+                    print('The dataset ' + dset.name +
+                          ' dimension ' + str(i) +
+                          ' is wrong: it is [' +
+                          str(dset.shape[i]) + '] but should be [' +
+                          str(required_dim[i]) + ']')
         else:
-            print ('The dataset '  + dset.name + ' dimensions: ' + str(dset.shape) + ' but should be ' + str(required_dim))
+            print('The dataset ' + dset.name + ' dimensions: ' +
+                  str(dset.shape) + ' but should be ' + str(required_dim))
 
     def func(name, dset):
         if isinstance(dset, h5py.Dataset):
@@ -120,9 +128,17 @@ def structure(file, schema):
                             attr = dset.attrs.get(key)
                             if attr is not None:
                                 if attr != tag_attribs.get(key):
-                                    print ('incorrect attribute in ' + tag + ': is ' + key + ':' + attr + ' but should be ' + key + ':' + tag_attribs.get(key))
+                                    print('incorrect attribute in ' +
+                                          tag + ': is ' +
+                                          key + ':' +
+                                          attr + ' but should be ' +
+                                          key + ':' +
+                                          tag_attribs.get(key))
                                 attrib_list.remove(key)
-                report_items(attrib_list, 'the following attributes are missing in tag ', tag)
+                report_items(
+                    attrib_list,
+                    'the following attributes are missing in tag ',
+                    tag)
 
     required_tags = {}
     with open(schema) as data_file:
@@ -133,19 +149,21 @@ def structure(file, schema):
     file_h5.visititems(func)
     report_items(tag_list, 'the following tags are missing: ', '')
 
+
 def tags(file, schema):
     """
-    This method is used when a file of hdf type is given. 
+    This method is used when a file of hdf type is given.
     All tags from the hdf file are added in the filetags list.
-    Then the schema is evaluated for tags. With each tag discovered it checks whether there is matching tag in the filetags list.
+    Then the schema is evaluated for tags. With each tag discovered
+    it checks whether there is matching tag in the filetags list.
     If a tag is missing, the function exits with False.
     Otherwise, it will return True.
-     
+
     Parameters
     ----------
     file : str
         File Name including path
-    
+
     schema : str
         Schema file name
 
@@ -153,7 +171,7 @@ def tags(file, schema):
     -------
     True if verified
     False if not verified
-        
+
     """
 
     with open('schemas/basicHDF.json') as data_file:
@@ -162,10 +180,13 @@ def tags(file, schema):
     tag_list = key_list(required_tags)
 
     class Result:
+
         def __init__(self):
             self.result = True
+
         def missing_tag(self):
             self.result = False
+
         def is_verified(self):
             return self.result
 
@@ -182,16 +203,18 @@ def tags(file, schema):
     for tag in tag_list:
         if result.is_verified():
             if tag not in filetags:
-                print ('tag ' + tag + ' not found')
+                print('tag ' + tag + ' not found')
                 result.missing_tag()
 
     return result.is_verified()
 
+
 def verify(file):
     """
-    This is the main function called when the structureverifier application starts.
-    It reads the configuration file for "*verification_type*" to verify "*hdf_structure*" or "*hdf_tags*"  
-     
+    This is the main function called when the structureverifier
+    application starts. It reads the configuration file for
+    "*verification_type*" to verify "*hdf_structure*" or "*hdf_tags*".
+
     Parameters
     ----------
     file : str
@@ -199,16 +222,18 @@ def verify(file):
 
     Returns
     -------
-    boolean        
+    boolean
     """
     try:
         type = config['verification_type']
-        print ('Verification type: ' + type)
+        print('Verification type: ' + type)
         if type == 'hdf_structure':
             try:
                 schema = config['schema']
                 if not os.path.isfile(schema):
-                    print ('configuration error: schema file ' + schema + ' does not exist')
+                    print(
+                        'configuration error: schema file ' +
+                        schema + ' does not exist')
                     return False
                 return structure(file, schema)
             except KeyError:
@@ -217,7 +242,9 @@ def verify(file):
             try:
                 schema = config['schema']
                 if not os.path.isfile(schema):
-                    print ('configuration error: schema file ' + schema + ' does not exist')
+                    print(
+                        'configuration error: schema file ' +
+                        schema + ' does not exist')
                     return False
                 return tags(file, schema)
             except KeyError:
@@ -225,4 +252,3 @@ def verify(file):
 
     except KeyError:
         return True
-
