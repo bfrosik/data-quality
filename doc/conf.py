@@ -67,7 +67,7 @@ master_doc = 'index'
 # General information about the project.
 Argonne = u'Argonne National Laboratory'
 project = u'DQuality'
-copyright = u'2013-2016, ' + Argonne
+copyright = u'2016, ' + Argonne
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -280,7 +280,7 @@ texinfo_documents = [
   project+u' Documentation',
   Argonne, 
   project, 
-  'Data Management: APS Data Management in Python.',
+  'Data Quality: APS Data Quality.',
   'Miscellaneous'),
 ]
 
@@ -308,7 +308,21 @@ class Mock(object):
         return Mock()
 
     @classmethod
-    def __getattr__(cls, name):        return Mock()    def __mul__(self, other):        return Mock()    def __rmul__(self, other):        return Mock()    def __pow__(self, other):        return Mock()    def __div__(self, other):        return Mock()    def __add__(self, other):        return Mock()    def __radd__(self, other):        return Mock()            
+    def __getattr__(cls, name):
+        return Mock()
+    def __mul__(self, other):
+        return Mock()
+    def __rmul__(self, other):
+        return Mock()
+    def __pow__(self, other):
+        return Mock()
+    def __div__(self, other):
+        return Mock()
+    def __add__(self, other):
+        return Mock()
+    def __radd__(self, other):
+        return Mock()
+            
 
 MOCK_MODULES = [
     'h5py', 'multiprocessing', 'pyinotify', 'configobj', 'epics', 'json',

@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*-
 
 # #########################################################################
-# Copyright (c) 2015, UChicago Argonne, LLC. All rights reserved.         #
+# Copyright (c) 2016, UChicago Argonne, LLC. All rights reserved.         #
 #                                                                         #
-# Copyright 2015. UChicago Argonne, LLC. This software was produced       #
+# Copyright 2016. UChicago Argonne, LLC. This software was produced       #
 # under U.S. Government contract DE-AC02-06CH11357 for Argonne National   #
 # Laboratory (ANL), which is operated by UChicago Argonne, LLC for the    #
 # U.S. Department of Energy. The U.S. Government has rights to use,       #
@@ -49,9 +49,11 @@
 """
 Please make sure the installation :ref:`pre-requisite-reference-label` are met.
 
-This module verifies that each of the PVs listed in the configuration file exist and their values are set within the predefined range.
+This module verifies that each of the PVs listed in the configuration
+file exist and their values are set within the predefined range.
 
-The results will be reported in a file (printed on screen for now). An error will be reported back to UI via PV.
+The results will be reported in a file (printed on screen for now).
+An error will be reported back to UI via PV.
 
 """
 
@@ -77,7 +79,8 @@ conf = ConfigObj(config)
 
 def read(pv_str):
     """
-    This function returns a Process Variable (PV) value or None if the PV does not exist.
+    This function returns a Process Variable (PV) value or None if the
+    PV does not exist.
 
     Parameters
     ----------
@@ -89,14 +92,16 @@ def read(pv_str):
     PV value
     """
     pv = PV(pv_str).get()
-    
+
     return pv
+
 
 def state(value, limit):
     """
-    This function takes boolean "*value*" parameter and string "limit" parameter that can be either "*True*" or "*False*".
-    The limit is converted to string and compared with the value. The function returns True if the boolean values are
-    equal, False otherwise.
+    This function takes boolean "*value*" parameter and string "limit"
+    parameter that can be either "*True*" or "*False*". The limit is
+    converted to string and compared with the value. The function
+    returns True if the boolean values are equal, False otherwise.
 
     Parameters
     ----------
@@ -111,9 +116,9 @@ def state(value, limit):
     boolean
     """
     if limit == 'True':
-        return value == True
+        return True
     else:
-        return value == False
+        return False
 
 
 def verify():
@@ -121,11 +126,11 @@ def verify():
     This function reads the :download:`dqschemas/pvs.json <../config/dqschemas/pvs.json>`
     as set in the :download:`dqconfig.ini <../config/dqconfig.ini>` file.
     This file contains dictionary with keys of mandatory process variables.
-    The values is a dictionary of attributes, each attribute being either description, or
-    a verification operation. The verification operation attribute has an operation as a key,
-    and the value is the limit of the PV.
+    The values is a dictionary of attributes, each attribute being either
+    description, or a verification operation. The verification operation
+    attribute has an operation as a key, and the value is the limit of the PV.
     The allowed keys are:
-    
+
     - "*less_than*" - the PV value must be less than attribute value
     - "*less_or_equal*" - the PV value must be less than or equal attribute value
     - "*equal*" - the PV value must be equal to attribute value
@@ -133,9 +138,10 @@ def verify():
     - "*greater_than*" - the PV value must be greater than attribute value
     - "*state*" - to support boolean PVs. The defined value must be "True" or "False".
 
-    Any missing PV (i.e. it can't be read) is an error that is reported (printed for now).
-    Any PV value that is out of limit is an error that is reported (printed for now)
-    The function returns True if no error was found and False otherwise.
+    Any missing PV (i.e. it can't be read) is an error that is reported
+    (printed for now). Any PV value that is out of limit is an error that
+    is reported (printed for now). The function returns True if no
+    error was found and False otherwise.
 
     Parameters
     ----------
@@ -145,7 +151,14 @@ def verify():
     -------
     boolean
     """
-    function_mapper = {'less_than':lt, 'less_or_equal':le, 'equal':eq, 'greater_or_equal':ge, 'greater_than':gt, 'state':state}
+    function_mapper = {
+        'less_than': lt,
+        'less_or_equal': le,
+        'equal': eq,
+        'greater_or_equal': ge,
+        'greater_than': gt,
+        'state': state}
+
     res = True
     file = os.path.join(home, conf['pv_file'])
 
@@ -154,7 +167,7 @@ def verify():
             required_pvs = json.loads(data_file.read()).get('required_pvs')
 
     except KeyError:
-        print ('config error: pv_file not configured')
+        print('config error: pv_file not configured')
         sys.exit(-1)
 
     for pv in required_pvs:
@@ -163,16 +176,18 @@ def verify():
 
         if pv_value is None:
             res = False
-            print ('PV ' + pv + ' cannot be read.')
+            print('PV ' + pv + ' cannot be read.')
         else:
             pv_attr = required_pvs[pv]
             for attr in pv_attr:
                 if attr == 'description':
                     descriprtion = pv_attr['description']
                 else:
-                    if function_mapper[attr](pv_value, pv_attr[attr]) == False:
+                    if not function_mapper[attr](pv_value, pv_attr[attr]):
                         res = False
-                        print ('PV ' + pv + ' has value out of range. The value is ' + str(pv_value)  + ' but should be ' + attr + ' ' + str(pv_attr[attr]))
+                        print('PV ' +
+                              pv + ' has value out of range. The value is ' +
+                              str(pv_value) + ' but should be ' +
+                              attr + ' ' +
+                              str(pv_attr[attr]))
     return res
-
-
