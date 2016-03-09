@@ -230,23 +230,15 @@ def verify(file):
 
     try:
         type = conf['verification_type']
-        print "********************"
-        print type
-        print "********************"
         print ('Verification type: ' + type)
         if type == 'hdf_structure':
             try:
                 schema = os.path.join(home, conf['schema'])
-                print "********************"
-                print schema
-                print "********************"
                 if not os.path.isfile(schema):
                     print(
                         'configuration error: schema file ' +
                         schema + ' does not exist')
                     return False
-                print file
-                print schema    
                 return structure(file, schema)
             except KeyError:
                 return True
