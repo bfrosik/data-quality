@@ -59,10 +59,13 @@ not configured, it is assumed no file structure verification is requested.
 
 import h5py
 import json
+import logging
 import os.path
 from os.path import expanduser
-from common.utilities import copy_list, key_list, report_items
 from configobj import ConfigObj
+
+from common.utilities import copy_list, key_list, report_items
+
 
 __author__ = "Barbara Frosik"
 __copyright__ = "Copyright (c) 2016, UChicago Argonne, LLC."
@@ -74,6 +77,7 @@ __all__ = ['verify',
 home = expanduser("~")
 config = os.path.join(home, 'dqconfig.ini')
 conf = ConfigObj(config)
+logger = logging.getLogger(__name__)
 
 
 def structure(file, schema):
@@ -106,13 +110,13 @@ def structure(file, schema):
                 try:
                     required_dim_copy.remove(dim[i])
                 except ValueError:
-                    print('The dataset ' + dset.name +
+                    logger.error('ValueError: The dataset ' + dset.name +
                           ' dimension ' + str(i) +
                           ' is wrong: it is [' +
                           str(dset.shape[i]) + '] but should be [' +
                           str(required_dim[i]) + ']')
         else:
-            print('The dataset ' + dset.name + ' dimensions: ' +
+            logger.warning('The dataset ' + dset.name + ' dimensions: ' +
                   str(dset.shape) + ' but should be ' + str(required_dim))
 
     def func(name, dset):
@@ -131,7 +135,7 @@ def structure(file, schema):
                             attr = dset.attrs.get(key)
                             if attr is not None:
                                 if attr != tag_attribs.get(key):
-                                    print('incorrect attribute in ' +
+                                    logger.warning('incorrect attribute in ' +
                                           tag + ': is ' +
                                           key + ':' +
                                           attr + ' but should be ' +
@@ -206,7 +210,7 @@ def tags(file, schema):
     for tag in tag_list:
         if result.is_verified():
             if tag not in filetags:
-                print('tag ' + tag + ' not found')
+                logger.warning('tag ' + tag + ' not found')
                 result.missing_tag()
 
     return result.is_verified()
@@ -233,7 +237,7 @@ def verify(file):
         print "********************"
         print type
         print "********************"
-        print ('Verification type: ' + type)
+        print('Verification type: ' + type)
         if type == 'hdf_structure':
             try:
                 schema = os.path.join(home, conf['schema'])
@@ -246,7 +250,7 @@ def verify(file):
                         schema + ' does not exist')
                     return False
                 print file
-                print schema    
+                print schema
                 return structure(file, schema)
             except KeyError:
                 return True
