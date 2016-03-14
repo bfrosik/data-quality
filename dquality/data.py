@@ -59,11 +59,12 @@ The results will be reported in a file (printed on screen for now)
 import os
 import sys
 import h5py
+import logging
 from multiprocessing import Process, Queue
 from configobj import ConfigObj
-
 from os.path import expanduser
 from file import verify as f_verify
+
 from common.qualitychecks import Data, validate_mean_signal_intensity
 from common.qualitychecks import validate_signal_intensity_standard_deviation
 from common.qualitychecks import (validate_voxel_based_SNR,
@@ -81,6 +82,7 @@ __all__ = ['verify',
 home = expanduser("~")
 config = os.path.join(home, 'dqconfig.ini')
 conf = ConfigObj(config)
+logger = logging.getLogger(__name__)
 
 processes = {}
 results = Queue()
@@ -129,6 +131,7 @@ def cleanup():
     for process in processes.itervalues():
         process.terminate()
 
+
 def verify(file):
     """
     This is the main function called when the application starts.
@@ -162,7 +165,7 @@ def verify(file):
     try:
         f_verify(file)
     except KeyError:
-        print('config error: neither directory or file configured')
+        logger.error('KeyError: neither directory or file configured')
         sys.exit(-1)
 
     data = Data(file, get_data(file))
@@ -180,7 +183,7 @@ def verify(file):
             pr.terminate()
             del processes[res.process_id]
             numresults = numresults - 1
-            print('result: file name, result, quality id, error: ',
+            logger.info('result: file name, result, quality id, error: ',
                   res.file, res.res, res.quality_id, res.error)
 
         if numresults is 0:
@@ -188,4 +191,4 @@ def verify(file):
 
     cleanup()
 
-    print('finished')
+    logger.info('finished')

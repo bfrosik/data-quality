@@ -60,11 +60,13 @@ An error will be reported back to UI via PV.
 import os
 import sys
 import json
-
+import logging
 from epics import PV
 from os.path import expanduser
 from configobj import ConfigObj
+
 from common.utilities import lt, le, eq, ge, gt
+
 
 __author__ = "Barbara Frosik"
 __copyright__ = "Copyright (c) 2016, UChicago Argonne, LLC."
@@ -76,6 +78,8 @@ __all__ = ['verify',
 home = expanduser("~")
 config = os.path.join(home, 'dqconfig.ini')
 conf = ConfigObj(config)
+logger = logging.getLogger(__name__)
+
 
 def read(pv_str):
     """
@@ -167,7 +171,7 @@ def verify():
             required_pvs = json.loads(data_file.read()).get('required_pvs')
 
     except KeyError:
-        print('config error: pv_file not configured')
+        logger.error('KeyError: pv_file not configured')
         sys.exit(-1)
 
     for pv in required_pvs:
@@ -176,7 +180,7 @@ def verify():
 
         if pv_value is None:
             res = False
-            print('PV ' + pv + ' cannot be read.')
+            logger.warning('PV ' + pv + ' cannot be read.')
         else:
             pv_attr = required_pvs[pv]
             for attr in pv_attr:
@@ -185,9 +189,10 @@ def verify():
                 else:
                     if not function_mapper[attr](pv_value, pv_attr[attr]):
                         res = False
-                        print('PV ' +
-                              pv + ' has value out of range. The value is ' +
-                              str(pv_value) + ' but should be ' +
-                              attr + ' ' +
-                              str(pv_attr[attr]))
+                        logger.warning('PV ' +
+                                       pv + ' has value out of range. \
+                                       The value is ' +
+                                       str(pv_value) + ' but should be ' +
+                                       attr + ' ' +
+                                       str(pv_attr[attr]))
     return res

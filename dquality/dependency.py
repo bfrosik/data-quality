@@ -60,9 +60,12 @@ import os
 import sys
 import json
 import h5py
+import logging
 from os.path import expanduser
 from configobj import ConfigObj
+
 from common.utilities import lt, le, eq, ge, gt
+
 
 __author__ = "Barbara Frosik"
 __copyright__ = "Copyright (c) 2016, UChicago Argonne, LLC."
@@ -74,6 +77,7 @@ __all__ = ['verify',
 home = expanduser("~")
 config = os.path.join(home, 'dqconfig.ini')
 conf = ConfigObj(config)
+logger = logging.getLogger(__name__)
 
 
 class TagValue:
@@ -190,10 +194,10 @@ def verify_list(file, list, relation):
         if not function_mapper[relation](
                 tags.get(tag).get_value(),
                 anchor_tag.get_value()):
-            print('the ' + tag + ' value is ' +
-                  str(tags.get(tag).get_value()) +
-                  ' but should be ' + relation +
-                  ' ' + str(anchor_tag.get_value()))
+            logger.warning('the ' + tag + ' value is ' +
+                           str(tags.get(tag).get_value()) +
+                           ' but should be ' + relation +
+                           ' ' + str(anchor_tag.get_value()))
             res = False
 
     return res
@@ -246,13 +250,13 @@ def verify():
             dependencies = json.loads(data_file.read())
 
     except KeyError:
-        print('config error: dependencies not configured')
+        logger.error('KeyError: dependencies not configured')
         sys.exit(-1)
 
     try:
         file = os.path.join(home, conf['file'])
     except KeyError:
-        print('config error: neither directory or file configured')
+        logger.error('KeyError: neither directory or file configured')
         sys.exit(-1)
 
     i = 0

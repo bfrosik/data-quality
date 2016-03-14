@@ -52,6 +52,7 @@ This file is a suite of verification functions for scientific data.
 """
 
 import numpy as np
+import logging
 
 __author__ = "Barbara Frosik"
 __copyright__ = "Copyright (c) 2016, UChicago Argonne, LLC."
@@ -60,6 +61,8 @@ __all__ = ['validate_mean_signal_intensity',
            'validate_signal_intensity_standard_deviation',
            'validate_voxel_based_SNR'
            'validate_slice_based_SNR']
+
+logger = logging.getLogger(__name__)
 
 
 class Result:
