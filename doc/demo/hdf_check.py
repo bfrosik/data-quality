@@ -58,7 +58,7 @@ from dquality.file import verify
 home = expanduser("~")
 config = os.path.join(home, 'dqconfig.ini')
 conf = ConfigObj(config)
-file = conf['dependencies']
+file = conf['file']
 
 if verify(file):
     print ('All PVs listed in pvs.json exist and meet conditions')
