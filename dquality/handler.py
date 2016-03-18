@@ -57,82 +57,95 @@ The results will be reported in a file (printed on screen for now)
 """
 
 from multiprocessing import Queue, Process
-from dquality.common.utilities import get_data
-import dquality.handler as handler
-from dquality.handler import Data
-from configobj import ConfigObj
-from os.path import expanduser
-import os
-import json
-import sys
+from Queue import Empty
+import dquality.common.qualitychecks as calc
+import common.constants as const
 
 __author__ = "Barbara Frosik"
 __copyright__ = "Copyright (c) 2016, UChicago Argonne, LLC."
 __docformat__ = 'restructuredtext en'
-__all__ = ['process_data']
+__all__ = ['handle_result',
+           'handle_data']
 
-home = expanduser("~")
-config = os.path.join(home, 'dqconfig.ini')
-conf = ConfigObj(config)
+class Data:
+    def __init__(self, slice, theta):
+        self.slice = slice
+        self.theta = theta
 
-try:
-    file = os.path.join(home, conf['file'])
-    all_data = get_data(file)
-except KeyError:
-    print('config error: neither directory or file configured')
-    sys.exit(-1)
+class Aggregate:
+    mean_values = []
+    stds = []
+    results = {const.QUALITYCHECK_MEAN : mean_values, const.QUALITYCHECK_STD: stds}
+    theta = []
+    last_theta = 0
+    bad_index = []
 
-try:
-    limitsfile = os.path.join(home, conf['limits'])
-    with open(limitsfile) as limits_file:
-        limits = json.loads(limits_file.read())['limits']
+def handle_result(result):
+    pass
 
-except KeyError:
-    print('config error: dependencies not configured')
-    sys.exit(-1)
-
-def process_data(dataq, data_type):
+def handle_data(dataq, all_limits, data_type):
     """
-    This method creates and starts a new handler process. The handler is initialized with data queue,
-    dictionary of limits values keyed with data type, and the data type. The data type can
-    be 'data_dark', 'data_white' or 'data'.
-    After starting the process the function puts into data queue slice by slice, untils all data is
-    queued. As the last element it enqueues end of data marker.
+    This function is typically called as a new process. It takes a dataq parameter
+    that is the queue on which data is received. It takes the dictionary containing limit values,
+    and a data_type indication whether the data to be processed is data_dark, data_white, or data.
+
+    The initialization constrains of retrieving limits corresponding to the data type, creating
+    queue for results passing, and initializing variables.
+
+    This function has a loop that retrieves data from the data queue, runs a sequence of
+    validation methods on the data, and retrieves results from rhe results queue.
+    Each result object contains information whether the data was out of limits, in addition
+    to the value and index. Each result is additionally evaluated with relation to the prvious
+    accumulated results.
+
+    The loop is interrupted when the data queue received end of data element in the queue, and all
+    processes produced results.
+
 
     Parameters
     ----------
     dataq : Queue
-        data queue
+        data queuel; data is received in this queue
+
+    all_limits : dictionary
+        a dictionary of limits keyed by the data type
 
     data_type : str
-        string indicating what type of data is processed.
+        a constant indicating which type of data is to be processed
+        can be 'data_dark', 'data_white", 'data'
 
     Returns
     -------
     None
     """
-    p = Process(target=handler.handle_data, args=(dataq, limits, data_type, ))
-    p.start()
-    data = all_data['/exchange/'+data_type]
-    for i in range(0,data.shape[0]-1):
-        dataq.put(Data(data[i],None))
-    dataq.put('all_data')
+    resultsq = Queue()
+    limits = all_limits[data_type]
+    interrupted = False
+    index = 0
+    max_index = 0
+    while not interrupted:
+        try:
+            data = dataq.get(timeout=0.005)
+            if data == 'all_data':
+                interrupted = True
+                while max_index < index + const.NUMBER_CHECKS-1:
+                    result = resultsq.get()
+                    max_index = max(result.index,max_index)
+                    handle_result(result)
+                    print (result.index,result.quality_id,result.error)
 
-def verify():
-    """
-    This invokes sequentially data verification process for data_dark, data_white, and data.
+            else:
+                slice = data.slice
+                p1 = Process(target=calc.validate_mean_signal_intensity, args=(slice, index,resultsq, limits,))
+                p2 = Process(target=calc.validate_signal_intensity_standard_deviation, args=(slice, index,resultsq, limits,))
+                p2.start()
+                p1.start()
+                index = index + 1
+        except Empty:
+            pass
 
-    Parameters
-    ----------
-    None
-
-    Returns
-    -------
-    None
-    """
-    #process data_dark
-    process_data(Queue(),'data_dark')
-    #process data_white
-    process_data(Queue(),'data_white')
-    #process data and theta
-    process_data(Queue(),'data')
+        while not resultsq.empty():
+            result = resultsq.get_nowait()
+            max_index = max(result.index,max_index)
+            handle_result(result)
+            print (result.index,result.quality_id,result.error)

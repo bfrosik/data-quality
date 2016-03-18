@@ -52,6 +52,7 @@ This file is a suite of verification functions for scientific data.
 """
 
 import numpy as np
+import constants as const
 
 __author__ = "Barbara Frosik"
 __copyright__ = "Copyright (c) 2016, UChicago Argonne, LLC."
@@ -64,22 +65,14 @@ __all__ = ['validate_mean_signal_intensity',
 
 class Result:
 
-    def __init__(self, file, res, process_id, quality_id, error):
-        self.file = file
+    def __init__(self, res, index, quality_id, error):
         self.res = res
-        self.process_id = process_id
+        self.index = index
         self.quality_id = quality_id
         self.error = error
 
 
-class Data:
-
-    def __init__(self, file, data):
-        self.file = file
-        self.data = data
-
-
-def validate_mean_signal_intensity(data, process_id, results):
+def validate_mean_signal_intensity(data, index, results, limits):
     """
     Currently a stub function.
     This is one of the validation methods. It has a "quality_id"
@@ -107,18 +100,16 @@ def validate_mean_signal_intensity(data, process_id, results):
     -------
     None
     """
-    # calculate mean value of dataset
-    dsets = data.data
-    dset = dsets.get('/exchange/data_dark')
-    quality = np.mean(dset)
-    quality_id = 1
-    # error = quality > 10.2
-    error = False
-    result1 = Result(data.file, quality, process_id, quality_id, error)
-    results.put(result1)
+    res = np.mean(data)
+    quality_id = const.QUALITYCHECK_MEAN
+    if res < limits['low_limit']:
+        result = Result(res, index+quality_id, quality_id, const.QUALITYERROR_LOW)
+    if res > limits['high_limit']:
+        result = Result(res, index+quality_id, quality_id, const.QUALITYERROR_HIGH)
+    result = Result(res, index+quality_id, quality_id, const.NO_ERROR)
+    results.put(result)
 
-
-def validate_signal_intensity_standard_deviation(data, process_id, results):
+def validate_signal_intensity_standard_deviation(data, index, results, limits):
     """
     Currently a stub function.
     This is one of the validation methods. It has a "quality_id"
@@ -147,15 +138,14 @@ def validate_signal_intensity_standard_deviation(data, process_id, results):
     None
     """
     # calculate standard deviation value of dataset
-    dsets = data.data
-    dset = dsets.get('/exchange/data_dark')
-    quality = np.std(dset)
-    quality_id = 2
-    # error = quality < 4
-    error = False
-    result2 = Result(data.file, quality, process_id, quality_id, error)
-    results.put(result2)
-
+    res = np.std(data)
+    quality_id = const.QUALITYCHECK_STD
+    if res < limits['low_limit']:
+        result = Result(res, index+quality_id, quality_id, const.QUALITYERROR_LOW)
+    if res > limits['high_limit']:
+        result = Result(res, index+quality_id, quality_id, const.QUALITYERROR_HIGH)
+    result = Result(res, index+quality_id, quality_id, const.NO_ERROR)
+    results.put(result)
 
 def validate_voxel_based_SNR(data, process_id, results):
     """
