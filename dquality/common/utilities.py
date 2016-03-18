@@ -52,6 +52,7 @@ This file is a suite of utility functions.
 """
 
 import h5py
+import logging
 
 __author__ = "Barbara Frosik"
 __copyright__ = "Copyright (c) 2016, UChicago Argonne, LLC."
@@ -65,6 +66,8 @@ __all__ = ['lt',
            'copy_list',
            'key_list',
            'report_items']
+
+logger = logging.getLogger(__name__)
 
 
 def lt(value, limit):
@@ -258,6 +261,6 @@ def report_items(list, text1, text2):
     None
     """
     if len(list) > 0:
-        print(text1 + text2)
+        logger.info(text1 + text2)
         for item in list:
-            print('    - ' + item)
+            logger.info('    - ' + item)

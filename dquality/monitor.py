@@ -62,12 +62,13 @@ import h5py
 import os
 import sys
 import pyinotify
-
+import logging
 from os.path import expanduser
 from configobj import ConfigObj
 from pyinotify import WatchManager
 from common.utilities import get_data
 from multiprocessing import Process, Queue
+
 from common.qualitychecks import Data, validate_mean_signal_intensity
 from common.qualitychecks import validate_signal_intensity_standard_deviation
 from common.qualitychecks import (validate_voxel_based_SNR,
@@ -76,6 +77,8 @@ from common.qualitychecks import (validate_voxel_based_SNR,
 from pv import verify as pv_verify
 from data import quality as d_quality
 from file import verify as f_verify
+
+logger = logging.getLogger(__name__)
 
 __author__ = "Barbara Frosik"
 __copyright__ = "Copyright (c) 2016, UChicago Argonne, LLC."
@@ -87,6 +90,7 @@ __all__ = ['verify',
 home = expanduser("~")
 config = os.path.join(home, 'dqconfig.ini')
 conf = ConfigObj(config)
+logger = logging.getLogger(__name__)
 
 processes = {}
 files = Queue()
@@ -190,7 +194,7 @@ def verify():
     interrupted = False
 
     if not pv_verify():
-        print "***"
+        logger.info("***")
         # the function will print report if error found
         sys.exit(-1)
 
@@ -203,7 +207,7 @@ def verify():
         # check if directory exists
         folder = conf['directory']
         if not os.path.isdir(folder):
-            print(
+            logger.error(
                 'configuration error: directory ' +
                 folder + ' does not exist')
             sys.exit()
@@ -246,11 +250,11 @@ def verify():
             pr.terminate()
             del processes[res.process_id]
             numresults = numresults - 1
-            print('result: file name, result, quality id, error: ',
+            logger.info('result: file name, result, quality id, error: ',
                   res.file, res.res, res.quality_id, res.error)
 
         if numresults is 0:
             interrupted = True
 
     cleanup()
-    print('finished')
+    logger.info('finished')
