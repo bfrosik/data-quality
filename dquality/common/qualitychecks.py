@@ -104,9 +104,10 @@ def validate_mean_signal_intensity(data, index, results, limits):
     quality_id = const.QUALITYCHECK_MEAN
     if res < limits['low_limit']:
         result = Result(res, index+quality_id, quality_id, const.QUALITYERROR_LOW)
-    if res > limits['high_limit']:
+    elif res > limits['high_limit']:
         result = Result(res, index+quality_id, quality_id, const.QUALITYERROR_HIGH)
-    result = Result(res, index+quality_id, quality_id, const.NO_ERROR)
+    else:
+        result = Result(res, index+quality_id, quality_id, const.NO_ERROR)
     results.put(result)
 
 def validate_signal_intensity_standard_deviation(data, index, results, limits):
@@ -142,9 +143,10 @@ def validate_signal_intensity_standard_deviation(data, index, results, limits):
     quality_id = const.QUALITYCHECK_STD
     if res < limits['low_limit']:
         result = Result(res, index+quality_id, quality_id, const.QUALITYERROR_LOW)
-    if res > limits['high_limit']:
+    elif res > limits['high_limit']:
         result = Result(res, index+quality_id, quality_id, const.QUALITYERROR_HIGH)
-    result = Result(res, index+quality_id, quality_id, const.NO_ERROR)
+    else:
+        result = Result(res, index+quality_id, quality_id, const.NO_ERROR)
     results.put(result)
 
 def validate_voxel_based_SNR(data, process_id, results):
