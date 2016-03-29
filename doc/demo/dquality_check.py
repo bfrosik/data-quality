@@ -54,11 +54,13 @@ import os
 from os.path import expanduser
 from configobj import ConfigObj
 from dquality.data import verify
+import json
 
 home = expanduser("~")
 config = os.path.join(home, 'dqconfig.ini')
 conf = ConfigObj(config)
 file = conf['file']
 
-verify()
+bad_indexes = verify()
+print json.dumps(bad_indexes)
         

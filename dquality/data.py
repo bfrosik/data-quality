@@ -49,17 +49,18 @@
 """
 Please make sure the installation :ref:`pre-requisite-reference-label` are met.
 
-This module verifies a given file according to schema configuration and
-starts new processes, each process performing specific quality calculations.
+This module verifies a configured hd5 file. The data is verified against configured
+"limits" file. The limits are applied by processes performing specific quality calculations.
 
-The results will be reported in a file (printed on screen for now)
+The results is a detail report of calculated values. The indexes of slices that did not pass
+quality check are returned back.
 
 """
 
 from multiprocessing import Queue, Process
 from dquality.common.utilities import get_data
 import dquality.handler as handler
-from dquality.handler import Data
+from dquality.common.containers import Aggregate, Data
 from configobj import ConfigObj
 from os.path import expanduser
 import os
@@ -91,36 +92,46 @@ except KeyError:
     print('config error: dependencies not configured')
     sys.exit(-1)
 
-def process_data(dataq, data_type):
+def process_data(dataq, data_type, aggregateq):
     """
     This method creates and starts a new handler process. The handler is initialized with data queue,
-    dictionary of limits values keyed with data type, and the data type. The data type can
-    be 'data_dark', 'data_white' or 'data'.
-    After starting the process the function puts into data queue slice by slice, untils all data is
-    queued. As the last element it enqueues end of data marker.
+    the data type, and a result queue. The data type can be 'data_dark', 'data_white' or 'data'.
+    After starting the process the function enqueues queue slice by slice into data, until all data is
+    queued. The last enqueued element is end of the data marker.
 
     Parameters
     ----------
     dataq : Queue
-        data queue
+        data queue; used to pass 2D arrays (slices) to the handler
 
     data_type : str
         string indicating what type of data is processed.
+
+    aggregateq : Queue
+        result queue; used by handler to enqueue results
 
     Returns
     -------
     None
     """
-    p = Process(target=handler.handle_data, args=(dataq, limits, data_type, ))
+
+    p = Process(target=handler.handle_data, args=(dataq, limits[data_type], data_type, aggregateq, ))
     p.start()
     data = all_data['/exchange/'+data_type]
     for i in range(0,data.shape[0]-1):
-        dataq.put(Data(data[i],None))
+        dataq.put(Data(data[i]))
     dataq.put('all_data')
 
 def verify():
     """
-    This invokes sequentially data verification process for data_dark, data_white, and data.
+    This invokes sequentially data verification processes for data_dark, data_white, and data that is contained
+    in configured hd5 file. The calculated values are check against limits, configured in a file.
+    Each process gets two queues parameters; one queue to get the data, and second queue to
+    pass back the results.
+    The function awaits results from the response queues in the matching sequence to how the
+    processes started.
+    The results are retrieved as json object.
+    The indexes of slices that did not pass quality check are reported to the calling function in form of dictionary.
 
     Parameters
     ----------
@@ -128,11 +139,37 @@ def verify():
 
     Returns
     -------
-    None
+    Dict
+    A dictionary containing indexes of slices that did not pass quality check. The key is a type of data.
+    (i.e. data_dark, data_white,data)
     """
     #process data_dark
-    process_data(Queue(),'data_dark')
+    data_dark_q = Queue()
+    process_data(Queue(),'data_dark',data_dark_q)
+
     #process data_white
-    process_data(Queue(),'data_white')
-    #process data and theta
-    process_data(Queue(),'data')
+    data_white_q = Queue()
+    process_data(Queue(),'data_white', data_white_q)
+
+    #process data
+    data_q = Queue()
+    process_data(Queue(),'data', data_q)
+
+    # receive the results
+    aggregate_data_dark = data_dark_q.get()
+    print 'data_dark'
+    print json.dumps(aggregate_data_dark)
+
+    aggregate_data_white = data_white_q.get()
+    print 'data_white'
+    print json.dumps(aggregate_data_white)
+
+    aggregate_data = data_q.get()
+    print 'data'
+    print json.dumps(aggregate_data)
+
+    bad_indexes = {}
+    bad_indexes['data_dark'] = aggregate_data_dark['bad_indexes'].keys()
+    bad_indexes['data_white'] = aggregate_data_white['bad_indexes'].keys()
+    bad_indexes['data'] = aggregate_data['bad_indexes'].keys()
+    return bad_indexes

@@ -53,6 +53,7 @@ This file is a suite of verification functions for scientific data.
 
 import numpy as np
 import constants as const
+from containers import Result
 
 __author__ = "Barbara Frosik"
 __copyright__ = "Copyright (c) 2016, UChicago Argonne, LLC."
@@ -63,16 +64,8 @@ __all__ = ['validate_mean_signal_intensity',
            'validate_slice_based_SNR']
 
 
-class Result:
 
-    def __init__(self, res, index, quality_id, error):
-        self.res = res
-        self.index = index
-        self.quality_id = quality_id
-        self.error = error
-
-
-def validate_mean_signal_intensity(data, index, results, limits):
+def validate_mean_signal_intensity(data, index, results, all_limits):
     """
     Currently a stub function.
     This is one of the validation methods. It has a "quality_id"
@@ -100,6 +93,7 @@ def validate_mean_signal_intensity(data, index, results, limits):
     -------
     None
     """
+    limits = all_limits['mean']
     res = np.mean(data)
     quality_id = const.QUALITYCHECK_MEAN
     if res < limits['low_limit']:
@@ -110,7 +104,7 @@ def validate_mean_signal_intensity(data, index, results, limits):
         result = Result(res, index+quality_id, quality_id, const.NO_ERROR)
     results.put(result)
 
-def validate_signal_intensity_standard_deviation(data, index, results, limits):
+def validate_signal_intensity_standard_deviation(data, index, results, all_limits):
     """
     Currently a stub function.
     This is one of the validation methods. It has a "quality_id"
@@ -138,7 +132,7 @@ def validate_signal_intensity_standard_deviation(data, index, results, limits):
     -------
     None
     """
-    # calculate standard deviation value of dataset
+    limits = all_limits['std']
     res = np.std(data)
     quality_id = const.QUALITYCHECK_STD
     if res < limits['low_limit']:
@@ -149,7 +143,55 @@ def validate_signal_intensity_standard_deviation(data, index, results, limits):
         result = Result(res, index+quality_id, quality_id, const.NO_ERROR)
     results.put(result)
 
-def validate_voxel_based_SNR(data, process_id, results):
+def validate_stat_mean(result, aggregate, results, all_limits):
+    """
+    Currently a stub function.
+    This is one of the validation methods. It has a "quality_id"
+    property that identifies this validation step. This function
+    calculates signal intensity standard deviation from the data
+    parameter. The result is compared with threshhold values to
+    determine the quality of the data. The "file" parameter, result,
+    the comparison result, "process_id" parameter, and quality_id
+    values are saved in a new Result object. This object is then
+    enqueued into the "results" queue.
+
+    Parameters
+    ----------
+    data : Data
+        data instance that includes File Name and data
+
+    process_id : int
+        Unique process id assigned by a calling function
+
+    results : Queue
+        A multiprocessing.Queue instance that is used to pass
+        the results from validating processes to the main
+
+    Returns
+    -------
+    None
+    """
+    limits = all_limits['stat_mean']
+    quality_id = const.STAT_MEAN
+    length = aggregate.get_results_len(const.QUALITYCHECK_MEAN)
+    stat_data = aggregate.results[const.QUALITYCHECK_MEAN]
+    # calculate std od mean values in aggregate
+    if length == 1:
+        mean_mean = np.mean(stat_data)
+    else:
+        mean_mean = np.mean(stat_data[0:(length -1)])
+    delta = result.res - mean_mean
+    index = result.index - result.quality_id
+
+    if delta < limits['low_limit']:
+        result = Result(delta, index+quality_id, quality_id, const.QUALITYERROR_LOW)
+    elif delta > limits['high_limit']:
+        result = Result(delta, index+quality_id, quality_id, const.QUALITYERROR_HIGH)
+    else:
+        result = Result(delta, index+quality_id, quality_id, const.NO_ERROR)
+    results.put(result)
+
+def validate_slice_based_SNR(data, index, results, all_limits):
     """
     Currently a stub function.
     This is one of the validation methods. It has a "quality_id"
@@ -177,18 +219,18 @@ def validate_voxel_based_SNR(data, process_id, results):
     -------
     None
     """
-    # calculate standard deviation value of dataset
-    dsets = data.data
-    dset = dsets.get('/exchange/data_dark')
-    quality = np.std(dset)
-    quality_id = 2
-    # error = quality < 4
-    error = False
-    result2 = Result(data.file, quality, process_id, quality_id, error)
-    results.put(result2)
+    limits = all_limits['std']
+    res = np.std(data)
+    quality_id = const.QUALITYCHECK_STD
+    if res < limits['low_limit']:
+        result = Result(res, index+quality_id, quality_id, const.QUALITYERROR_LOW)
+    elif res > limits['high_limit']:
+        result = Result(res, index+quality_id, quality_id, const.QUALITYERROR_HIGH)
+    else:
+        result = Result(res, index+quality_id, quality_id, const.NO_ERROR)
+    results.put(result)
 
-
-def validate_slice_based_SNR(data, process_id, results):
+def validate_voxel_based_SNR(data, index, results, all_limits):
     """
     Currently a stub function.
     This is one of the validation methods. It has a "quality_id"
@@ -216,12 +258,14 @@ def validate_slice_based_SNR(data, process_id, results):
     -------
     None
     """
-    # calculate standard deviation value of dataset
-    dsets = data.data
-    dset = dsets.get('/exchange/data_dark')
-    quality = np.std(dset)
-    quality_id = 2
-    # error = quality < 4
-    error = False
-    result2 = Result(data.file, quality, process_id, quality_id, error)
-    results.put(result2)
+    limits = all_limits['std']
+    res = np.std(data)
+    quality_id = const.QUALITYCHECK_STD
+    if res < limits['low_limit']:
+        result = Result(res, index+quality_id, quality_id, const.QUALITYERROR_LOW)
+    elif res > limits['high_limit']:
+        result = Result(res, index+quality_id, quality_id, const.QUALITYERROR_HIGH)
+    else:
+        result = Result(res, index+quality_id, quality_id, const.NO_ERROR)
+    results.put(result)
+
