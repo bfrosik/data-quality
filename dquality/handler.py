@@ -57,9 +57,9 @@ and handles results of the checks.
 from multiprocessing import Queue, Process
 from Queue import Empty
 import dquality.common.qualitychecks as calc
-import common.constants as const
-from common.containers import Aggregate
-from common.qualitychecks import validate_stat_mean
+import dquality.common.constants as const
+from dquality.common.containers import Aggregate
+from dquality.common.qualitychecks import validate_stat_mean
 
 __author__ = "Barbara Frosik"
 __copyright__ = "Copyright (c) 2016, UChicago Argonne, LLC."
@@ -192,13 +192,13 @@ def handle_data(dataq, limits, data_type, reportq):
                         result = resultsq.get()
                         max_index = max(result.index,max_index)
                         stat_index += handle_result(result, aggregate, statq, limits)
-                        print (data_type, result.index-result.quality_id,result.quality_id,result.res,result.error)
+                        #print (data_type, result.index-result.quality_id,result.quality_id,result.res,result.error)
 
                     while not statq.empty():
                         result = statq.get_nowait()
                         stat_index -= 1
                         handle_stat_result(result, aggregate)
-                        print (data_type, result.index-result.quality_id,result.quality_id,result.res,result.error)
+                        #print (data_type, result.index-result.quality_id,result.quality_id,result.res,result.error)
             else:
                 slice = data.slice
                 p1 = Process(target=calc.validate_mean_signal_intensity, args=(slice, index, resultsq, limits,))
@@ -214,13 +214,13 @@ def handle_data(dataq, limits, data_type, reportq):
             max_index = max(result.index,max_index)
             if handle_result(result, aggregate, statq, limits):
                 stat_index += 1
-            print (data_type, result.index-result.quality_id,result.quality_id,result.res,result.error)
+            #print (data_type, result.index-result.quality_id,result.quality_id,result.res,result.error)
 
         while not statq.empty():
             result = statq.get_nowait()
             stat_index -= 1
             handle_stat_result(result, aggregate)
-            print (data_type, result.index-result.quality_id,result.quality_id,result.res,result.error)
+            #print (data_type, result.index-result.quality_id,result.quality_id,result.res,result.error)
 
     results = {}
     results['bad_indexes'] = aggregate.bad_indexes

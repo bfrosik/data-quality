@@ -2,80 +2,44 @@
 "limits" : {
     "data" : {
         "mean" : {
-             "low_limit" : 3000,
-             "high_limit" : 4000
+             "low_limit" : 400,
+             "high_limit" : 600
              },
-        "mean_mean" : {
-             "low_limit" : 3500,
-             "high_limit" : 3750
-             },
-        "mean_std" : {
-             "low_limit" : 350,
-             "high_limit" : 450
+        "stat_mean" : {
+             "low_limit" : -150,
+             "high_limit" : 150
              },
         "std" : {
-             "low_limit" : 300,
-             "high_limit" : 500
-             },
-        "std_mean" : {
-             "low_limit" : 350,
-             "high_limit" : 450
-             },
-        "std_std" : {
-             "low_limit" : 20,
-             "high_limit" : 30
+             "low_limit" : 150,
+             "high_limit" : 200
              }
         },
     "data_dark" : {
         "mean" : {
              "low_limit" : 0,
-             "high_limit" : 20.9
+             "high_limit" : 110
              },
-        "mean_mean" : {
-             "low_limit" : 0,
-             "high_limit" : 20
-             },
-        "mean_std" : {
-             "low_limit" : 50,
-             "high_limit" : 70
+        "stat_mean" : {
+             "low_limit" : -5,
+             "high_limit" : 5
              },
         "std" : {
-             "low_limit" : 45,
-             "high_limit" : 55
-             },
-        "std_mean" : {
-             "low_limit" : 55,
-             "high_limit" : 65
-             },
-        "std_std" : {
-             "low_limit" : 20,
-             "high_limit" : 30
+             "low_limit" : 1.5,
+             "high_limit" : 10
              }
         },
     "data_white" : {
         "mean" : {
-             "low_limit" : 3000,
-             "high_limit" : 4000
+             "low_limit" : 550,
+             "high_limit" : 600
              },
-        "mean_mean" : {
-             "low_limit" : 3500,
-             "high_limit" : 4750
-             },
-        "mean_std" : {
-             "low_limit" : 350,
-             "high_limit" : 450
+        "stat_mean" : {
+             "low_limit" : -150,
+             "high_limit" : 150
              },
         "std" : {
-             "low_limit" : 450,
-             "high_limit" : 550
-             },
-        "std_mean" : {
-             "low_limit" : 350,
-             "high_limit" : 450
-             },
-        "std_std" : {
-             "low_limit" : 20,
-             "high_limit" : 30
+             "low_limit" : 100,
+             "high_limit" : 260
              }
         }
     }

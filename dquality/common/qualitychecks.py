@@ -52,8 +52,8 @@ This file is a suite of verification functions for scientific data.
 """
 
 import numpy as np
-import constants as const
-from containers import Result
+import dquality.common.constants as const
+from dquality.common.containers import Result
 
 __author__ = "Barbara Frosik"
 __copyright__ = "Copyright (c) 2016, UChicago Argonne, LLC."
@@ -67,32 +67,34 @@ __all__ = ['validate_mean_signal_intensity',
 
 def validate_mean_signal_intensity(data, index, results, all_limits):
     """
-    Currently a stub function.
     This is one of the validation methods. It has a "quality_id"
     property that identifies this validation step. This function
     calculates mean signal intensity from the data parameter. The
     result is compared with threshhold values to determine the
-    quality of the data. The "file" parameter, result, the
-    comparison result, "process_id" parameter, and quality_id
-    values are saved in a new Result object. This object is then
-    enqueued into the "results" queue.
+    quality of the data. The result, comparison result, index, and
+    quality_id values are saved in a new Result object. This object
+    is then enqueued into the "results" queue.
 
     Parameters
     ----------
     data : Data
-        data instance that includes File Name and data
+        data instance that includes slice 2D data
 
-    process_id : int
-        Unique process id assigned by a calling function
+    index : int
+        slice index
 
     results : Queue
         A multiprocessing.Queue instance that is used to pass the
         results from validating processes to the main
 
+    all_limits : dictionary
+        a dictionary containing threshold values
+
     Returns
     -------
     None
     """
+
     limits = all_limits['mean']
     res = np.mean(data)
     quality_id = const.QUALITYCHECK_MEAN
@@ -106,27 +108,28 @@ def validate_mean_signal_intensity(data, index, results, all_limits):
 
 def validate_signal_intensity_standard_deviation(data, index, results, all_limits):
     """
-    Currently a stub function.
     This is one of the validation methods. It has a "quality_id"
     property that identifies this validation step. This function
-    calculates signal intensity standard deviation from the data
-    parameter. The result is compared with threshhold values to
-    determine the quality of the data. The "file" parameter, result,
-    the comparison result, "process_id" parameter, and quality_id
-    values are saved in a new Result object. This object is then
-    enqueued into the "results" queue.
+    calculates standard deviation signal intensity from the data parameter. The
+    result is compared with threshhold values to determine the
+    quality of the data. The result, comparison result, index, and
+    quality_id values are saved in a new Result object. This object
+    is then enqueued into the "results" queue.
 
     Parameters
     ----------
     data : Data
-        data instance that includes File Name and data
+        data instance that includes slice 2D data
 
-    process_id : int
-        Unique process id assigned by a calling function
+    index : int
+        slice index
 
     results : Queue
-        A multiprocessing.Queue instance that is used to pass
-        the results from validating processes to the main
+        A multiprocessing.Queue instance that is used to pass the
+        results from validating processes to the main
+
+    all_limits : dictionary
+        a dictionary containing threshold values
 
     Returns
     -------
@@ -145,27 +148,28 @@ def validate_signal_intensity_standard_deviation(data, index, results, all_limit
 
 def validate_stat_mean(result, aggregate, results, all_limits):
     """
-    Currently a stub function.
-    This is one of the validation methods. It has a "quality_id"
-    property that identifies this validation step. This function
-    calculates signal intensity standard deviation from the data
-    parameter. The result is compared with threshhold values to
-    determine the quality of the data. The "file" parameter, result,
-    the comparison result, "process_id" parameter, and quality_id
-    values are saved in a new Result object. This object is then
-    enqueued into the "results" queue.
+    This is one of the statistical validation methods. It has a "quality_id"
+    property that identifies this validation step. This function evaluates
+    current mean signal intensity with relation to statistical data captured
+    in the aggregate object. The delta is compared with threshhold values.
+    The result, comparison result, index, and
+    quality_id values are saved in a new Result object. This object
+    is then enqueued into the "results" queue.
 
     Parameters
     ----------
-    data : Data
-        data instance that includes File Name and data
+    result : Result
+        result instance that includes calculated mean value
 
-    process_id : int
-        Unique process id assigned by a calling function
+    aggregate : Aggregate
+        aggregate instance containing calculated results for previous slices
 
     results : Queue
-        A multiprocessing.Queue instance that is used to pass
-        the results from validating processes to the main
+        A multiprocessing.Queue instance that is used to pass the
+        results from validating processes to the main
+
+    all_limits : dictionary
+        a dictionary containing threshold values
 
     Returns
     -------
@@ -194,30 +198,6 @@ def validate_stat_mean(result, aggregate, results, all_limits):
 def validate_slice_based_SNR(data, index, results, all_limits):
     """
     Currently a stub function.
-    This is one of the validation methods. It has a "quality_id"
-    property that identifies this validation step. This function
-    calculates voxel-based signal to noise ratio from the data
-    parameter. The result is compared with threshhold values to
-    determine the quality of the data. The "file" parameter, result,
-    the comparison result, "process_id" parameter, and quality_id
-    values are saved in a new Result object. This object is then
-    enqueued into the "results" queue.
-
-    Parameters
-    ----------
-    data : Data
-        data instance that includes File Name and data
-
-    process_id : int
-        Unique process id assigned by a calling function
-
-    results : Queue
-        A multiprocessing.Queue instance that is used to pass the
-        results from validating processes to the main
-
-    Returns
-    -------
-    None
     """
     limits = all_limits['std']
     res = np.std(data)
@@ -233,30 +213,6 @@ def validate_slice_based_SNR(data, index, results, all_limits):
 def validate_voxel_based_SNR(data, index, results, all_limits):
     """
     Currently a stub function.
-    This is one of the validation methods. It has a "quality_id"
-    property that identifies this validation step. This function
-    calculates voxel-based signal to noise ratio from the data
-    parameter. The result is compared with threshhold values to
-    determine the quality of the data. The "file" parameter, result,
-    the comparison result, "process_id" parameter, and quality_id
-    values are saved in a new Result object. This object is then
-    enqueued into the "results" queue.
-
-    Parameters
-    ----------
-    data : Data
-        data instance that includes File Name and data
-
-    process_id : int
-        Unique process id assigned by a calling function
-
-    results : Queue
-        A multiprocessing.Queue instance that is used to pass the
-        results from validating processes to the main
-
-    Returns
-    -------
-    None
     """
     limits = all_limits['std']
     res = np.std(data)

@@ -58,7 +58,6 @@ The results will be sent to an EPICS PV (printed on screen for now).
 
 """
 
-import h5py
 import os
 import sys
 import pyinotify
@@ -66,17 +65,16 @@ import logging
 from os.path import expanduser
 from configobj import ConfigObj
 from pyinotify import WatchManager
-from common.utilities import get_data
 from multiprocessing import Process, Queue
 
-from common.qualitychecks import Data, validate_mean_signal_intensity
-from common.qualitychecks import validate_signal_intensity_standard_deviation
-from common.qualitychecks import (validate_voxel_based_SNR,
-                                  validate_slice_based_SNR)
+from dquality.common.utilities import get_data
+from dquality.common.qualitychecks import validate_mean_signal_intensity
+from dquality.common.qualitychecks import validate_signal_intensity_standard_deviation
+from dquality.common.containers import Data
 
-from pv import verify as pv_verify
-from data import quality as d_quality
-from file import verify as f_verify
+from dquality.pv import verify as pv_verify
+from dquality.data import verify as d_quality
+from dquality.file import verify as f_verify
 
 logger = logging.getLogger(__name__)
 

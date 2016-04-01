@@ -57,15 +57,16 @@ quality check are returned back.
 
 """
 
+import os
+import json
+import sys
+import pprint
+from configobj import ConfigObj
+from os.path import expanduser
 from multiprocessing import Queue, Process
 from dquality.common.utilities import get_data
 import dquality.handler as handler
 from dquality.common.containers import Aggregate, Data
-from configobj import ConfigObj
-from os.path import expanduser
-import os
-import json
-import sys
 
 __author__ = "Barbara Frosik"
 __copyright__ = "Copyright (c) 2016, UChicago Argonne, LLC."
@@ -114,13 +115,37 @@ def process_data(dataq, data_type, aggregateq):
     -------
     None
     """
+    try:
+        data = all_data['/exchange/'+data_type]
+    except KeyError:
+        print('the hd5 file does not contain data of the type ' + data_type)
+        dataq.put('all_data')
+        return
 
     p = Process(target=handler.handle_data, args=(dataq, limits[data_type], data_type, aggregateq, ))
     p.start()
-    data = all_data['/exchange/'+data_type]
+
     for i in range(0,data.shape[0]-1):
         dataq.put(Data(data[i]))
     dataq.put('all_data')
+
+def report_results(aggregate, type, bad_indexes, report_file):
+
+
+    # receive the results
+    if report_file is None:
+        print (type)
+        pprint.pprint(aggregate, depth=3)
+        #print json.dumps(aggregate)
+    else:
+        report_file.write(type)
+        pprint.pprint(aggregate, report_file)
+        #report_file.write(pprint.pprint(aggregate, depth=3))
+
+    list = []
+    for key in aggregate['bad_indexes'].keys():
+        list.append(key)
+    bad_indexes[type] = list
 
 def verify():
     """
@@ -155,21 +180,32 @@ def verify():
     data_q = Queue()
     process_data(Queue(),'data', data_q)
 
-    # receive the results
-    aggregate_data_dark = data_dark_q.get()
-    print 'data_dark'
-    print json.dumps(aggregate_data_dark)
+    # find from config how to report the results
+    report_file = None
+    try:
+        report_file_name = conf['report_file']
+        try:
+            report_file = open(report_file_name, 'w')
+        except:
+            print ('Cannot open report file, writing report on console')
 
-    aggregate_data_white = data_white_q.get()
-    print 'data_white'
-    print json.dumps(aggregate_data_white)
-
-    aggregate_data = data_q.get()
-    print 'data'
-    print json.dumps(aggregate_data)
+    except KeyError:
+        pass
 
     bad_indexes = {}
-    bad_indexes['data_dark'] = aggregate_data_dark['bad_indexes'].keys()
-    bad_indexes['data_white'] = aggregate_data_white['bad_indexes'].keys()
-    bad_indexes['data'] = aggregate_data['bad_indexes'].keys()
+
+    # receive the results
+    aggregate_data_dark = data_dark_q.get()
+    report_results(aggregate_data_dark, 'data_dark', bad_indexes, report_file)
+
+    aggregate_data_white = data_white_q.get()
+    report_results(aggregate_data_white, 'data_white', bad_indexes, report_file)
+
+    aggregate_data = data_q.get()
+    report_results(aggregate_data, 'data', bad_indexes, report_file)
+
+    if report_file is not None:
+        report_file.write('bad_indexes:')
+        pprint.pprint(bad_indexes, report_file)
+
     return bad_indexes

@@ -1,5 +1,5 @@
-import constants as const
 from multiprocessing import Lock
+import dquality.common.constants as const
 
 class Result:
     """
