@@ -22,6 +22,7 @@ This guide is maintained on
    source/demo
    source/faq
    source/credits
+   source/howto
 
 
 Indices and tables
