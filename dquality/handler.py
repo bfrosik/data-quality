@@ -177,17 +177,6 @@ def handle_data(dataq, limits, data_type, reportq):
             if data == 'all_data':
                 interrupted = True
                 while max_index < index + const.NUMBER_CHECKS-1 and stat_index > 0:
-                    # result = resultsq.get(timeout=0.005)
-                    # max_index = max(result.index,max_index)
-                    # if handle_result(result, aggregate, statq, limits):
-                    #     stat_index = stat_index + 1
-                    # print (data_type, result.index-result.quality_id,result.quality_id,result.res,result.error)
-                    # while not statq.empty():
-                    #     result = statq.get_nowait()
-                    #     stat_index = stat_index -1
-                    #     handle_stat_result(result, aggregate)
-                    #     print (data_type, result.index-result.quality_id,result.quality_id,result.res,result.error)
-
                     while not resultsq.empty():
                         result = resultsq.get()
                         max_index = max(result.index,max_index)
