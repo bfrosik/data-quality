@@ -102,7 +102,7 @@ class Aggregate:
             False otherwise
         """
         res = False
-        index = result.index - result.quality_id
+        index = result.index
         if result.error is const.NO_ERROR:
             bad_index = self.bad_indexes.get(index)
             if bad_index is None:

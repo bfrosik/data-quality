@@ -99,11 +99,11 @@ def validate_mean_signal_intensity(data, index, results, all_limits):
     res = np.mean(data)
     quality_id = const.QUALITYCHECK_MEAN
     if res < limits['low_limit']:
-        result = Result(res, index+quality_id, quality_id, const.QUALITYERROR_LOW)
+        result = Result(res, index, quality_id, const.QUALITYERROR_LOW)
     elif res > limits['high_limit']:
-        result = Result(res, index+quality_id, quality_id, const.QUALITYERROR_HIGH)
+        result = Result(res, index, quality_id, const.QUALITYERROR_HIGH)
     else:
-        result = Result(res, index+quality_id, quality_id, const.NO_ERROR)
+        result = Result(res, index, quality_id, const.NO_ERROR)
     results.put(result)
 
 def validate_signal_intensity_standard_deviation(data, index, results, all_limits):
@@ -139,11 +139,11 @@ def validate_signal_intensity_standard_deviation(data, index, results, all_limit
     res = np.std(data)
     quality_id = const.QUALITYCHECK_STD
     if res < limits['low_limit']:
-        result = Result(res, index+quality_id, quality_id, const.QUALITYERROR_LOW)
+        result = Result(res, index, quality_id, const.QUALITYERROR_LOW)
     elif res > limits['high_limit']:
-        result = Result(res, index+quality_id, quality_id, const.QUALITYERROR_HIGH)
+        result = Result(res, index, quality_id, const.QUALITYERROR_HIGH)
     else:
-        result = Result(res, index+quality_id, quality_id, const.NO_ERROR)
+        result = Result(res, index, quality_id, const.NO_ERROR)
     results.put(result)
 
 def validate_stat_mean(result, aggregate, results, all_limits):
@@ -185,43 +185,13 @@ def validate_stat_mean(result, aggregate, results, all_limits):
     else:
         mean_mean = np.mean(stat_data[0:(length -1)])
     delta = result.res - mean_mean
-    index = result.index - result.quality_id
+    index = result.index
 
     if delta < limits['low_limit']:
-        result = Result(delta, index+quality_id, quality_id, const.QUALITYERROR_LOW)
+        result = Result(delta, index, quality_id, const.QUALITYERROR_LOW)
     elif delta > limits['high_limit']:
-        result = Result(delta, index+quality_id, quality_id, const.QUALITYERROR_HIGH)
+        result = Result(delta, index, quality_id, const.QUALITYERROR_HIGH)
     else:
-        result = Result(delta, index+quality_id, quality_id, const.NO_ERROR)
-    results.put(result)
-
-def validate_slice_based_SNR(data, index, results, all_limits):
-    """
-    Currently a stub function.
-    """
-    limits = all_limits['std']
-    res = np.std(data)
-    quality_id = const.QUALITYCHECK_STD
-    if res < limits['low_limit']:
-        result = Result(res, index+quality_id, quality_id, const.QUALITYERROR_LOW)
-    elif res > limits['high_limit']:
-        result = Result(res, index+quality_id, quality_id, const.QUALITYERROR_HIGH)
-    else:
-        result = Result(res, index+quality_id, quality_id, const.NO_ERROR)
-    results.put(result)
-
-def validate_voxel_based_SNR(data, index, results, all_limits):
-    """
-    Currently a stub function.
-    """
-    limits = all_limits['std']
-    res = np.std(data)
-    quality_id = const.QUALITYCHECK_STD
-    if res < limits['low_limit']:
-        result = Result(res, index+quality_id, quality_id, const.QUALITYERROR_LOW)
-    elif res > limits['high_limit']:
-        result = Result(res, index+quality_id, quality_id, const.QUALITYERROR_HIGH)
-    else:
-        result = Result(res, index+quality_id, quality_id, const.NO_ERROR)
+        result = Result(delta, index, quality_id, const.NO_ERROR)
     results.put(result)
 

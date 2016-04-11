@@ -79,7 +79,7 @@ conf = ConfigObj(config)
 
 try:
     file = os.path.join(home, conf['file'])
-    all_data = get_data(file)
+    fp, tags = get_data(file)
 except KeyError:
     print('config error: neither directory or file configured')
     sys.exit(-1)
@@ -116,16 +116,17 @@ def process_data(dataq, data_type, aggregateq):
     None
     """
     try:
-        data = all_data['/exchange/'+data_type]
+        data_tag = tags['/exchange/'+data_type]
+        data = fp[data_tag]
     except KeyError:
         print('the hd5 file does not contain data of the type ' + data_type)
         dataq.put('all_data')
         return
 
-    p = Process(target=handler.handle_data, args=(dataq, limits[data_type], data_type, aggregateq, ))
+    p = Process(target=handler.handle_data, args=(dataq, limits[data_type], aggregateq, ))
     p.start()
 
-    for i in range(0,data.shape[0]-1):
+    for i in range(0,data.shape[0]):
         dataq.put(Data(data[i]))
     dataq.put('all_data')
 

@@ -68,7 +68,8 @@ __all__ = ['handle_result',
            'handle_data']
 
 # This map maps a list of statistical quality checks that are dependent on previous calculation to a calculation type.
-function_mapper = {const.QUALITYCHECK_MEAN : [validate_stat_mean], const.QUALITYCHECK_STD : []}
+calc_functions = [calc.validate_mean_signal_intensity, calc.validate_signal_intensity_standard_deviation]
+function_mapper = {const.QUALITYCHECK_MEAN : [validate_stat_mean], const.QUALITYCHECK_STD : [], const.STAT_MEAN : []}
 
 def handle_result(result, aggregate, statq, limits):
     """
@@ -105,30 +106,11 @@ def handle_result(result, aggregate, statq, limits):
             ret += 1
     return ret
 
-def handle_stat_result(result, aggregate):
-    """
-    This function calls handle_result function on aggregate.
-
-    Parameters
-    ----------
-    result : Result object
-        result object with information about result, and calculation
-
-    aggregate : Aggregate object
-        aggregate for the type of data that is assessing data integrity. If one of the data checks failed for the data,
-        the data is considered as failed. This object aggregates the results.
-
-    Returns
-    -------
-    None
-    """
-    aggregate.handle_result(result)
-
-def handle_data(dataq, limits, data_type, reportq):
+def handle_data(dataq, limits, reportq,):
     """
     This function is typically called as a new process. It takes a dataq parameter
-    that is the queue on which data is received. It takes the dictionary containing limit values,
-    and a data_type indication whether the data to be processed is data_dark, data_white, or data.
+    that is the queue on which data is received. It takes the dictionary containing limit values
+    for the data type being processed, such as data_dark, data_white, or data.
     Lastly, it takes a reportq parameter, a queue, which is used to report results.
 
     The initialization constrains of creating aggregate instance to track results for a data type,
@@ -151,11 +133,7 @@ def handle_data(dataq, limits, data_type, reportq):
         data queuel; data is received in this queue
 
     limits : dictionary
-        a dictionary of limits keyed by the data type
-
-    data_type : str
-        a constant indicating which type of data is to be processed
-        i.e. 'data_dark', 'data_white", 'data'
+        a dictionary of limits for the processed data type
 
     reportq : Queue
        results queue; used to pass results to the calling process
@@ -166,53 +144,33 @@ def handle_data(dataq, limits, data_type, reportq):
     """
     aggregate = Aggregate()
     resultsq = Queue()
-    statq = Queue()
     interrupted = False
     index = 0
-    max_index = 0
-    stat_index = 0
+    num_processes = 0
     while not interrupted:
         try:
             data = dataq.get(timeout=0.005)
             if data == 'all_data':
                 interrupted = True
-                while max_index < index + const.NUMBER_CHECKS-1 and stat_index > 0:
-                    while not resultsq.empty():
-                        result = resultsq.get()
-                        max_index = max(result.index,max_index)
-                        stat_index += handle_result(result, aggregate, statq, limits)
-                        #print (data_type, result.index-result.quality_id,result.quality_id,result.res,result.error)
+                while num_processes > 0:
+                    result = resultsq.get()
+                    num_processes += (handle_result(result, aggregate, resultsq, limits) - 1)
 
-                    while not statq.empty():
-                        result = statq.get_nowait()
-                        stat_index -= 1
-                        handle_stat_result(result, aggregate)
-                        #print (data_type, result.index-result.quality_id,result.quality_id,result.res,result.error)
             else:
                 slice = data.slice
-                p1 = Process(target=calc.validate_mean_signal_intensity, args=(slice, index, resultsq, limits,))
-                p2 = Process(target=calc.validate_signal_intensity_standard_deviation, args=(slice, index, resultsq, limits,))
-                p2.start()
-                p1.start()
+                for function in calc_functions:
+                    p = Process(target=function, args=(slice, index, resultsq, limits,))
+                    p.start()
+                    num_processes += 1
                 index += 1
+
         except Empty:
             pass
 
         while not resultsq.empty():
             result = resultsq.get_nowait()
-            max_index = max(result.index,max_index)
-            if handle_result(result, aggregate, statq, limits):
-                stat_index += 1
-            #print (data_type, result.index-result.quality_id,result.quality_id,result.res,result.error)
+            num_processes += (handle_result(result, aggregate, resultsq, limits) - 1)
 
-        while not statq.empty():
-            result = statq.get_nowait()
-            stat_index -= 1
-            handle_stat_result(result, aggregate)
-            #print (data_type, result.index-result.quality_id,result.quality_id,result.res,result.error)
-
-    results = {}
-    results['bad_indexes'] = aggregate.bad_indexes
-    results['good_indexes'] = aggregate.good_indexes
-    results['results'] = aggregate.results
+    results = {'bad_indexes': aggregate.bad_indexes, 'good_indexes': aggregate.good_indexes,
+               'results': aggregate.results}
     reportq.put(results)

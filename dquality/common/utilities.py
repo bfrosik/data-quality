@@ -191,11 +191,11 @@ def get_data(file):
         if not hasattr(dset, 'shape'):
             return  # not array, can't be image
         if isinstance(dset, h5py.Dataset):
-            data[dset.name] = dset
+            data[dset.name] = dset.name
 
     file_h5 = h5py.File(file, 'r')
     file_h5.visititems(func)
-    return data
+    return file_h5, data
 
 
 def copy_list(list):
