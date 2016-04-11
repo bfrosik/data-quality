@@ -58,12 +58,42 @@ from dquality.common.containers import Result
 __author__ = "Barbara Frosik"
 __copyright__ = "Copyright (c) 2016, UChicago Argonne, LLC."
 __docformat__ = 'restructuredtext en'
-__all__ = ['validate_mean_signal_intensity',
+__all__ = ['find_result',
+           'validate_mean_signal_intensity',
            'validate_signal_intensity_standard_deviation',
-           'validate_voxel_based_SNR'
-           'validate_slice_based_SNR']
+           'validate_stat_mean']
 
+def find_result(res, index, quality_id, limits):
+    """
+    This is a helper method. It evaluates given result against limits, and creates
+    Result instance.
 
+    Parameters
+    ----------
+    res : float
+        calculated result
+
+    index : int
+        slice index
+
+    quality_id : int
+        id of the quality check function
+
+    limits : dictionary
+        a dictionary containing threshold values
+
+    Returns
+    -------
+    None
+    """
+
+    if res < limits['low_limit']:
+        result = Result(res, index, quality_id, const.QUALITYERROR_LOW)
+    elif res > limits['high_limit']:
+        result = Result(res, index, quality_id, const.QUALITYERROR_HIGH)
+    else:
+        result = Result(res, index, quality_id, const.NO_ERROR)
+    return result
 
 def validate_mean_signal_intensity(data, index, results, all_limits):
     """
@@ -97,13 +127,7 @@ def validate_mean_signal_intensity(data, index, results, all_limits):
 
     limits = all_limits['mean']
     res = np.mean(data)
-    quality_id = const.QUALITYCHECK_MEAN
-    if res < limits['low_limit']:
-        result = Result(res, index, quality_id, const.QUALITYERROR_LOW)
-    elif res > limits['high_limit']:
-        result = Result(res, index, quality_id, const.QUALITYERROR_HIGH)
-    else:
-        result = Result(res, index, quality_id, const.NO_ERROR)
+    result = find_result(res, index, const.QUALITYCHECK_MEAN, limits)
     results.put(result)
 
 def validate_signal_intensity_standard_deviation(data, index, results, all_limits):
@@ -135,15 +159,9 @@ def validate_signal_intensity_standard_deviation(data, index, results, all_limit
     -------
     None
     """
-    limits = all_limits['std']
+    limits = all_limits['mean']
     res = np.std(data)
-    quality_id = const.QUALITYCHECK_STD
-    if res < limits['low_limit']:
-        result = Result(res, index, quality_id, const.QUALITYERROR_LOW)
-    elif res > limits['high_limit']:
-        result = Result(res, index, quality_id, const.QUALITYERROR_HIGH)
-    else:
-        result = Result(res, index, quality_id, const.NO_ERROR)
+    result = find_result(res, index, const.QUALITYCHECK_STD, limits)
     results.put(result)
 
 def validate_stat_mean(result, aggregate, results, all_limits):
@@ -176,7 +194,6 @@ def validate_stat_mean(result, aggregate, results, all_limits):
     None
     """
     limits = all_limits['stat_mean']
-    quality_id = const.STAT_MEAN
     length = aggregate.get_results_len(const.QUALITYCHECK_MEAN)
     stat_data = aggregate.results[const.QUALITYCHECK_MEAN]
     # calculate std od mean values in aggregate
@@ -187,11 +204,7 @@ def validate_stat_mean(result, aggregate, results, all_limits):
     delta = result.res - mean_mean
     index = result.index
 
-    if delta < limits['low_limit']:
-        result = Result(delta, index, quality_id, const.QUALITYERROR_LOW)
-    elif delta > limits['high_limit']:
-        result = Result(delta, index, quality_id, const.QUALITYERROR_HIGH)
-    else:
-        result = Result(delta, index, quality_id, const.NO_ERROR)
+    result = find_result(delta, index, const.STAT_MEAN, limits)
     results.put(result)
+
 
