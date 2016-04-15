@@ -172,7 +172,7 @@ def gt(value, limit):
 def get_logger(name, conf):
     """
     This function initializes logger. If logger is not configured or the logging directory does not exist,
-    the logging messages will appear on the console.
+    the logging messages will be added into default.log file.
 
     Parameters
     ----------
@@ -199,6 +199,23 @@ def get_logger(name, conf):
     return logger
 
 def get_directory(conf, logger):
+    """
+    This function returns a directory object. It reads the directory from a configuration file.
+    If the directory is not configured or does not exist a message is logged into a log file,
+    and None is returned.
+
+    Parameters
+    ----------
+    conf : config Object
+        a configuration object
+
+    logger : Logger Object
+        a logger object
+
+    Returns
+    -------
+    folder : str
+    """
     try:
         # check if directory exists
         folder = conf['directory']
@@ -214,6 +231,29 @@ def get_directory(conf, logger):
 
 
 def get_file(dir, conf, config_name, logger):
+    """
+    This function returns a file object. It reads the file from a configuration file.
+    If the file is not configured or does not exist a message is logged into a log file,
+    and None is returned.
+
+    Parameters
+    ----------
+    dir : str
+        a path the file starts with
+        
+    conf : config Object
+        a configuration object
+
+    config_name : str
+        a key string defining the file in a configuration
+        
+    logger : Logger Object
+        a logger object
+
+    Returns
+    -------
+    folder : str
+    """
     try:
         filename = conf[config_name]
         file = os.path.join(dir, filename)
