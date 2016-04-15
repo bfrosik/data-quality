@@ -62,10 +62,12 @@ __all__ = ['lt',
            'eq',
            'ge',
            'gt',
+           'get_logger',
+           'get_directory',
+           'get_file',
            'get_data_hd5',
            'copy_list',
-           'key_list',
-           'report_items']
+           'key_list']
 
 
 
