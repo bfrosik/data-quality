@@ -60,13 +60,13 @@ quality check are returned back.
 import os
 import json
 import sys
-import pprint
 from configobj import ConfigObj
 from os.path import expanduser
 from multiprocessing import Queue, Process
-from dquality.common.utilities import get_data
+import dquality.common.utilities as utils
 import dquality.handler as handler
-from dquality.common.containers import Aggregate, Data
+from dquality.common.containers import Data
+import dquality.common.report as report
 
 __author__ = "Barbara Frosik"
 __copyright__ = "Copyright (c) 2016, UChicago Argonne, LLC."
@@ -76,22 +76,20 @@ __all__ = ['process_data']
 home = expanduser("~")
 config = os.path.join(home, 'dqconfig.ini')
 conf = ConfigObj(config)
+logger = utils.get_logger(__name__, conf)
 
-try:
-    file = os.path.join(home, conf['file'])
-    fp, tags = get_data(file)
-except KeyError:
-    print('config error: neither directory or file configured')
+file = utils.get_file(home, conf, 'file', logger)
+if file is None:
     sys.exit(-1)
 
-try:
-    limitsfile = os.path.join(home, conf['limits'])
-    with open(limitsfile) as limits_file:
-        limits = json.loads(limits_file.read())['limits']
-
-except KeyError:
-    print('config error: dependencies not configured')
+limitsfile = utils.get_file(home, conf, 'limits', logger)
+if file is None:
     sys.exit(-1)
+
+fp, tags = utils.get_data_hd5(file)
+with open(limitsfile) as limits_file:
+    limits = json.loads(limits_file.read())['limits']
+
 
 def process_data(dataq, data_type, aggregateq):
     """
@@ -119,7 +117,7 @@ def process_data(dataq, data_type, aggregateq):
         data_tag = tags['/exchange/'+data_type]
         data = fp[data_tag]
     except KeyError:
-        print('the hd5 file does not contain data of the type ' + data_type)
+        logger.warning('the hd5 file does not contain data of the type ' + data_type)
         dataq.put('all_data')
         return
 
@@ -129,24 +127,6 @@ def process_data(dataq, data_type, aggregateq):
     for i in range(0,data.shape[0]):
         dataq.put(Data(data[i]))
     dataq.put('all_data')
-
-def report_results(aggregate, type, bad_indexes, report_file):
-
-
-    # receive the results
-    if report_file is None:
-        print (type)
-        pprint.pprint(aggregate, depth=3)
-        #print json.dumps(aggregate)
-    else:
-        report_file.write(type)
-        pprint.pprint(aggregate, report_file)
-        #report_file.write(pprint.pprint(aggregate, depth=3))
-
-    list = []
-    for key in aggregate['bad_indexes'].keys():
-        list.append(key)
-    bad_indexes[type] = list
 
 def verify():
     """
@@ -188,25 +168,23 @@ def verify():
         try:
             report_file = open(report_file_name, 'w')
         except:
-            print ('Cannot open report file, writing report on console')
-
+            logger.warning('Cannot open report file, writing report on console')
     except KeyError:
-        pass
+        logger.info('report file not configured, writing report on console')
 
     bad_indexes = {}
 
     # receive the results
     aggregate_data_dark = data_dark_q.get()
-    report_results(aggregate_data_dark, 'data_dark', bad_indexes, report_file)
+    report.report_results(aggregate_data_dark, 'data_dark', report_file)
+    report.add_bad_indexes(aggregate_data_dark, 'data_dark', bad_indexes)
 
     aggregate_data_white = data_white_q.get()
-    report_results(aggregate_data_white, 'data_white', bad_indexes, report_file)
+    report.report_results(aggregate_data_white, 'data_white', report_file)
+    report.add_bad_indexes(aggregate_data_white, 'data_white', bad_indexes)
 
     aggregate_data = data_q.get()
-    report_results(aggregate_data, 'data', bad_indexes, report_file)
-
-    if report_file is not None:
-        report_file.write('bad_indexes:')
-        pprint.pprint(bad_indexes, report_file)
+    report.report_results(aggregate_data, 'data', report_file)
+    report.add_bad_indexes(aggregate_data, 'data', bad_indexes)
 
     return bad_indexes
