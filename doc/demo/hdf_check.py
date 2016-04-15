@@ -55,5 +55,5 @@ import dquality.file as file
 if file.verify():
     print ('All tags exist and meet conditions')
 else:
-    print ('Some of the tags do not exist or do not meet conditions')
+    print ('Some of the tags do not exist or do not meet conditions, check log file')
         
