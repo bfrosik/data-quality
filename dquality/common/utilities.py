@@ -50,7 +50,7 @@
 This file is a suite of utility functions.
 
 """
-
+import os
 import h5py
 import logging
 
@@ -62,12 +62,11 @@ __all__ = ['lt',
            'eq',
            'ge',
            'gt',
-           'get_data',
+           'get_data_hd5',
            'copy_list',
            'key_list',
            'report_items']
 
-logger = logging.getLogger(__name__)
 
 
 def lt(value, limit):
@@ -170,7 +169,68 @@ def gt(value, limit):
     return value > limit
 
 
-def get_data(file):
+def get_logger(name, conf):
+    """
+    This function initializes logger. If logger is not configured or the logging directory does not exist,
+    the logging messages will appear on the console.
+
+    Parameters
+    ----------
+    name : str
+        name of the logger, typically name of file that uses the logger
+
+    conf : config Object
+        a configuration object
+
+    Returns
+    -------
+    logger : logger
+    """
+    logger = logging.getLogger(name)
+    try:
+        log_file_name = conf['log_file']
+        logging.basicConfig(filename=log_file_name, level=logging.DEBUG)
+    except KeyError:
+        print('config error: log file is not configured, logging to default.log')
+        logging.basicConfig(filename='default.log', level=logging.DEBUG)
+    except:
+        print('config error: log file directory does not exist')
+        logging.basicConfig(filename='default.log', level=logging.DEBUG)
+    return logger
+
+def get_directory(conf, logger):
+    try:
+        # check if directory exists
+        folder = conf['directory']
+        if not os.path.isdir(folder):
+            logger.error(
+                'configuration error: directory ' +
+                folder + ' does not exist')
+            return None
+    except KeyError:
+        logger.error('config error: directory to monitor not configured')
+        return None
+    return folder
+
+
+def get_file(dir, conf, config_name, logger):
+    try:
+        filename = conf[config_name]
+        file = os.path.join(dir, filename)
+        if not os.path.isfile(file):
+            logger.error(
+                'configuration error: file ' +
+                file + ' does not exist')
+            return None
+    except KeyError:
+        logger.error(
+            'configuration error: ' +
+            config_name + ' is not configured')
+        return None
+    return file
+
+
+def get_data_hd5(file):
     """
    This function takes a file of HD5 format, traverses through tags,
    finds "shape" data sets and returns the sets in a dictionary.
@@ -238,29 +298,3 @@ def key_list(dict):
     return list
 
 
-def report_items(list, text1, text2):
-    """
-   This function takes a list and strings. If the list is not
-   empty it prints the two string parameters as a title,
-   and prints formatted output for each item in a list.
-
-    Parameters
-    ----------
-    list : list
-        A list of items
-
-    text1 : str
-        A title that will be printed if the list is not empty
-
-    text2 : str
-        An optional part of title that will be printed if
-        the list is not empty
-
-    Returns
-    -------
-    None
-    """
-    if len(list) > 0:
-        logger.info(text1 + text2)
-        for item in list:
-            logger.info('    - ' + item)

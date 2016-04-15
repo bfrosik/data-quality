@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*-
 
 # #########################################################################
-# Copyright (c) 2015, UChicago Argonne, LLC. All rights reserved.         #
+# Copyright (c) 2016, UChicago Argonne, LLC. All rights reserved.         #
 #                                                                         #
-# Copyright 2015. UChicago Argonne, LLC. This software was produced       #
+# Copyright 2016. UChicago Argonne, LLC. This software was produced       #
 # under U.S. Government contract DE-AC02-06CH11357 for Argonne National   #
 # Laboratory (ANL), which is operated by UChicago Argonne, LLC for the    #
 # U.S. Department of Energy. The U.S. Government has rights to use,       #
@@ -45,15 +45,98 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE         #
 # POSSIBILITY OF SUCH DAMAGE.                                             #
 # #########################################################################
-"""
-Please make sure the installation :ref:`pre-requisite-reference-label` are met.
 
-This example shows how to verify an HDF file structure.
 """
-import dquality.file as file
+This file contains functions used to report results of quality checks and functions
+facilitating logger.
 
-if file.verify():
-    print ('All tags exist and meet conditions')
-else:
-    print ('Some of the tags do not exist or do not meet conditions')
-        
+"""
+
+import pprint
+
+__author__ = "Barbara Frosik"
+__copyright__ = "Copyright (c) 2016, UChicago Argonne, LLC."
+__docformat__ = 'restructuredtext en'
+__all__ = ['report_results',
+           'add_bad_indexes',
+           'report_bad_indexes']
+
+
+def report_results(aggregate, type, report_file):
+    """
+    This function reports results of quality checks to a file or console
+    if the file is not defined.
+
+    Parameters
+    ----------
+    aggregate : Aggregate
+        an instance holding result values for the data of one type
+
+    type : str
+        a string characterizung the data type (i.e. data_dark, data_white or data)
+
+    report_file : file
+        a file where the report will be written, or None, if written to a console
+
+    Returns
+    -------
+    None
+    """
+
+    if report_file is None:
+        print (type)
+        pprint.pprint(aggregate, depth=3)
+    else:
+        report_file.write(type)
+        pprint.pprint(aggregate, report_file)
+
+def add_bad_indexes(aggregate, type, bad_indexes):
+    """
+    This function gets bad indexes from aggregate instance and creates an entry in
+    bad_indexes dictionary.
+
+    Parameters
+    ----------
+    aggregate : Aggregate
+        an instance holding result values for the data of one type
+
+    type : str
+        a string characterizung the data type (i.e. data_dark, data_white or data)
+
+    bad_indexes : dictionary
+        a dictionary structure that the bad indexes will be written to
+
+    Returns
+    -------
+    None
+    """
+
+    list = []
+    for key in aggregate['bad_indexes'].keys():
+        list.append(key)
+    bad_indexes[type] = list
+
+def report_bad_indexes(bad_indexes, report_file):
+    """
+    This function gets bad_indexes dictionary and reports them in a file, if one is defined
+    or on the console otherwise.
+
+    Parameters
+    ----------
+    bad_indexes : dictionary
+        a dictionary structure that the bad indexes will be written to
+
+    report_file : file
+        a file where the report will be written, or None, if written to a console
+
+    Returns
+    -------
+    None
+    """
+
+    if report_file is None:
+        print ('bad indexes')
+        pprint.pprint(bad_indexes, depth=3)
+    else:
+        report_file.write('bad indexes')
+        pprint.pprint(bad_indexes, report_file)

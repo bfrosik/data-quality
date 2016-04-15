@@ -64,6 +64,8 @@ import logging
 from epics import PV
 from os.path import expanduser
 from configobj import ConfigObj
+import dquality.common.report as report
+import dquality.common.utilities as utils
 
 from common.utilities import lt, le, eq, ge, gt
 
@@ -78,7 +80,7 @@ __all__ = ['verify',
 home = expanduser("~")
 config = os.path.join(home, 'dqconfig.ini')
 conf = ConfigObj(config)
-logger = logging.getLogger(__name__)
+logger = utils.get_logger(__name__, conf)
 
 
 def read(pv_str):
@@ -155,6 +157,7 @@ def verify():
     -------
     boolean
     """
+    logger.info('verifying process variables')
     function_mapper = {
         'less_than': lt,
         'less_or_equal': le,
@@ -164,15 +167,12 @@ def verify():
         'state': state}
 
     res = True
-    file = os.path.join(home, conf['pv_file'])
-
-    try:
-        with open(file) as data_file:
-            required_pvs = json.loads(data_file.read()).get('required_pvs')
-
-    except KeyError:
-        logger.error('KeyError: pv_file not configured')
+    file = utils.get_file(home, conf, 'pv_file', logger)
+    if file is None:
         sys.exit(-1)
+
+    with open(file) as data_file:
+        required_pvs = json.loads(data_file.read()).get('required_pvs')
 
     for pv in required_pvs:
         # possible the read pv needs try statement

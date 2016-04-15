@@ -56,28 +56,55 @@ schema that defines mandatory parameters. If any of the parameters is
 not configured, it is assumed no file structure verification is requested.
 
 """
-
+import sys
 import h5py
 import json
-import logging
 import os.path
 from os.path import expanduser
 from configobj import ConfigObj
 
-from common.utilities import copy_list, key_list, report_items
-
+import dquality.common.utilities as utils
 
 __author__ = "Barbara Frosik"
 __copyright__ = "Copyright (c) 2016, UChicago Argonne, LLC."
 __docformat__ = 'restructuredtext en'
-__all__ = ['verify',
+__all__ = ['report_items',
+           'verify',
            'tags',
            'structure']
 
 home = expanduser("~")
 config = os.path.join(home, 'dqconfig.ini')
 conf = ConfigObj(config)
-logger = logging.getLogger(__name__)
+logger = utils.get_logger(__name__, conf)
+
+
+def report_items(list, text1, text2):
+    """
+   This function takes a list and strings. If the list is not
+   empty it prints the two string parameters as a title,
+   and prints formatted output for each item in a list.
+
+    Parameters
+    ----------
+    list : list
+        A list of items
+
+    text1 : str
+        A title that will be printed if the list is not empty
+
+    text2 : str
+        An optional part of title that will be printed if
+        the list is not empty
+
+    Returns
+    -------
+    None
+    """
+    if len(list) > 0:
+        logger.warning(text1 + text2)
+        for item in list:
+            logger.warning('    - ' + item)
 
 
 def structure(file, schema):
@@ -103,14 +130,14 @@ def structure(file, schema):
     """
     def check_dim(dset, attr):
         required_dim = attr.get('dim')
-        required_dim_copy = copy_list(required_dim)
+        required_dim_copy = utils.copy_list(required_dim)
         dim = dset.shape
         if len(dim) == len(required_dim):
             for i in range(len(dim)):
                 try:
                     required_dim_copy.remove(dim[i])
                 except ValueError:
-                    logger.error('ValueError: The dataset ' + dset.name +
+                    logger.warning('ValueError: The dataset ' + dset.name +
                           ' dimension ' + str(i) +
                           ' is wrong: it is [' +
                           str(dset.shape[i]) + '] but should be [' +
@@ -125,7 +152,7 @@ def structure(file, schema):
             tag_attribs = required_tags.get(tag)
             if tag_attribs is not None:
                 tag_list.remove(tag)
-                attrib_list = key_list(tag_attribs)
+                attrib_list = utils.key_list(tag_attribs)
                 for key in tag_attribs:
                     if len(attrib_list) > 0:
                         if key == 'dim':
@@ -151,7 +178,7 @@ def structure(file, schema):
     with open(schema) as data_file:
         required_tags = json.loads(data_file.read()).get('required_tags')
 
-    tag_list = key_list(required_tags)
+    tag_list = utils.key_list(required_tags)
     file_h5 = h5py.File(file, 'r')
     file_h5.visititems(func)
     report_items(tag_list, 'the following tags are missing: ', '')
@@ -180,11 +207,11 @@ def tags(file, schema):
     False if not verified
 
     """
-    file = conf['schema']
-    with open(file) as data_file:
-        required_tags = json.loads(data_file.read()).get('required_tags')
 
-    tag_list = key_list(required_tags)
+    with open(schema) as tags_file:
+        required_tags = json.loads(tags_file.read()).get('required_tags')
+
+    tag_list = utils.key_list(required_tags)
 
     class Result:
 
@@ -216,7 +243,7 @@ def tags(file, schema):
     return result.is_verified()
 
 
-def verify(file):
+def verify():
     """
     This is the main function called when the structureverifier
     application starts. It reads the configuration file for
@@ -231,40 +258,22 @@ def verify(file):
     -------
     boolean
     """
+    file = utils.get_file(home, conf, 'file', logger)
+    if file is None:
+        sys.exit(-1)
 
-    try:
-        type = conf['verification_type']
-        print "********************"
-        print type
-        print "********************"
-        print('Verification type: ' + type)
-        if type == 'hdf_structure':
-            try:
-                schema = os.path.join(home, conf['schema'])
-                print "********************"
-                print schema
-                print "********************"
-                if not os.path.isfile(schema):
-                    print(
-                        'configuration error: schema file ' +
-                        schema + ' does not exist')
-                    return False
-                print file
-                print schema
-                return structure(file, schema)
-            except KeyError:
-                return True
-        if type == 'hdf_tags':
-            try:
-                schema = os.path.join(home, conf['schema'])
-                if not os.path.isfile(schema):
-                    print(
-                        'configuration error: schema file ' +
-                        schema + ' does not exist')
-                    return False
-                return tags(file, schema)
-            except KeyError:
-                return True
+    logger.info('verifying file ' + file)
 
-    except KeyError:
-        return True
+    schema = utils.get_file(home, conf, 'schema', logger)
+    if file is None:
+        sys.exit(-1)
+
+    if schema is None:
+        sys.exit(-1)
+
+    type = conf['verification_type']
+    if type == 'hdf_structure':
+        return structure(file, schema)
+    if type == 'hdf_tags':
+        return tags(file, schema)
+

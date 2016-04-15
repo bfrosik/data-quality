@@ -159,7 +159,7 @@ def validate_signal_intensity_standard_deviation(data, index, results, all_limit
     -------
     None
     """
-    limits = all_limits['mean']
+    limits = all_limits['std']
     res = np.std(data)
     result = find_result(res, index, const.QUALITYCHECK_STD, limits)
     results.put(result)

@@ -61,40 +61,33 @@ The results will be sent to an EPICS PV (printed on screen for now).
 import os
 import sys
 import pyinotify
-import logging
 from os.path import expanduser
 from configobj import ConfigObj
 from pyinotify import WatchManager
 from multiprocessing import Process, Queue
+import json
+import numpy as np
 
-from dquality.common.utilities import get_data
-from dquality.common.qualitychecks import validate_mean_signal_intensity
-from dquality.common.qualitychecks import validate_signal_intensity_standard_deviation
+import dquality.common.utilities as utils
+import dquality.handler as handler
+import dquality.common.report as report
 from dquality.common.containers import Data
-
-from dquality.pv import verify as pv_verify
-from dquality.data import verify as d_quality
-from dquality.file import verify as f_verify
-
-logger = logging.getLogger(__name__)
 
 __author__ = "Barbara Frosik"
 __copyright__ = "Copyright (c) 2016, UChicago Argonne, LLC."
 __docformat__ = 'restructuredtext en'
 __all__ = ['verify',
-           'directory',
-           'cleanup']
+           'directory']
 
 home = expanduser("~")
 config = os.path.join(home, 'dqconfig.ini')
 conf = ConfigObj(config)
-logger = logging.getLogger(__name__)
+logger = utils.get_logger(__name__, conf)
 
-processes = {}
+logger.info('monitoring')
+
 files = Queue()
-results = Queue()
 INTERRUPT = 'interrupt'
-
 
 def directory(directory, patterns):
     """
@@ -119,16 +112,10 @@ def directory(directory, patterns):
     class EventHandler(pyinotify.ProcessEvent):
 
         def process_IN_CLOSE_WRITE(self, event):
-            for pattern in patterns.as_list('extensions'):
+            for pattern in patterns:
                 file = event.pathname
                 if file.endswith(pattern):
-                    # before any data verification check the data structure
-                    # against given schema
-                    if f_verify(file):
                         files.put(event.pathname)
-                        break
-                    else:
-                        files.put(INTERRUPT)
                         break
 
     wm = WatchManager()
@@ -138,26 +125,7 @@ def directory(directory, patterns):
     wdd = wm.add_watch(directory, mask, rec=False)
     return notifier
 
-
-def cleanup():
-    """
-    This method is called on exit. If any process is still active it
-    will be terminated.
-
-    Parameters
-    ----------
-    None
-
-    Returns
-    -------
-    None
-    """
-    for process in processes.itervalues():
-        process.terminate()
-        notifier.stop()
-
-
-def verify():
+def verify(data_type, num_files):
     """
     This is the main function called when the verifier application starts.
     It reads the configuration for the directory to monitor, for pattern
@@ -189,32 +157,31 @@ def verify():
     -------
     None
     """
+    logger.info('monitoring directory')
     interrupted = False
-
-    if not pv_verify():
-        logger.info("***")
-        # the function will print report if error found
+    folder = utils.get_directory(conf, logger)
+    if folder is None:
         sys.exit(-1)
 
-    # number of verification functions to call for each data file
-    numberverifiers = 2
-    process_id = 0
-    # The verifier can be configured to verify file or to monitor a directory
-    # and verify a new file on close save.
+    limitsfile = utils.get_file(home, conf, 'limits', logger)
+    if limitsfile is None:
+        sys.exit(-1)
+
+    with open(limitsfile) as limits_file:
+        limits = json.loads(limits_file.read())['limits']
+
     try:
-        # check if directory exists
-        folder = conf['directory']
-        if not os.path.isdir(folder):
-            logger.error(
-                'configuration error: directory ' +
-                folder + ' does not exist')
-            sys.exit()
-        notifier = directory(folder, config['file_patterns'])
-        numresults = int(conf['number_files']) * numberverifiers
+        notifier = directory(folder, conf['extensions'])
     except KeyError:
-        print('config error: directory not configured')
-        sys.exit(-1)
+        logger.warning('no file extension specified. Monitoring for all files.')
+        notifier = directory(folder, None)
 
+    dataq = Queue()
+    aggregateq = Queue()
+    p = Process(target=handler.handle_data, args=(dataq, limits[data_type], aggregateq, ))
+    p.start()
+
+    index = 0
     while not interrupted:
         # The notifier will put a new file into a newFiles queue if one was
         # detected
@@ -227,32 +194,41 @@ def verify():
         while not files.empty():
             file = files.get()
             if file == INTERRUPT:
-                # the schema verification may detect incorrect file structure
-                # and thus request to exit.
+                # the calling function may use a 'interrupt' command to stop the monitoring
+                # and processing.
+                dataq.put('all_data')
+                notifier.stop()
                 interrupted = True
+                break
             else:
-                data = Data(file, get_data(file))
-                process_id = process_id + 1
-                d_quality(data, validate_mean_signal_intensity, process_id)
-                process_id = process_id + 1
-                d_quality(
-                    data,
-                    validate_signal_intensity_standard_deviation,
-                    process_id)
+                fp, tags = utils.get_data_hd5(file)
+                data_tag = tags['/exchange/'+data_type]
+                data = np.asarray(fp[data_tag])
+                dataq.put(Data(data))
+                index += 1
+                if index == num_files:
+                    dataq.put('all_data')
+                    notifier.stop()
+                    interrupted = True
+                    break
 
-        # checking the result queue and printing result
-        # later the result will be passed to an EPICS process variable
-        while not results.empty():
-            res = results.get()
-            pr = processes[res.process_id]
-            pr.terminate()
-            del processes[res.process_id]
-            numresults = numresults - 1
-            logger.info('result: file name, result, quality id, error: ',
-                  res.file, res.res, res.quality_id, res.error)
+    aggregate = aggregateq.get()
 
-        if numresults is 0:
-            interrupted = True
+    report_file = None
+    try:
+        report_file_name = conf['report_file']
+        try:
+            report_file = open(report_file_name, 'w')
+        except:
+            logger.warning ('Cannot open report file, writing report to console')
+    except KeyError:
+        logger.warning ('report file not configured, writing report to console')
+        pass
 
-    cleanup()
-    logger.info('finished')
+    report.report_results(aggregate, data_type, report_file)
+    bad_indexes = {}
+    report.add_bad_indexes(aggregate, data_type, bad_indexes)
+    report.report_bad_indexes(bad_indexes, report_file)
+
+    return bad_indexes
+
