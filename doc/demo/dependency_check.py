@@ -50,10 +50,10 @@ Please make sure the installation :ref:`pre-requisite-reference-label` are met.
 
 This example shows how to verify an HDF file dependencies.
 """
-from dquality.dependency import verify
+import dquality.dependency as dependency
 
 
-if verify():
+if dependency.verify():
     print ('All dependecies are satisfied')
 else:
     print ('Some dependecies are not satisfied')
