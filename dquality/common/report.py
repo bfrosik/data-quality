@@ -93,7 +93,34 @@ def report_results(aggregate, type, report_file):
 def add_bad_indexes(aggregate, type, bad_indexes):
     """
     This function gets bad indexes from aggregate instance and creates an entry in
-    bad_indexes dictionary.
+    bad_indexes dictionary. The bad_indexes dictionary has added an entry for the given type.
+    The entry is a list of all indexes of slices that did not pass quality checks.
+
+    Parameters
+    ----------
+    aggregate : Aggregate
+        an instance holding result values for the data of one type
+    type : str
+        a string characterizung the data type (i.e. data_dark, data_white or data)
+    bad_indexes : dictionary
+        a dictionary structure that the bad indexes will be written to
+    Returns
+    -------
+    None
+    """
+
+    list = []
+    for key in aggregate['bad_indexes'].keys():
+        list.append(key)
+    bad_indexes[type] = list
+
+
+def add_bad_indexes_per_file(aggregate, type, bad_indexes, file_indexes):
+    """
+    This function gets bad indexes from aggregate instance and creates an entry in
+    bad_indexes dictionary. The bad_indexes dictionary has added an entry for the given type.
+    The entry is a dictionary of files that were processed with lists of all indexes of slices
+    in the file that did not pass quality checks.
 
     Parameters
     ----------
@@ -106,15 +133,45 @@ def add_bad_indexes(aggregate, type, bad_indexes):
     bad_indexes : dictionary
         a dictionary structure that the bad indexes will be written to
 
+    file_indexes : dictionary
+        a dictionary with filenames as keys, and starting indexes as values
+
     Returns
     -------
     None
     """
 
+    def get_next_file_index(files_count, file_indexes):
+        files_count -= 1
+        if files_count > 0:
+            next_file = it.next()
+            next_file_index = file_indexes[next_file]
+        else:
+            next_file_index = -1
+            next_file = None
+        return next_file_index, next_file, files_count
+
     list = []
+    files_count = len(file_indexes)
+    dict = {}
+    offset = 0
+    it = iter(file_indexes.keys())
+    current_file = it.next()
+    current_file_index = file_indexes[current_file]
+    next_file_index, next_file, files_count = get_next_file_index(files_count, file_indexes)
     for key in aggregate['bad_indexes'].keys():
-        list.append(key)
-    bad_indexes[type] = list
+        if key == current_file_index:
+            dict[current_file] = list
+            list = []
+            offset = current_file_index
+            current_file = next_file
+            current_file_index = next_file_index
+            next_file_index, next_file, files_count = get_next_file_index(files_count, file_indexes)
+        list.append(key - offset)
+
+    dict[current_file] = list
+    bad_indexes[type] = dict
+
 
 def report_bad_indexes(bad_indexes, report_file):
     """

@@ -48,16 +48,29 @@
 """
 Please make sure the installation :ref:`pre-requisite-reference-label` are met.
 
-This example shows how to verify file newly created in a monitored folder.
+This example shows how to verify newly created or modified files in a monitored folder.
+This example takes three command line arguments:
+type: a string defining data type being processed; can be 'data_dark', 'data_white' or 'data'.
+num_files: an integer value specifying how many files will be processed
+report_by_files: a boolean value defining how the bad indexes should be reported. If True,
+the bad indexes will be sorted by files the image belongs to, and the indexes will be relative
+to the files. If False, the bad indexes are reported as a list of all indexes in sequence that
+did not pass quality checks.
 
-This test can be done at during data collection to confirm mandatory process 
-variables are accessible and their values are within acceptable range.
+This test can be done at during data collection to confirm data quality
+values are within acceptable range.
 """
-import dquality.monitor as monitor 
+import sys
+import json
+import dquality.monitor as monitor
 
-if monitor.verify():
-    print ('All PVs listed in pvs.json exist and meet conditions')
-else:
-    print ('Some of the PVs listed in pvs.json do not exist or do not meet conditions')
+args = sys.argv
+if args is None or len(args) < 3:
+    print ('incorrect arguments')
 
+type = args[1]
+num_files = args[2]
+report_by_files = (args[3] == 'True')
 
+bad_indexes = monitor.verify(type, int(num_files), report_by_files)
+print json.dumps(bad_indexes)
