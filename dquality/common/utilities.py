@@ -190,14 +190,21 @@ def get_logger(name, conf):
     """
     logger = logging.getLogger(name)
     try:
+        # try absolute path
         log_file_name = conf['log_file']
         logging.basicConfig(filename=log_file_name, level=logging.DEBUG)
     except KeyError:
         print('config error: log file is not configured, logging to default.log')
         logging.basicConfig(filename='default.log', level=logging.DEBUG)
     except:
-        print('config error: log file directory does not exist')
-        logging.basicConfig(filename='default.log', level=logging.DEBUG)
+        # try relative path
+        try:
+            dir = os.getcwd()
+            log_file_name = dir + '/' + conf['log_file']
+            logging.basicConfig(filename=log_file_name, level=logging.DEBUG)
+        except:
+            print('config error: log file directory does not exist')
+            logging.basicConfig(filename='default.log', level=logging.DEBUG)
     return logger
 
 def get_directory(conf, logger):
@@ -219,13 +226,17 @@ def get_directory(conf, logger):
     folder : str
     """
     try:
-        # check if directory exists
+        # check if directory exists, try absolute path
         folder = conf['directory']
         if not os.path.isdir(folder):
-            logger.error(
-                'configuration error: directory ' +
-                folder + ' does not exist')
-            return None
+            # try relative path
+            dir = os.getcwd()
+            folder = dir + '/' + conf['directory']
+            if not os.path.isdir(folder):
+                logger.error(
+                    'configuration error: directory ' +
+                    folder + ' does not exist')
+                return None
     except KeyError:
         logger.error('config error: directory to monitor not configured')
         return None

@@ -30,7 +30,7 @@
         },
     "data_white" : {
         "mean" : {
-             "low_limit" : 550,
+             "low_limit" : 650,
              "high_limit" : 600
              },
         "stat_mean" : {
