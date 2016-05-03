@@ -48,7 +48,7 @@
 """
 Please make sure the installation :ref:`pre-requisite-reference-label` are met.
 
-This example shows how to verify the quality of an HDF file.
+This example shows how to verify the quality of data in an HDF file.
 """
 import dquality.data as data
 import json

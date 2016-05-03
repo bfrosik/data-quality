@@ -69,7 +69,7 @@ import json
 import numpy as np
 
 import dquality.common.utilities as utils
-import dquality.handler as handler
+import dquality.handler as datahandler
 import dquality.common.report as report
 from dquality.common.containers import Data
 
@@ -125,7 +125,7 @@ def directory(directory, patterns):
     wdd = wm.add_watch(directory, mask, rec=False)
     return notifier
 
-def verify(data_type, num_files):
+def verify(data_type, num_files, report_by_files):
     """
     This is the main function called when the verifier application starts.
     It reads the configuration for the directory to monitor, for pattern
@@ -176,12 +176,14 @@ def verify(data_type, num_files):
         logger.warning('no file extension specified. Monitoring for all files.')
         notifier = directory(folder, None)
 
+    file_indexes = {}
     dataq = Queue()
     aggregateq = Queue()
-    p = Process(target=handler.handle_data, args=(dataq, limits[data_type], aggregateq, ))
+    p = Process(target=datahandler.handle_data, args=(dataq, limits[data_type], aggregateq, ))
     p.start()
 
-    index = 0
+    file_index = 0
+    slice_index = 0
     while not interrupted:
         # The notifier will put a new file into a newFiles queue if one was
         # detected
@@ -204,9 +206,12 @@ def verify(data_type, num_files):
                 fp, tags = utils.get_data_hd5(file)
                 data_tag = tags['/exchange/'+data_type]
                 data = np.asarray(fp[data_tag])
-                dataq.put(Data(data))
-                index += 1
-                if index == num_files:
+                slice_index += data.shape[0]
+                file_indexes[file] = slice_index
+                for i in range(0, data.shape[0]):
+                    dataq.put(Data(data[i]))
+                file_index += 1
+                if file_index == num_files:
                     dataq.put('all_data')
                     notifier.stop()
                     interrupted = True
@@ -227,7 +232,10 @@ def verify(data_type, num_files):
 
     report.report_results(aggregate, data_type, report_file)
     bad_indexes = {}
-    report.add_bad_indexes(aggregate, data_type, bad_indexes)
+    if report_by_files:
+        report.add_bad_indexes_per_file(aggregate, data_type, bad_indexes, file_indexes)
+    else:
+        report.add_bad_indexes(aggregate, data_type, bad_indexes)
     report.report_bad_indexes(bad_indexes, report_file)
 
     return bad_indexes
