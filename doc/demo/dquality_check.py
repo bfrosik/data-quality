@@ -50,7 +50,7 @@ Please make sure the installation :ref:`pre-requisite-reference-label` are met.
 
 This example shows how to verify the quality of data in an HDF file.
 """
-import dquality.data as data
+from dquality import data
 import json
 
 bad_indexes = data.verify()

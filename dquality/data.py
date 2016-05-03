@@ -78,18 +78,20 @@ config = os.path.join(home, 'dqconfig.ini')
 conf = ConfigObj(config)
 logger = utils.get_logger(__name__, conf)
 
+
 file = utils.get_file(home, conf, 'file', logger)
 if file is None:
     sys.exit(-1)
 
+
 limitsfile = utils.get_file(home, conf, 'limits', logger)
-if file is None:
+if limitsfile is None:
     sys.exit(-1)
 
-fp, tags = utils.get_data_hd5(file)
 with open(limitsfile) as limits_file:
     limits = json.loads(limits_file.read())['limits']
 
+fp, tags = utils.get_data_hd5(file)
 
 def process_data(dataq, data_type, aggregateq):
     """
