@@ -48,19 +48,14 @@
 """
 Please make sure the installation :ref:`pre-requisite-reference-label` are met.
 
-This example shows how to verify newly created or modified files in a monitored folder. This test
-will be used if the data of the same type (i.e. "data" or "data_dark" or "data_white) is collected
-in multiple files.
-This example takes four mandatory and one optional command line arguments:
+This example shows how to verify newly created or modified files in a monitored folder.
+This example takes three mandatory command line arguments:
 conf: a string defining the configuration file. If only path is defined, the name 'dqconfig.ini'
 will be added as default
 folder: the folder to monitor
-type: a string defining data type being processed; i.e. 'data_dark', 'data_white' or 'data'.
 num_files: an integer value specifying how many files will be processed
-report_by_files: a boolean value defining how the bad indexes should be reported. If True,
-the bad indexes will be sorted by files the image belongs to, and the indexes will be relative
-to the files. If False, the bad indexes are reported as a list of all indexes in sequence that
-did not pass quality checks.
+The configuration file configures limits that the quality calculation results is checked against.
+The detailed results are stored into configured report file.
 
 This test can be done at during data collection to confirm data quality
 values are within acceptable range.
@@ -68,21 +63,17 @@ values are within acceptable range.
 """
 import sys
 import json
-import dquality.monitor as monitor
+import dquality.data_monitor as dmonitor
 
 args = sys.argv
 
-if args is None or len(args) < 4:
+if args is None or len(args) < 3:
     print ('incorrect number of arguments')
     sys.exit(-1)
 
 conf = args[1]
 folder = args[2]
-data_type = args[3]
-num_files = args[4]
-report_by_files = True
-if len(args) > 5:
-    report_by_files = (args[5] == 'True')
+num_files = args[3]
 
-bad_indexes = monitor.verify(conf, folder, data_type, int(num_files), report_by_files)
+bad_indexes = dmonitor.verify(conf, folder, int(num_files))
 print json.dumps(bad_indexes)

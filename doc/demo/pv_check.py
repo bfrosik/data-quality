@@ -49,14 +49,26 @@
 Please make sure the installation :ref:`pre-requisite-reference-label` are met.
 
 This example shows how to verify that the list of PV/PV-value conditions listed
-in the pvs.jason configuration file are satisfied.
+in the pvs.jason configured file are satisfied.
+This example takes one mandatory command line argument:
+conf: a string defining the configuration file. If only path is defined, the name 'dqconfig.ini'
+The pvs.json file location is configured.
 
 This test can be done at the beginning of a scan to confirm mandatory process 
 variables are accessible and their values are within acceptable range.
 """
-import dquality.pv as pv 
+import sys
+import dquality.pv as pv
 
-if pv.verify():
+args = sys.argv
+
+if args is None or len(args) < 1:
+    print ('incorrect number of arguments')
+    sys.exit(-1)
+
+conf = args[1]
+
+if pv.verify(conf):
     print ('All PVs listed in pvs.json exist and meet conditions')
 else:
     print ('Some of the PVs listed in pvs.json do not exist or do not meet conditions')

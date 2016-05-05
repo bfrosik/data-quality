@@ -49,13 +49,30 @@
 Please make sure the installation :ref:`pre-requisite-reference-label` are met.
 
 This example shows how to verify an HDF file dependencies.
+This example takes two mandatory command line arguments:
+conf: a string defining the configuration file. If only path is defined, the name 'dqconfig.ini'
+file: a file to be verified.
+The configuration file configures dependencies schema that the file is checked against.
+
+This test can be done at the end of data collection to verify that the collected data file is not
+corrupted.
+
 """
+import sys
 import dquality.dependency as dependency
 
+args = sys.argv
 
-if dependency.verify():
+if args is None or len(args) < 2:
+    print ('incorrect number of arguments')
+    sys.exit(-1)
+
+conf = args[1]
+file = args[2]
+
+if dependency.verify(conf, file):
     print ('All dependecies are satisfied')
 else:
-    print ('Some dependecies are not satisfied')
+    print ('Some dependecies are not satisfied, see log file')
 
 

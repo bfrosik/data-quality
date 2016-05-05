@@ -49,10 +49,26 @@
 Please make sure the installation :ref:`pre-requisite-reference-label` are met.
 
 This example shows how to verify the quality of data in an HDF file.
+This example takes two mandatory command line arguments:
+conf: a string defining the configuration file. If only path is defined, the name 'dqconfig.ini'
+file: a file to be verified.
+The configuration file configures limits that the quality calculation results is checked against.
+The detailed results are stored into configured report file.
+
 """
+import sys
 import dquality.data as data
 import json
 
-bad_indexes = data.verify()
+args = sys.argv
+
+if args is None or len(args) < 2:
+    print ('incorrect number of arguments')
+    sys.exit(-1)
+
+conf = args[1]
+file = args[2]
+
+bad_indexes = data.verify(conf, file)
 print json.dumps(bad_indexes)
         

@@ -56,12 +56,9 @@ The results is a detail report of calculated values. The indexes of slices that 
 quality check are returned back.
 
 """
-
-import os
+import os.path
 import json
 import sys
-from configobj import ConfigObj
-from os.path import expanduser
 from multiprocessing import Queue, Process
 import dquality.common.utilities as utils
 import dquality.handler as handler
@@ -71,27 +68,50 @@ import dquality.common.report as report
 __author__ = "Barbara Frosik"
 __copyright__ = "Copyright (c) 2016, UChicago Argonne, LLC."
 __docformat__ = 'restructuredtext en'
-__all__ = ['process_data']
-
-home = expanduser("~")
-config = os.path.join(home, 'dqconfig.ini')
-conf = ConfigObj(config)
-logger = utils.get_logger(__name__, conf)
-
-file = utils.get_file(home, conf, 'file', logger)
-if file is None:
-    sys.exit(-1)
-
-limitsfile = utils.get_file(home, conf, 'limits', logger)
-if file is None:
-    sys.exit(-1)
-
-fp, tags = utils.get_data_hd5(file)
-with open(limitsfile) as limits_file:
-    limits = json.loads(limits_file.read())['limits']
+__all__ = ['init',
+           'process_data',
+           'verify_file',
+           'verify']
 
 
-def process_data(dataq, data_type, aggregateq):
+def init(config):
+    """
+    This function initializes global variables. It gets values from the configuration file, evaluates and processes
+    the values. If mandatory file or directory is missing, the script logs an error and exits.
+
+    Parameters
+    ----------
+    config : str
+        configuration file name, including path
+
+    Returns
+    -------
+    logger : Logger
+        logger instance
+
+    limits : dictionary
+        a dictionary containing limit values read from the configured 'limit' file
+
+    report_file : str
+        a report file configured in a given configuration file
+    """
+
+    conf = utils.get_config(config)
+
+    logger = utils.get_logger(__name__, conf)
+
+    limitsfile = utils.get_file(conf, 'limits', logger)
+    if limitsfile is None:
+        sys.exit(-1)
+
+    with open(limitsfile) as limits_file:
+        limits = json.loads(limits_file.read())['limits']
+
+    report_file = utils.get_file(conf, 'report_file', logger)
+
+    return logger, limits, report_file
+
+def process_data(data_type, aggregateq, fp, data_tag, limits):
     """
     This method creates and starts a new handler process. The handler is initialized with data queue,
     the data type, and a result queue. The data type can be 'data_dark', 'data_white' or 'data'.
@@ -100,26 +120,28 @@ def process_data(dataq, data_type, aggregateq):
 
     Parameters
     ----------
-    dataq : Queue
-        data queue; used to pass 2D arrays (slices) to the handler
-
     data_type : str
         string indicating what type of data is processed.
 
     aggregateq : Queue
         result queue; used by handler to enqueue results
 
+    fp : file pointer
+        a pointer to the file that is verifier
+
+    data_tag : str
+        a data tag to look for
+
+    limits : dict
+        a dictionary of limits values
+
     Returns
     -------
     None
     """
-    try:
-        data_tag = tags['/exchange/'+data_type]
-        data = fp[data_tag]
-    except KeyError:
-        logger.warning('the hd5 file does not contain data of the type ' + data_type)
-        dataq.put('all_data')
-        return
+    data = fp[data_tag]
+
+    dataq = Queue()
 
     p = Process(target=handler.handle_data, args=(dataq, limits[data_type], aggregateq, ))
     p.start()
@@ -128,7 +150,69 @@ def process_data(dataq, data_type, aggregateq):
         dataq.put(Data(data[i]))
     dataq.put('all_data')
 
-def verify():
+
+def verify_file(logger, file, limits, report_file):
+    """
+    This method creates and starts a new handler process. The handler is initialized with data queue,
+    the data type, and a result queue. The data type can be 'data_dark', 'data_white' or 'data'.
+    After starting the process the function enqueues queue slice by slice into data, until all data is
+    queued. The last enqueued element is end of the data marker.
+
+    Parameters
+    ----------
+    logger: Logger
+        Logger instance.
+
+    file : str
+        a filename including path that will be verified
+
+    limits : dict
+        a dictionary of limits values
+
+    report_file : str
+        a name of a report file
+
+    Returns
+    -------
+    bad_indexes : dict
+        a dictionary of bad indexes per data type
+
+    """
+    fp, tags = utils.get_data_hd5(file)
+
+    if report_file is not None:
+        try:
+            report_file = open(report_file, 'w')
+        except:
+            logger.warning('Cannot open report file')
+            report_file = None
+
+    types = ['data_dark', 'data_white', 'data']
+    queues = {}
+    bad_indexes = {}
+
+    for type in types:
+        data_tag = '/exchange/'+ type
+        if data_tag in tags:
+            queues[type] = Queue()
+
+    for type in queues.keys():
+        queue = queues[type]
+        process_data(type, queue, fp, data_tag, limits)
+
+
+    # receive the results
+    for type in queues.keys():
+        queue = queues[type]
+        aggregate = queue.get()
+        if report_file is not None:
+            report.report_results(aggregate, type, file, report_file)
+        report.add_bad_indexes(aggregate, type, bad_indexes)
+
+    return bad_indexes
+
+
+def verify(conf, file):
     """
     This invokes sequentially data verification processes for data_dark, data_white, and data that is contained
     in configured hd5 file. The calculated values are check against limits, configured in a file.
@@ -141,50 +225,25 @@ def verify():
 
     Parameters
     ----------
-    None
+    conf : str
+        name of the configuration file including path. If contains only directory, 'dqconfig.ini' will a default
+        file name.
+
+    file : str
+        file name to do the quality checks on
 
     Returns
     -------
-    Dict
-    A dictionary containing indexes of slices that did not pass quality check. The key is a type of data.
-    (i.e. data_dark, data_white,data)
+    bad_indexes : Dict
+        A dictionary containing indexes of slices that did not pass quality check. The key is a type of data.
+        (i.e. data_dark, data_white,data)
     """
-    #process data_dark
-    data_dark_q = Queue()
-    process_data(Queue(),'data_dark',data_dark_q)
 
-    #process data_white
-    data_white_q = Queue()
-    process_data(Queue(),'data_white', data_white_q)
+    logger, limits, report_file = init(conf)
+    if not os.path.isfile(file):
+        logger.error(
+            'parameter error: file ' +
+            file + ' does not exist')
+        sys.exit(-1)
 
-    #process data
-    data_q = Queue()
-    process_data(Queue(),'data', data_q)
-
-    # find from config how to report the results
-    report_file = None
-    try:
-        report_file_name = conf['report_file']
-        try:
-            report_file = open(report_file_name, 'w')
-        except:
-            logger.warning('Cannot open report file, writing report on console')
-    except KeyError:
-        logger.info('report file not configured, writing report on console')
-
-    bad_indexes = {}
-
-    # receive the results
-    aggregate_data_dark = data_dark_q.get()
-    report.report_results(aggregate_data_dark, 'data_dark', report_file)
-    report.add_bad_indexes(aggregate_data_dark, 'data_dark', bad_indexes)
-
-    aggregate_data_white = data_white_q.get()
-    report.report_results(aggregate_data_white, 'data_white', report_file)
-    report.add_bad_indexes(aggregate_data_white, 'data_white', bad_indexes)
-
-    aggregate_data = data_q.get()
-    report.report_results(aggregate_data, 'data', report_file)
-    report.add_bad_indexes(aggregate_data, 'data', bad_indexes)
-
-    return bad_indexes
+    return verify_file(logger, file, limits, report_file)

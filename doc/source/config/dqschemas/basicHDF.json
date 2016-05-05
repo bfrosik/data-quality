@@ -1,7 +1,7 @@
 {
 "required_tags" : {
     "/exchange/data" : {
-        "dim" : [722,2048,2449],
+        "dim" : [722,2048,2448],
         "axes" : "theta:y:x",
         "units" : "counts"
         },
