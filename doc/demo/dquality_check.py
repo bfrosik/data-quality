@@ -71,4 +71,4 @@ file = args[2]
 
 bad_indexes = data.verify(conf, file)
 print json.dumps(bad_indexes)
-        
+
