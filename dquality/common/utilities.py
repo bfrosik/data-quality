@@ -53,6 +53,7 @@ This file is a suite of utility functions.
 import os
 import h5py
 import logging
+from configobj import ConfigObj
 
 __author__ = "Barbara Frosik"
 __copyright__ = "Copyright (c) 2016, UChicago Argonne, LLC."
@@ -62,6 +63,7 @@ __all__ = ['lt',
            'eq',
            'ge',
            'gt',
+           'get_config',
            'get_logger',
            'get_directory',
            'get_file',
@@ -170,6 +172,32 @@ def gt(value, limit):
     """
     return value > limit
 
+def get_config(conf_path):
+    """
+    This function returns configuration dictionary. It checks the conf_path parameter wheter it is directory
+    or a file. If a directory, it appends 'dqconfig.ini' as a file name. If the directory or file does not
+    exist, a message is printed on a console and None is returned. Otherwise, the file is processed into
+    dictionary, that is returned.
+
+    Parameters
+    ----------
+    conf_path : str
+        name of the configuration file including path, or path
+
+    Returns
+    -------
+    conf : config Object
+        a configuration object
+    """
+    if os.path.isdir(conf_path):
+        config = os.path.join(conf_path, 'dqconfig.ini')
+    elif os.path.isfile(conf_path):
+        config = conf_path
+    else:
+        print ('configuration file ' + conf_path + ' not found')
+        return None
+    return ConfigObj(config)
+
 
 def get_logger(name, conf):
     """
@@ -197,14 +225,8 @@ def get_logger(name, conf):
         print('config error: log file is not configured, logging to default.log')
         logging.basicConfig(filename='default.log', level=logging.DEBUG)
     except:
-        # try relative path
-        try:
-            dir = os.getcwd()
-            log_file_name = dir + '/' + conf['log_file']
-            logging.basicConfig(filename=log_file_name, level=logging.DEBUG)
-        except:
-            print('config error: log file directory does not exist')
-            logging.basicConfig(filename='default.log', level=logging.DEBUG)
+        print('config error: log file directory does not exist')
+        logging.basicConfig(filename='default.log', level=logging.DEBUG)
     return logger
 
 def get_directory(conf, logger):
@@ -229,21 +251,17 @@ def get_directory(conf, logger):
         # check if directory exists, try absolute path
         folder = conf['directory']
         if not os.path.isdir(folder):
-            # try relative path
-            dir = os.getcwd()
-            folder = dir + '/' + conf['directory']
-            if not os.path.isdir(folder):
-                logger.error(
-                    'configuration error: directory ' +
-                    folder + ' does not exist')
-                return None
+            logger.error(
+                'configuration error: directory ' +
+                folder + ' does not exist')
+            return None
     except KeyError:
         logger.error('config error: directory to monitor not configured')
         return None
     return folder
 
 
-def get_file(dir, conf, config_name, logger):
+def get_file(conf, config_name, logger):
     """
     This function returns a file object. It reads the file from a configuration file.
     If the file is not configured or does not exist a message is logged into a log file,
@@ -251,9 +269,6 @@ def get_file(dir, conf, config_name, logger):
 
     Parameters
     ----------
-    dir : str
-        a path the file starts with
-        
     conf : config Object
         a configuration object
 
@@ -265,11 +280,10 @@ def get_file(dir, conf, config_name, logger):
 
     Returns
     -------
-    folder : str
+    file : str
     """
     try:
-        filename = conf[config_name]
-        file = os.path.join(dir, filename)
+        file = conf[config_name]
         if not os.path.isfile(file):
             logger.error(
                 'configuration error: file ' +

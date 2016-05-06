@@ -59,10 +59,11 @@ __copyright__ = "Copyright (c) 2016, UChicago Argonne, LLC."
 __docformat__ = 'restructuredtext en'
 __all__ = ['report_results',
            'add_bad_indexes',
+           'add_bad_indexes_per_file',
            'report_bad_indexes']
 
 
-def report_results(aggregate, type, report_file):
+def report_results(aggregate, type, filename, report_file):
     """
     This function reports results of quality checks to a file or console
     if the file is not defined.
@@ -75,6 +76,9 @@ def report_results(aggregate, type, report_file):
     type : str
         a string characterizung the data type (i.e. data_dark, data_white or data)
 
+    filename : str
+        name of the verified file
+
     report_file : file
         a file where the report will be written, or None, if written to a console
 
@@ -84,16 +88,20 @@ def report_results(aggregate, type, report_file):
     """
 
     if report_file is None:
-        print (type)
+        if filename is not None:
+            print (filename + '\n')
+        print (type + '\n')
         pprint.pprint(aggregate, depth=3)
     else:
-        report_file.write(type)
+        if filename is not None:
+            report_file.write(filename+ '\n')
+        report_file.write(type+ '\n')
         pprint.pprint(aggregate, report_file)
 
 def add_bad_indexes(aggregate, type, bad_indexes):
     """
     This function gets bad indexes from aggregate instance and creates an entry in
-    bad_indexes dictionary. The bad_indexes dictionary has added an entry for the given type.
+    bad_indexes dictionary. The bad_indexes dictionary will have added an entry for the given type.
     The entry is a list of all indexes of slices that did not pass quality checks.
 
     Parameters
@@ -118,7 +126,7 @@ def add_bad_indexes(aggregate, type, bad_indexes):
 def add_bad_indexes_per_file(aggregate, type, bad_indexes, file_indexes):
     """
     This function gets bad indexes from aggregate instance and creates an entry in
-    bad_indexes dictionary. The bad_indexes dictionary has added an entry for the given type.
+    bad_indexes dictionary. The bad_indexes dictionary will have added an entry for the given type.
     The entry is a dictionary of files that were processed with lists of all indexes of slices
     in the file that did not pass quality checks.
 

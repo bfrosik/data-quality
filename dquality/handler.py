@@ -55,11 +55,15 @@ and handles results of the checks.
 """
 
 from multiprocessing import Queue, Process
-from Queue import Empty
 import dquality.common.qualitychecks as calc
 import dquality.common.constants as const
 from dquality.common.containers import Aggregate
 from dquality.common.qualitychecks import validate_stat_mean
+import sys
+if sys.version[0] == '2':
+    import Queue as queue
+else:
+    import queue as queue
 
 __author__ = "Barbara Frosik"
 __copyright__ = "Copyright (c) 2016, UChicago Argonne, LLC."
@@ -164,7 +168,7 @@ def handle_data(dataq, limits, reportq,):
                     num_processes += 1
                 index += 1
 
-        except Empty:
+        except queue.Empty:
             pass
 
         while not resultsq.empty():

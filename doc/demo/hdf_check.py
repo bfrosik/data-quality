@@ -49,10 +49,30 @@
 Please make sure the installation :ref:`pre-requisite-reference-label` are met.
 
 This example shows how to verify an HDF file structure.
-"""
-import dquality.file as file
+This example takes two mandatory command line arguments:
+conf: a string defining the configuration file. If only path is defined, the name 'dqconfig.ini'
+file: a file to be verified.
+The configuration file configures schema that the file is checked against. Also the configuration
+defines a verification type. If the type is "hdf_tags", the file will be checked for the presence
+of listed tags; if the type is "hdf_structure", the tags, and listed attributes are checked.
 
-if file.verify():
+This test can be done at the end of data collection to verify that the collected data file is not
+corrupted.
+
+"""
+import sys
+import dquality.file as hdf
+
+args = sys.argv
+
+if args is None or len(args) < 2:
+    print ('incorrect number of arguments')
+    sys.exit(-1)
+
+conf = args[1]
+file = args[2]
+
+if hdf.verify(conf, file):
     print ('All tags exist and meet conditions')
 else:
     print ('Some of the tags do not exist or do not meet conditions, check log file')

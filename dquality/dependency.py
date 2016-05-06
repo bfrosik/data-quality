@@ -60,24 +60,52 @@ import os
 import sys
 import json
 import h5py
-import logging
-from os.path import expanduser
-from configobj import ConfigObj
-
-from common.utilities import lt, le, eq, ge, gt
+import dquality.common.utilities as utils
+from dquality.common.utilities import lt, le, eq, ge, gt
 
 
 __author__ = "Barbara Frosik"
 __copyright__ = "Copyright (c) 2016, UChicago Argonne, LLC."
 __docformat__ = 'restructuredtext en'
-__all__ = ['verify',
+__all__ = ['init',
+           'verify',
            'verify_list',
            'find_value']
 
-home = expanduser("~")
-config = os.path.join(home, 'dqconfig.ini')
-conf = ConfigObj(config)
-logger = logging.getLogger(__name__)
+function_mapper = {'less_than': lt, 'less_or_equal': le,
+                   'equal': eq, 'greater_or_equal': ge, 'greater_than': gt}
+
+def init(config):
+    """
+    This function initializes global variables. It gets values from the configuration file, evaluates and processes
+    the values. If mandatory file or directory is missing, the script logs an error and exits.
+
+    Parameters
+    ----------
+    config : str
+        configuration file name, including path
+
+    Returns
+    -------
+    logger : Logger
+        logger instance
+
+    dep : dictionary
+        a dictionary containing dependency values read from the configured 'dependencies' file
+
+    """
+    conf = utils.get_config(config)
+
+    logger = utils.get_logger(__name__, conf)
+
+    dependencies = utils.get_file(conf, 'dependencies', logger)
+    if dependencies is None:
+        sys.exit(-1)
+
+    with open(dependencies) as file:
+        dep = json.loads(file.read())
+
+    return logger, dep
 
 
 class TagValue:
@@ -125,11 +153,7 @@ def find_value(tag, dset):
             axis = tag_def[2]
             return dset.shape[int(axis)]
 
-function_mapper = {'less_than': lt, 'less_or_equal': le,
-                   'equal': eq, 'greater_or_equal': ge, 'greater_than': gt}
-
-
-def verify_list(file, list, relation):
+def verify_list(file, list, relation, logger):
     """
     This function takes an hd5 file, a list of tags (can be extended)
     and a relation between the list members. First the method creates
@@ -160,6 +184,9 @@ def verify_list(file, list, relation):
 
     relation : str
         a string specifying the relation between tags in the list
+
+    logger : Logger
+        a Logger instance
 
     Returns
     -------
@@ -203,7 +230,7 @@ def verify_list(file, list, relation):
     return res
 
 
-def verify():
+def verify(conf, file):
     """
     This function reads the json "*dependencies*" file from the 
     :download:`dqconfig.ini <../config/dqconfig.ini>` file.
@@ -236,33 +263,30 @@ def verify():
 
     Parameters
     ----------
-    None
+    conf : str
+        configuration file name, including path
+
+    file : str
+        File Name to verify including path
 
     Returns
     -------
     boolean
     """
+    logger, dependencies = init(conf)
+    if not os.path.isfile(file):
+        logger.error(
+            'parameter error: file ' +
+            file + ' does not exist')
+        sys.exit(-1)
+
     res = True
-
-    try:
-        file = os.path.join(home, conf['dependencies'])
-        with open(file) as data_file:
-            dependencies = json.loads(data_file.read())
-
-    except KeyError:
-        logger.error('KeyError: dependencies not configured')
-        sys.exit(-1)
-
-    try:
-        file = os.path.join(home, conf['file'])
-    except KeyError:
-        logger.error('KeyError: neither directory or file configured')
-        sys.exit(-1)
-
     i = 0
+
     for relation in dependencies:
         batch = dependencies[relation]
         for tag_list in batch:
-            res = verify_list(file, tag_list, relation)
+            if not verify_list(file, tag_list, relation, logger):
+                res = False
 
     return res

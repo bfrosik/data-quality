@@ -60,26 +60,55 @@ import sys
 import h5py
 import json
 import os.path
-from os.path import expanduser
-from configobj import ConfigObj
 
 import dquality.common.utilities as utils
 
 __author__ = "Barbara Frosik"
 __copyright__ = "Copyright (c) 2016, UChicago Argonne, LLC."
 __docformat__ = 'restructuredtext en'
-__all__ = ['report_items',
+__all__ = ['init',
+           'report_items',
            'verify',
            'tags',
            'structure']
 
-home = expanduser("~")
-config = os.path.join(home, 'dqconfig.ini')
-conf = ConfigObj(config)
-logger = utils.get_logger(__name__, conf)
+
+def init(config):
+    """
+    This function initializes global variables. It gets values from the configuration file, evaluates and processes
+    the values. If mandatory file or directory is missing, the script logs an error and exits.
+
+    Parameters
+    ----------
+    config : str
+        configuration file name, including path
+
+    Returns
+    -------
+    logger : Logger
+        logger instance
+
+    tags : dictionary
+        a dictionary containing tag and attributes values read from the configured 'schema' file
+
+    """
+    conf = utils.get_config(config)
+
+    logger = utils.get_logger(__name__, conf)
+
+    schema = utils.get_file(conf, 'schema', logger)
+    if schema is None:
+        sys.exit(-1)
+
+    with open(schema) as file:
+        tags = json.loads(file.read())['required_tags']
+
+    type = conf['verification_type']
+
+    return logger, tags, type
 
 
-def report_items(list, text1, text2):
+def report_items(list, text1, text2, logger):
     """
    This function takes a list and strings. If the list is not
    empty it prints the two string parameters as a title,
@@ -97,6 +126,9 @@ def report_items(list, text1, text2):
         An optional part of title that will be printed if
         the list is not empty
 
+    logger : Logger
+        a Logger instance
+
     Returns
     -------
     None
@@ -107,7 +139,7 @@ def report_items(list, text1, text2):
             logger.warning('    - ' + item)
 
 
-def structure(file, schema):
+def structure(file, required_tags, logger):
     """
     This method is used when a file of hdf type is given.
     All tags and array dimensions are verified against a schema.
@@ -122,10 +154,12 @@ def structure(file, schema):
     schema : str
         Schema file name
 
+    logger : Logger
+        a Logger instance
+
     Returns
     -------
-    True if verified
-    False if not verified
+    None
 
     """
     def check_dim(dset, attr):
@@ -172,19 +206,16 @@ def structure(file, schema):
                 report_items(
                     attrib_list,
                     'the following attributes are missing in tag ',
-                    tag)
-
-    required_tags = {}
-    with open(schema) as data_file:
-        required_tags = json.loads(data_file.read()).get('required_tags')
+                    tag,
+                    logger)
 
     tag_list = utils.key_list(required_tags)
     file_h5 = h5py.File(file, 'r')
     file_h5.visititems(func)
-    report_items(tag_list, 'the following tags are missing: ', '')
+    report_items(tag_list, 'the following tags are missing: ', '', logger)
 
 
-def tags(file, schema):
+def tags(file, required_tags, logger):
     """
     This method is used when a file of hdf type is given.
     All tags from the hdf file are added in the filetags list.
@@ -201,15 +232,15 @@ def tags(file, schema):
     schema : str
         Schema file name
 
+    logger : Logger
+        a Logger instance
+
     Returns
     -------
     True if verified
     False if not verified
 
     """
-
-    with open(schema) as tags_file:
-        required_tags = json.loads(tags_file.read()).get('required_tags')
 
     tag_list = utils.key_list(required_tags)
 
@@ -243,7 +274,7 @@ def tags(file, schema):
     return result.is_verified()
 
 
-def verify():
+def verify(conf, file):
     """
     This is the main function called when the structureverifier
     application starts. It reads the configuration file for
@@ -251,29 +282,26 @@ def verify():
 
     Parameters
     ----------
+    conf : str
+        configuration file name, including path
+
     file : str
-        File Name including path
+        File Name to verify including path
 
     Returns
     -------
     boolean
     """
-    file = utils.get_file(home, conf, 'file', logger)
-    if file is None:
+
+    logger, tags, type = init(conf)
+    if not os.path.isfile(file):
+        logger.error(
+            'parameter error: file ' +
+            file + ' does not exist')
         sys.exit(-1)
 
-    logger.info('verifying file ' + file)
-
-    schema = utils.get_file(home, conf, 'schema', logger)
-    if file is None:
-        sys.exit(-1)
-
-    if schema is None:
-        sys.exit(-1)
-
-    type = conf['verification_type']
     if type == 'hdf_structure':
-        return structure(file, schema)
+        return structure(file, tags, logger)
     if type == 'hdf_tags':
-        return tags(file, schema)
+        return tags(file, tags, logger)
 

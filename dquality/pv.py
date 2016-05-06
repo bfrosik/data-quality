@@ -57,30 +57,52 @@ An error will be reported back to UI via PV.
 
 """
 
-import os
 import sys
 import json
-import logging
 from epics import PV
-from os.path import expanduser
-from configobj import ConfigObj
-import dquality.common.report as report
 import dquality.common.utilities as utils
-
-from common.utilities import lt, le, eq, ge, gt
+from dquality.common.utilities import lt, le, eq, ge, gt
 
 
 __author__ = "Barbara Frosik"
 __copyright__ = "Copyright (c) 2016, UChicago Argonne, LLC."
 __docformat__ = 'restructuredtext en'
-__all__ = ['verify',
+__all__ = ['init',
+           'verify',
            'read',
            'state']
 
-home = expanduser("~")
-config = os.path.join(home, 'dqconfig.ini')
-conf = ConfigObj(config)
-logger = utils.get_logger(__name__, conf)
+def init(config):
+    """
+    This function initializes global variables. It gets values from the configuration file, evaluates and processes
+    the values. If mandatory file or directory is missing, the script logs an error and exits.
+
+    Parameters
+    ----------
+    config : str
+        configuration file name, including path
+
+    Returns
+    -------
+    logger : Logger
+        logger instance
+
+    pvs : dictionary
+        a dictionary containing pvs values and attributes read from the configured 'pv_file' file
+
+    """
+    conf = utils.get_config(config)
+
+    logger = utils.get_logger(__name__, conf)
+
+    pvfile = utils.get_file(conf, 'pv_file', logger)
+    if pvfile is None:
+        sys.exit(-1)
+
+    with open(pvfile) as file:
+        pvs = json.loads(file.read())['required_pvs']
+
+    return logger, pvs
 
 
 def read(pv_str):
@@ -127,7 +149,7 @@ def state(value, limit):
         return False
 
 
-def verify():
+def verify(conf):
     """
     This function reads the :download:`dqschemas/pvs.json <../config/dqschemas/pvs.json>`
     as set in the :download:`dqconfig.ini <../config/dqconfig.ini>` file.
@@ -157,6 +179,9 @@ def verify():
     -------
     boolean
     """
+
+    logger, required_pvs = init(conf)
+
     logger.info('verifying process variables')
     function_mapper = {
         'less_than': lt,
@@ -167,12 +192,6 @@ def verify():
         'state': state}
 
     res = True
-    file = utils.get_file(home, conf, 'pv_file', logger)
-    if file is None:
-        sys.exit(-1)
-
-    with open(file) as data_file:
-        required_pvs = json.loads(data_file.read()).get('required_pvs')
 
     for pv in required_pvs:
         # possible the read pv needs try statement
