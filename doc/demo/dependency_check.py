@@ -49,10 +49,15 @@
 Please make sure the installation :ref:`pre-requisite-reference-label` are met.
 
 This example shows how to verify an HDF file dependencies.
+
 This example takes two mandatory command line arguments:
 conf: a string defining the configuration file. If only path is defined, the name 'dqconfig.ini'
-file: a file to be verified.
-The configuration file configures dependencies schema that the file is checked against.
+file: a file to be verified for dependencies according to schema.
+
+The configuration file will have the following definitions:
+'dependencies' - file name including path that contain dependecy schema. Example of dependency schema: 
+                 doc/source/config/dqschemas/dependencies.json
+'log_file' - defines log file. If not configured, the software will create default.log file in the working directory.
 
 This test can be done at the end of data collection to verify that the collected data file is not
 corrupted.
