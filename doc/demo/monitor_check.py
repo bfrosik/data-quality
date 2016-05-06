@@ -51,6 +51,7 @@ Please make sure the installation :ref:`pre-requisite-reference-label` are met.
 This example shows how to verify newly created or modified files in a monitored folder. This test
 will be used if the data of the same type (i.e. "data" or "data_dark" or "data_white) is collected
 in multiple files.
+
 This example takes four mandatory and one optional command line arguments:
 conf: a string defining the configuration file. If only path is defined, the name 'dqconfig.ini'
 will be added as default
@@ -61,6 +62,13 @@ report_by_files: a boolean value defining how the bad indexes should be reported
 the bad indexes will be sorted by files the image belongs to, and the indexes will be relative
 to the files. If False, the bad indexes are reported as a list of all indexes in sequence that
 did not pass quality checks.
+
+The configuration file will have the following definitions:
+'limits' - file name including path that contains dictionary of limit values that will be applied to verify quality check calculations.
+           Example of limits file: doc/source/config/dqschemas/limits.json
+'log_file' - defines log file. If not configured, the software will create default.log file in the working directory. 
+'report_file' - report file that will be created when the given file is verified. This file will contain the quality checks results.
+'extensions' - list of file extensions that the script will monitor for.
 
 This test can be done at during data collection to confirm data quality
 values are within acceptable range.
