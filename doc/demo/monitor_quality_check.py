@@ -54,8 +54,13 @@ conf: a string defining the configuration file. If only path is defined, the nam
 will be added as default
 folder: the folder to monitor
 num_files: an integer value specifying how many files will be processed
-The configuration file configures limits that the quality calculation results is checked against.
-The detailed results are stored into configured report file.
+
+The configuration file will have the following definitions:
+'limits' - file name including path that contains dictionary of limit values that will be applied to verify quality check calculations.
+           Example of limits file: doc/source/config/dqschemas/limits.json
+'log_file' - defines log file. If not configured, the software will create default.log file in the working directory. 
+'report_file' - report file that will be created when the given file is verified. This file will contain the quality checks results.
+'extensions' - list of file extensions that the script will monitor for.
 
 This test can be done at during data collection to confirm data quality
 values are within acceptable range.
