@@ -52,7 +52,13 @@ This example shows how to verify the quality of data in an HDF file.
 This example takes two mandatory command line arguments:
 conf: a string defining the configuration file. If only path is defined, the name 'dqconfig.ini'
 file: a file to be verified.
-The configuration file configures limits that the quality calculation results is checked against.
+
+The configuration file will have the following definitions:
+'limits' - file name including path that contains dictionary of limit values that will be applied to verify quality check calculations.
+           Example of limits file: doc/source/config/dqschemas/limits.json
+'log_file' - defines log file. If not configured, the software will create default.log file in the working directory. 
+'report_file' - report file that will be created when the given file is verified. This file will contain the quality checks results.
+
 The detailed results are stored into configured report file.
 
 """
