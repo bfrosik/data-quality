@@ -52,8 +52,12 @@ This example shows how to verify an HDF file structure.
 This example takes two mandatory command line arguments:
 conf: a string defining the configuration file. If only path is defined, the name 'dqconfig.ini'
 file: a file to be verified.
-The configuration file configures schema that the file is checked against. Also the configuration
-defines a verification type. If the type is "hdf_tags", the file will be checked for the presence
+
+The configuration file will have the following definitions:
+'schema' - file name including path that contains schema that the file is checked against.
+           Example of schema file: doc/source/config/dqschemas/basicHDF.json
+'log_file' - defines log file. If not configured, the software will create default.log file in the working directory. 
+'verification_type' - defines how the file is verified. If the type is "hdf_tags", the file will be checked for the presence
 of listed tags; if the type is "hdf_structure", the tags, and listed attributes are checked.
 
 This test can be done at the end of data collection to verify that the collected data file is not
