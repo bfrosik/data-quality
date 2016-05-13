@@ -10,5 +10,7 @@
 
    .. autosummary::
    
-      verify
-      cleanup
+       init
+       process_data
+       verify_file
+       verify

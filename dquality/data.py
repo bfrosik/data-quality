@@ -226,7 +226,7 @@ def verify(conf, file):
     Parameters
     ----------
     conf : str
-        name of the configuration file including path. If contains only directory, 'dqconfig.ini' will a default
+        name of the configuration file including path. If contains only directory, 'dqconfig_test.ini' will a default
         file name.
 
     file : str

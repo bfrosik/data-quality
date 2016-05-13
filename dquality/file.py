@@ -103,7 +103,15 @@ def init(config):
     with open(schema) as file:
         tags = json.loads(file.read())['required_tags']
 
-    type = conf['verification_type']
+    try:
+        type = conf['verification_type']
+    except KeyError:
+        logger.error('config error: verification type not configured')
+        sys.exit(-1)
+
+    if type != 'hdf_structure' and type != 'hdf_tags':
+        logger.error('configured verification type ' + type + ' is not supported')
+        sys.exit(-1)
 
     return logger, tags, type
 
@@ -266,10 +274,9 @@ def tags(file, required_tags, logger):
     file_h5.visititems(func)
 
     for tag in tag_list:
-        if result.is_verified():
-            if tag not in filetags:
-                logger.warning('tag ' + tag + ' not found')
-                result.missing_tag()
+        if tag not in filetags:
+            logger.warning('tag ' + tag + ' not found')
+            result.missing_tag()
 
     return result.is_verified()
 
@@ -293,7 +300,7 @@ def verify(conf, file):
     boolean
     """
 
-    logger, tags, type = init(conf)
+    logger, required_tags, type = init(conf)
     if not os.path.isfile(file):
         logger.error(
             'parameter error: file ' +
@@ -301,7 +308,7 @@ def verify(conf, file):
         sys.exit(-1)
 
     if type == 'hdf_structure':
-        return structure(file, tags, logger)
+        return structure(file, required_tags, logger)
     if type == 'hdf_tags':
-        return tags(file, tags, logger)
+        return tags(file, required_tags, logger)
 

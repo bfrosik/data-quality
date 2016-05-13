@@ -152,7 +152,7 @@ def state(value, limit):
 def verify(conf):
     """
     This function reads the :download:`dqschemas/pvs.json <../config/dqschemas/pvs.json>`
-    as set in the :download:`dqconfig.ini <../config/dqconfig.ini>` file.
+    as set in the :download:`dqconfig_test.ini <../config/dqconfig_test.ini>` file.
     This file contains dictionary with keys of mandatory process variables.
     The values is a dictionary of attributes, each attribute being either
     description, or a verification operation. The verification operation
@@ -209,8 +209,8 @@ def verify(conf):
                     if not function_mapper[attr](pv_value, pv_attr[attr]):
                         res = False
                         logger.warning('PV ' +
-                                       pv + ' has value out of range. \
-                                       The value is ' +
+                                       pv + ' has value out of range. ' +
+                                       'The value is ' +
                                        str(pv_value) + ' but should be ' +
                                        attr + ' ' +
                                        str(pv_attr[attr]))

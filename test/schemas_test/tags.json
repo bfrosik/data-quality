@@ -1,7 +1,9 @@
 {
 "required_tags" : {
+    "/exchange/missing" : {},
+    "/exchange/missing1" : {},
     "/exchange/data" : {
-        "dim" : [722,2048,2449],
+        "dim" : [181,2048,2448],
         "axes" : "theta:y:x",
         "units" : "counts"
         },
@@ -16,12 +18,8 @@
         "units" : "counts"
         },
     "/exchange/theta" : {
-        "dim" : [721],
-        "units":"degrees"
-        },
-    "/exchange/missing" : {
-        "dim" : [721],
-        "units" : "degrees"
+        "dim" : [181]
+        ,"units":"degrees"
         }
     }
 }

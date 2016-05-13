@@ -9,7 +9,8 @@
    .. rubric:: **Functions:**
 
    .. autosummary::
-   
+      init
       verify
+      read
       state
 

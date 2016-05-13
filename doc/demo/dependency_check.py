@@ -51,7 +51,7 @@ Please make sure the installation :ref:`pre-requisite-reference-label` are met.
 This example shows how to verify an HDF file dependencies.
 
 This example takes two mandatory command line arguments:
-conf: a string defining the configuration file. If only path is defined, the name 'dqconfig.ini'
+conf: a string defining the configuration file. If only path is defined, the name 'dqconfig_test.ini'
 file: a file to be verified for dependencies according to schema.
 
 The configuration file will have the following definitions:

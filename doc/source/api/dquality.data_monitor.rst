@@ -1,7 +1,7 @@
-:mod:`dquality.file`
-====================
+:mod:`dquality.data_monitor`
+=======================
 
-.. automodule:: dquality.file
+.. automodule:: dquality.data_monitor
    :members:
    :show-inheritance:
    :undoc-members:
@@ -10,7 +10,5 @@
 
    .. autosummary::
       init
-      report_items
       verify
-      structure
-      tags
+      directory

@@ -51,7 +51,7 @@ Please make sure the installation :ref:`pre-requisite-reference-label` are met.
 This example shows how to verify that the list of PV/PV-value conditions listed
 in the pvs.jason configured file are satisfied.
 This example takes one mandatory command line argument:
-conf: a string defining the configuration file. If only path is defined, the name 'dqconfig.ini'
+conf: a string defining the configuration file. If only path is defined, the name 'dqconfig_test.ini'
 
 The configuration file will have the following definitions:
 'pv_file' - file name including path that contain process variables requirements. Example of pv file: 

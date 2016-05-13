@@ -12,17 +12,19 @@ This section covers the basics of how to download and install `DQuality <https:/
 Pre-requisites 
 ==============
 
-Before testing `DQuality <https://github.com/bfrosik/data-quality>`_  on your data files you need to create in your home directory the following files:
+Each of the verifier requires parameter: configuration file. The configuration file must define schemas, and verifire's properties.
     
 - :download:`dqconfig.ini <config/dqconfig.ini>`
 
-You must also create in your home directory a "*dqschemas*" folder containing the following files:
+The schemas can point to different files, in different paths, but it is advised to create a relative "*dqschemas*" folder containing the following files:
 
 - :download:`dqschemas/pvs.json.json <config/dqschemas/pvs.json>` containing the list of Process variable (PV) of your beamline PVs with their acceptable value range.
 
-- :download:`dqschemas/basicHDF.json <config/dqschemas/basicHDF.json>` containing the list valid HDF file tags, attributes and array dimentions.
+- :download:`dqschemas/tags.json <config/dqschemas/tags.json>` containing the list valid HDF file tags, attributes and array dimentions.
 
 - :download:`dqschemas/dependencies.json <config/dqschemas/dependencies.json>` containing the list of valid relation among data sets in the same HDF file.
+
+- :download:`dqschemas/limits.json <config/dqschemas/limits.json>` containing the threshold values for the quality check calculations.
 
 Installing from source
 ======================

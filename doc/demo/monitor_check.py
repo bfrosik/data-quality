@@ -53,7 +53,7 @@ will be used if the data of the same type (i.e. "data" or "data_dark" or "data_w
 in multiple files.
 
 This example takes four mandatory and one optional command line arguments:
-conf: a string defining the configuration file. If only path is defined, the name 'dqconfig.ini'
+conf: a string defining the configuration file. If only path is defined, the name 'dqconfig_test.ini'
 will be added as default
 folder: the folder to monitor
 type: a string defining data type being processed; i.e. 'data_dark', 'data_white' or 'data'.

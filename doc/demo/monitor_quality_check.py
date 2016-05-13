@@ -50,7 +50,7 @@ Please make sure the installation :ref:`pre-requisite-reference-label` are met.
 
 This example shows how to verify newly created or modified files in a monitored folder.
 This example takes three mandatory command line arguments:
-conf: a string defining the configuration file. If only path is defined, the name 'dqconfig.ini'
+conf: a string defining the configuration file. If only path is defined, the name 'dqconfig_test.ini'
 will be added as default
 folder: the folder to monitor
 num_files: an integer value specifying how many files will be processed

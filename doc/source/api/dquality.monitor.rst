@@ -9,7 +9,6 @@
    .. rubric:: **Functions:**
 
    .. autosummary::
-   
+      init
       verify
       directory
-      cleanup

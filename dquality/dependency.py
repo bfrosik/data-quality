@@ -233,7 +233,7 @@ def verify_list(file, list, relation, logger):
 def verify(conf, file):
     """
     This function reads the json "*dependencies*" file from the 
-    :download:`dqconfig.ini <../config/dqconfig.ini>` file.
+    :download:`dqconfig_test.ini <../config/dqconfig_test.ini>` file.
     This file contains dictionary with keys of relations between tags.
     The value is a list of lists. The relation applies to the tags in
     inner list respectively. For example if the relation is "*equal*",

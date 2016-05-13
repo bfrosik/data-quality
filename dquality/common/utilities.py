@@ -175,7 +175,7 @@ def gt(value, limit):
 def get_config(conf_path):
     """
     This function returns configuration dictionary. It checks the conf_path parameter wheter it is directory
-    or a file. If a directory, it appends 'dqconfig.ini' as a file name. If the directory or file does not
+    or a file. If a directory, it appends 'dqconfig_test.ini' as a file name. If the directory or file does not
     exist, a message is printed on a console and None is returned. Otherwise, the file is processed into
     dictionary, that is returned.
 
@@ -190,7 +190,7 @@ def get_config(conf_path):
         a configuration object
     """
     if os.path.isdir(conf_path):
-        config = os.path.join(conf_path, 'dqconfig.ini')
+        config = os.path.join(conf_path, 'dqconfig_test.ini')
     elif os.path.isfile(conf_path):
         config = conf_path
     else:

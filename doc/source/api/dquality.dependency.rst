@@ -9,6 +9,7 @@
    .. rubric:: **Functions:**
 
    .. autosummary::
+      init
       verify
       verify_list
       find_value
