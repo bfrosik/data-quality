@@ -3,22 +3,22 @@
     "/exchange/missing" : {},
     "/exchange/missing1" : {},
     "/exchange/data" : {
-        "dim" : [181,2048,2448],
+        "dim" : [5,512,512],
         "axes" : "theta:y:x",
         "units" : "counts"
         },
     "/exchange/data_dark" : {
-        "dim" : [8,2048,2448],
+        "dim" : [5,512,512],
         "axes" : "theta_dark:y:x",
         "units" : "counts"
         },
     "/exchange/data_white" : {
-        "dim" : [20,2048,2448],
+        "dim" : [5,512,512],
         "axes" : "theta_white:y:x",
         "units" : "counts"
         },
     "/exchange/theta" : {
-        "dim" : [181]
+        "dim" : [5]
         ,"units":"degrees"
         }
     }

@@ -91,38 +91,38 @@ def test_struct_no_missing():
     file.verify(conf_file, data_file)
 
 def ver_conf_error_no_schema():
-    logfile = os.path.join(os.getcwd(),"logs/data_quality.log")
+    logfile = os.path.join(os.getcwd(),"default.log")
     return res.is_text_in_file(logfile, 'configuration error: schema is not configured')
 
 def ver_no_schema():
-    logfile = os.path.join(os.getcwd(),"logs/data_quality.log")
+    logfile = os.path.join(os.getcwd(),"default.log")
     return res.is_text_in_file(logfile, 'configuration error: file schemas/tagsx.json does not exist')
 
 def ver_conf_error_no_type():
-    logfile = os.path.join(os.getcwd(),"logs/data_quality.log")
+    logfile = os.path.join(os.getcwd(),"default.log")
     return res.is_text_in_file(logfile, 'config error: verification type not configured')
 
 def ver_bad_type():
-    logfile = os.path.join(os.getcwd(),"logs/data_quality.log")
+    logfile = os.path.join(os.getcwd(),"default.log")
     return res.is_text_in_file(logfile, 'configured verification type hdf_structurex is not supported')
 
 def ver_bad_file():
-    logfile = os.path.join(os.getcwd(),"logs/data_quality.log")
+    logfile = os.path.join(os.getcwd(),"default.log")
     return res.is_text_in_file(logfile, 'parameter error: file data/test_datax.h5 does not exist')
 
 def ver_tags_missing_tags():
-    logfile = os.path.join(os.getcwd(),"logs/data_quality.log")
+    logfile = os.path.join(os.getcwd(),"default.log")
     if res.is_text_in_file(logfile, '/exchange/missing'):
         return res.is_text_in_file(logfile, '/exchange/missing1')
     else:
         return False
 
 def ver_tags_no_missing_tags():
-    logfile = os.path.join(os.getcwd(),"logs/data_quality.log")
+    logfile = os.path.join(os.getcwd(),"default.log")
     return not res.is_text_in_file(logfile, 'not found')
 
 def ver_struct_missing_tags_attrib():
-    logfile = os.path.join(os.getcwd(),"logs/data_quality.log")
+    logfile = os.path.join(os.getcwd(),"default.log")
     if not res.is_text_in_file(logfile, '/exchange/missing'):
         return False
     if not res.is_text_in_file(logfile, '/exchange/missing1'):
@@ -137,7 +137,7 @@ def ver_struct_missing_tags_attrib():
     return True
 
 def ver_struct_no_missing_tags():
-    logfile = os.path.join(os.getcwd(),"logs/data_quality.log")
+    logfile = os.path.join(os.getcwd(),"default.log")
     return os.stat(logfile).st_size == 0
 
 
