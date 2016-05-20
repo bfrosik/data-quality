@@ -1,6 +1,7 @@
 import shutil
 
 def init():
+    print 'in init'
     config = "dqconfig.ini"
     config_test = "dqconfig_test.ini"
     shutil.copyfile(config_test, config)

@@ -10,5 +10,5 @@ def clean():
     if os.path.isfile(config):
         os.remove(config)
 
-    logfile = "logs/data_quality.log"
+    logfile = "default.log"
     open(logfile, 'w').close()
