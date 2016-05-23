@@ -6,4 +6,4 @@ python: "2.7"
 # command to install dependencies
 
 # command to run tests
-script: python -m pytest test/test_file.py
+script: py.test
