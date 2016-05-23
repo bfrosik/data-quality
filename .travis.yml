@@ -10,4 +10,4 @@ python:
 
 # command to run tests
 script: 
-py.test test/test_file.py
+-m pytest test/test_file.py
