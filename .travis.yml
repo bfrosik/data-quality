@@ -12,6 +12,8 @@ before_install:
 
 
 install:
+- python setup.py install
+- pip install codecov
   #- conda config --set always_yes true
   #- conda update conda
   #- conda config --add channels data-quality
@@ -20,10 +22,9 @@ install:
   # # need to build_ext -i for the tests so that the .so is local to the source
   # # code.  We could also setup.py develop, but I'm not sure if that is any
   # # better
-  - python setup.py install
-  - pip install codecov
+
   
-  script: 
+script: 
   - py.test --with-coverage
 
 after_success:
