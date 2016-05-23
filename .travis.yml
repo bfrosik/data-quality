@@ -13,10 +13,11 @@ before_install:
   - bash miniconda.sh -b -p $HOME/miniconda
   - export PATH="$HOME/miniconda/bin:$PATH"
   - conda config --set always_yes yes --set changeps1 no
+  - conda install numpy h5py
   - conda update conda
 
 install:
-- conda install numpy h5py
+
 
 # command to run tests
 script: py.test
