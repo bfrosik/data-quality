@@ -26,8 +26,8 @@ before_install:
 
 install:
   - noarch_python: True
-  - conda install python=$TRAVIS_PYTHON_VERSION numpy
-  - conda install python=$TRAVIS_PYTHON_VERSION h5py
+  - conda install numpy
+  - conda install h5py
   - conda info -a
   - python setup.py build_ext --inplace
 
