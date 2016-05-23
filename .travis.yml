@@ -26,7 +26,8 @@ before_install:
   - conda install anaconda-client
 
 install:
-  - conda install python=$TRAVIS_PYTHON_VERSION pytest six numpy h5py python-coveralls dxchange
+  - conda install python=$TRAVIS_PYTHON_VERSION numpy
+    - conda install python=$TRAVIS_PYTHON_VERSION h5py
   - conda info -a
   - python setup.py build_ext --inplace
 
