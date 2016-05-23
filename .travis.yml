@@ -14,7 +14,8 @@ before_install:
   - export PATH="$HOME/miniconda/bin:$PATH"
   - conda config --set always_yes yes --set changeps1 no
   - conda install numpy
-  - pip install --no-use-wheel --no-cache-dir h5py
+  - pip install Cython
+  - pip install h5py
   - conda update conda
 
 # command to run tests
