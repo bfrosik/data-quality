@@ -9,5 +9,4 @@ python:
 # command to install dependencies
 
 # command to run tests
-script: 
--m pytest test/test_file.py
+script: -m pytest test/test_file.py
