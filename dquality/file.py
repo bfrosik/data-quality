@@ -309,6 +309,6 @@ def verify(conf, file):
 
     if type == 'hdf_structure':
         return structure(file, required_tags, logger)
-    if type == 'hdf_tags':
+    elif type == 'hdf_tags':
         return tags(file, required_tags, logger)
 
