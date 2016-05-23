@@ -2,16 +2,10 @@ language: python
 
 python:
   - "2.7"
-  
-before_install:
-  - conda config --set always_yes yes --set changeps1 no
-  - conda update conda
 
 install:
   - noarch_python: True
-  - conda install numpy
-  - conda install h5py
-  - conda info -a
+
   - python setup.py build_ext --inplace
 
 script: 
