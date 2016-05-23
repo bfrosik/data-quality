@@ -16,6 +16,7 @@ install:
   - conda install numpy
   - conda install h5py
   - conda update conda
+  - python setup.py build_ext --inplace
 
 # command to run tests
 script: py.test
