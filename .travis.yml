@@ -1,14 +1,32 @@
 language: python
+sudo: false
 
 python:
   - "2.7"
+env:
+ - RUN_TESTS: true
+ - GH_REF: github.com/bfrosik/data-quality.git
+
+before_install:
+  - if [ ${TRAVIS_PYTHON_VERSION:0:1} == "2" ]; then wget http://repo.continuum.io/miniconda/Miniconda-3.5.5-Linux-x86_64.sh -O miniconda.sh; else wget http://repo.continuum.io/miniconda/Miniconda3-3.5.5-Linux-x86_64.sh -O miniconda.sh; fi
+  - chmod +x miniconda.sh
+  - ./miniconda.sh -b -p /home/travis/mc
+  - export PATH=/home/travis/mc/bin:$PATH
+
 
 install:
-  - noarch_python: True
-
-  - python setup.py build_ext --inplace
-
-script: 
+  - conda config --set always_yes true
+  - conda update conda
+  - conda config --add channels data-quality
+  #- conda create -n testenv pip nose python=$TRAVIS_PYTHON_VERSION numpy scipy scikit-image six coverage cython xraylib lmfit=0.8.3 netcdf4 flake8
+  #- source activate testenv
+  # # need to build_ext -i for the tests so that the .so is local to the source
+  # # code.  We could also setup.py develop, but I'm not sure if that is any
+  # # better
+  - python setup.py install
+  - pip install codecov
+  
+  script: 
   - py.test --with-coverage
 
 after_success:
