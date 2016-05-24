@@ -13,8 +13,8 @@ import shutil
 logfile = os.path.join(os.getcwd(),"default.log")
 
 def init():
-    config = "dqconfig.ini"
-    config_test = "dqconfig_test.ini"
+    config = os.path.join(os.getcwd(),"dqconfig.ini")
+    config_test = os.path.join(os.getcwd(),"dqconfig_test.ini")
     shutil.copyfile(config_test, config)
 
     schemas = "schemas"
