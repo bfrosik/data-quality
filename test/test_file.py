@@ -19,8 +19,8 @@ def init():
     config_test = os.path.join(os.getcwd(),"test/dqconfig_test.ini")
     shutil.copyfile(config_test, config)
 
-    schemas = os.path.join(os.getcwd(),"schemas")
-    schemas_test = os.path.join(os.getcwd(),"schemas_test")
+    schemas = os.path.join(os.getcwd(),"test/schemas")
+    schemas_test = os.path.join(os.getcwd(),"test/schemas_test")
     shutil.copytree(schemas_test, schemas)
 
 def on_exit_test(test):
