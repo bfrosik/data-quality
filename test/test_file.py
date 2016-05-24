@@ -1,7 +1,7 @@
 import threading
 import os
 import time
-from test.test_utils.set_config import init
+#from test.test_utils.set_config import init
 from test.test_utils.cleanup import clean
 import test.test_utils.modify_settings as mod
 import test.test_utils.verify_results as res
@@ -10,6 +10,15 @@ from nose import with_setup
 import dquality.file as file
 
 logfile = os.path.join(os.getcwd(),"default.log")
+
+def init():
+    config = "dqconfig.ini"
+    config_test = "dqconfig_test.ini"
+    shutil.copyfile(config_test, config)
+
+    schemas = "schemas"
+    schemas_test = "schemas_test"
+    shutil.copytree(schemas_test, schemas)
 
 def on_exit_test(test):
     tt = threading.Thread(target=test, args = () )
