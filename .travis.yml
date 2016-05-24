@@ -21,7 +21,7 @@ before_install:
   - conda install anaconda-client
 
 install:
-  - conda install python=$TRAVIS_PYTHON_VERSION pytest numpy h5py nose
+  - conda install python=$TRAVIS_PYTHON_VERSION pytest numpy h5py nose ConfigObj
   - conda info -a
   - python setup.py build_ext --inplace
 
