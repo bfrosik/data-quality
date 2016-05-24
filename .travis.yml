@@ -21,15 +21,13 @@ before_install:
   - conda install anaconda-client
 
 install:
-  - conda install python=$TRAVIS_PYTHON_VERSION pytest numpy h5py scipy python-coveralls
+  - conda install python=$TRAVIS_PYTHON_VERSION pytest numpy h5py
   - conda info -a
   - python setup.py build_ext --inplace
 
 script: 
-  - py.test --with-coverage
+  - py.test
 
-after_success:
-  - coveralls
 
 
   
