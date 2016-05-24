@@ -8,6 +8,7 @@ import test.test_utils.verify_results as res
 from nose import with_setup
 
 import dquality.file as file
+import shutil
 
 logfile = os.path.join(os.getcwd(),"default.log")
 
