@@ -23,8 +23,11 @@ def init():
 
     schemas = os.path.join(os.getcwd(),"test/schemas")
     schemas_test = os.path.join(os.getcwd(),"test/schemas_test")
-    #if os.path.isdir(schemas):
-    shutil.rmtree(schemas, ignore_errors=True)
+    if os.path.isdir(schemas):
+        os.remove(os.path.join(schemas, "tags.json"))
+        os.remove(os.path.join(schemas, "dependencies.json"))
+        os.remove(os.path.join(schemas, "limits.json"))
+        os.remove(os.path.join(schemas, "pvs.json"))
     shutil.copytree(schemas_test, schemas)
 
 def clean():
