@@ -10,7 +10,8 @@ from nose import with_setup
 import dquality.file as file
 import shutil
 
-logfile = os.path.join(os.getcwd(),"default.log")
+logfile = os.path.join(os.getcwd(),"test/default.log")
+config_file = os.path.join(os.getcwd(),"test/dqconfig.ini")
 
 def init():
     config = os.path.join(os.getcwd(),"test/dqconfig.ini")
@@ -18,8 +19,8 @@ def init():
     config_test = os.path.join(os.getcwd(),"test/dqconfig_test.ini")
     shutil.copyfile(config_test, config)
 
-    schemas = "schemas"
-    schemas_test = "schemas_test"
+    schemas = os.path.join(os.getcwd(),"schemas")
+    schemas_test = os.path.join(os.getcwd(),"schemas_test")
     shutil.copytree(schemas_test, schemas)
 
 def on_exit_test(test):
