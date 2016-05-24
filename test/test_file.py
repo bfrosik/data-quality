@@ -14,7 +14,7 @@ logfile = os.path.join(os.getcwd(),"test/default.log")
 config_file = os.path.join(os.getcwd(),"test/dqconfig.ini")
 
 def init():
-    config = os.path.join(os.getcwd(),"test/dqconfig.ini")
+    config = os.path.join(os.getcwd(),"test/schemas")
     print (config)
     config_test = os.path.join(os.getcwd(),"test/dqconfig_test.ini")
     shutil.copyfile(config_test, config)
@@ -23,6 +23,17 @@ def init():
     schemas_test = os.path.join(os.getcwd(),"test/schemas_test")
     shutil.copytree(schemas_test, schemas)
 
+def clean():
+    schemas = os.path.join(os.getcwd(),"test/schemas")
+    if os.path.isdir(schemas):
+        shutil.rmtree(schemas)
+
+    config = os.path.join(os.getcwd(),"test/schemas")
+    if os.path.isfile(config):
+        os.remove(config)
+
+    open(logfile, 'w').close()
+    
 def on_exit_test(test):
     tt = threading.Thread(target=test, args = () )
     tt.start()
