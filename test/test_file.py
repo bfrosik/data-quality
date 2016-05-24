@@ -23,6 +23,8 @@ def init():
 
     schemas = os.path.join(os.getcwd(),"test/schemas")
     schemas_test = os.path.join(os.getcwd(),"test/schemas_test")
+    if os.path.isdir(schemas):
+        os.remdir(config)
     shutil.copytree(schemas_test, schemas)
 
 def clean():
