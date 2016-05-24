@@ -17,6 +17,8 @@ def init():
     config = os.path.join(os.getcwd(),"test/schemas")
     print (config)
     config_test = os.path.join(os.getcwd(),"test/dqconfig_test.ini")
+    if os.path.isfile(config):
+        os.remove(config)
     shutil.copyfile(config_test, config)
 
     schemas = os.path.join(os.getcwd(),"test/schemas")
