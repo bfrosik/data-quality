@@ -30,6 +30,7 @@ def init():
         os.remove(os.path.join(schemas, "pvs.json"))
         shutil.rmtree(schemas)
     shutil.copytree(schemas_test, schemas)
+    os.chmod(schemas, '+w')
 
 def clean():
     schemas = os.path.join(os.getcwd(),"test/schemas")
