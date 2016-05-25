@@ -59,7 +59,7 @@ def test_conf_error_no_schema():
         file.verify(config_file, None)
     except:
         pass
-    on_exit_test(test_no_schema)
+    time.sleep(1)
     assert res.is_text_in_file(logfile, 'configuration error: schema is not configured')
 
     os.remove(os.path.join(schemas, "dependencies.json"))
