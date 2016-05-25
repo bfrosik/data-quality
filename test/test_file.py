@@ -15,33 +15,26 @@ config_file = os.path.join(os.getcwd(),"test/dqconfig.ini")
 
 def init():
     config = os.path.join(os.getcwd(),"test/schemas")
-    print (config)
     config_test = os.path.join(os.getcwd(),"test/dqconfig_test.ini")
-    if os.path.isfile(config):
-        os.remove(config)
     shutil.copyfile(config_test, config)
 
     schemas = os.path.join(os.getcwd(),"test/schemas")
     schemas_test = os.path.join(os.getcwd(),"test/schemas_test")
-    if not os.path.exists(schemas):
-        shutil.copytree(schemas_test, schemas)
-    else:   
-        shutil.copyfile(os.path.join(schemas_test,"dependencies.json"),os.path.join(schemas,"dependencies.json"))
-        shutil.copyfile(os.path.join(schemas_test,"limits.json"),os.path.join(schemas,"limits.json"))
-        shutil.copyfile(os.path.join(schemas_test,"pvs.json"),os.path.join(schemas,"pvs.json"))
-        shutil.copyfile(os.path.join(schemas_test,"tags.json"),os.path.join(schemas,"tags.json"))
+  
+    shutil.copyfile(os.path.join(schemas_test,"dependencies.json"),os.path.join(schemas,"dependencies.json"))
+    shutil.copyfile(os.path.join(schemas_test,"limits.json"),os.path.join(schemas,"limits.json"))
+    shutil.copyfile(os.path.join(schemas_test,"pvs.json"),os.path.join(schemas,"pvs.json"))
+    shutil.copyfile(os.path.join(schemas_test,"tags.json"),os.path.join(schemas,"tags.json"))
 
 
 def clean():
     schemas = os.path.join(os.getcwd(),"test/schemas")
-    if os.path.isdir(schemas):
-        os.remove(os.path.join(schemas, "dependencies.json"))
-        os.remove(os.path.join(schemas, "limits.json"))
-        os.remove(os.path.join(schemas, "pvs.json"))
-        os.remove(os.path.join(schemas, "tags.json"))
+    os.remove(os.path.join(schemas, "dependencies.json"))
+    os.remove(os.path.join(schemas, "limits.json"))
+    os.remove(os.path.join(schemas, "pvs.json"))
+    os.remove(os.path.join(schemas, "tags.json"))
 
-    if os.path.isfile(config_file):
-        os.remove(config_file)
+    os.remove(config_file)
 
     open(logfile, 'w').close()
     
@@ -50,9 +43,14 @@ def on_exit_test(test):
     tt.start()
     time.sleep(1)
 
-@with_setup(init, clean)
+
 def test_conf_error_no_schema():
-    conf_file = "dqconfig.ini"
+    config_test = os.path.join(os.getcwd(),"test/dqconfig_test.ini")
+    shutil.copyfile(config_test, config_file)
+    schemas = os.path.join(os.getcwd(),"test/schemas")
+    schemas_test = os.path.join(os.getcwd(),"test/schemas_test")
+    shutil.copytree(schemas_test, schemas)
+
     find = 'schema'
     replace = 'schemax'
     mod.replace_text_in_file(conf_file, find, replace)
@@ -63,6 +61,16 @@ def test_conf_error_no_schema():
         pass
     on_exit_test(test_no_schema)
     assert res.is_text_in_file(logfile, 'configuration error: schema is not configured')
+
+    os.remove(os.path.join(schemas, "dependencies.json"))
+    os.remove(os.path.join(schemas, "limits.json"))
+    os.remove(os.path.join(schemas, "pvs.json"))
+    os.remove(os.path.join(schemas, "tags.json"))
+
+    if os.path.isfile(config_file):
+        os.remove(config_file)
+
+    open(logfile, 'w').close()
 
 
 @with_setup(init, clean)
