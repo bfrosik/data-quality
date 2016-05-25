@@ -13,6 +13,10 @@ import shutil
 logfile = os.path.join(os.getcwd(),"default.log")
 config_file = os.path.join(os.getcwd(),"test/dqconfig.ini")
 
+def print_log():
+    f = open(logfile, 'r')
+    print (f)
+    
 def init():
     config = os.path.join(os.getcwd(),"test/dqconfig.ini")
     config_test = os.path.join(os.getcwd(),"test/dqconfig_test.ini")
@@ -95,8 +99,8 @@ def test_conf_error_no_type():
         file.verify(config_file, None)
     except:
         pass
+    print_log()
     assert res.is_text_in_file(logfile, 'config error: verification type not configured')
-    time.sleep(1)
 
 @with_setup(init, clean)
 def test_bad_type():
@@ -109,6 +113,7 @@ def test_bad_type():
     except:
         pass
     assert res.is_text_in_file(logfile, 'configured verification type hdf_structurex is not supported')
+    print_log()
 
 
 @with_setup(init, clean)
