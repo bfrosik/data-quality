@@ -10,7 +10,7 @@ from nose import with_setup
 import dquality.file as file
 import shutil
 
-logfile = os.path.join(os.getcwd(),"test/default.log")
+logfile = os.path.join(os.getcwd(),"default.log")
 config_file = os.path.join(os.getcwd(),"test/dqconfig.ini")
 
 def init():
