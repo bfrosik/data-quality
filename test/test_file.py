@@ -87,7 +87,7 @@ def test_no_schema():
     except:
         pass
     assert res.is_text_in_file(logfile, 'configuration error: file schemas/tagsx.json does not exist')
-    time.sleep(1)
+    print_log()
 
 @with_setup(init, clean)
 def test_conf_error_no_type():
@@ -125,6 +125,7 @@ def test_bad_file():
     except:
         pass
     assert res.is_text_in_file(logfile, 'parameter error: file data/test_datax.h5 does not exist')
+    print_log()
 
 
 @with_setup(init, clean)
@@ -137,6 +138,7 @@ def test_tags_missing_tags():
     file.verify(config_file, data_file)
     assert res.is_text_in_file(logfile, '/exchange/missing')
     assert res.is_text_in_file(logfile, '/exchange/missing1')
+    print_log()
 
 
 @with_setup(init, clean)
@@ -150,6 +152,7 @@ def test_tags_no_missing_tags():
     data_file = os.path.join(os.getcwd(),"test/data/test_data.h5")
     file.verify(config_file, data_file)
     assert not res.is_text_in_file(logfile, 'not found')
+    print_log()
 
 
 @with_setup(init, clean)
@@ -162,6 +165,7 @@ def test_struct_missing_tags_attrib():
     assert res.is_text_in_file(logfile, 'should be axes:theta_dark:y:x')
     assert res.is_text_in_file(logfile, 'should be axes:theta_white:y:x')
     assert res.is_text_in_file(logfile, 'attributes are missing in tag /exchange/theta')
+    print_log()
 
 
 @with_setup(init, clean)
@@ -176,5 +180,6 @@ def test_struct_no_missing():
     data_file = os.path.join(os.getcwd(),"test/data/test_data.h5")
     file.verify(config_file, data_file)
     assert os.stat(logfile).st_size == 0
+    print_log()
 
 
