@@ -83,6 +83,7 @@ def test_no_schema():
     except:
         pass
     assert res.is_text_in_file(logfile, 'configuration error: file schemas/tagsx.json does not exist')
+    time.sleep(1)
 
 @with_setup(init, clean)
 def test_conf_error_no_type():
@@ -94,9 +95,8 @@ def test_conf_error_no_type():
         file.verify(config_file, None)
     except:
         pass
-    time.sleep(1)
     assert res.is_text_in_file(logfile, 'config error: verification type not configured')
-
+    time.sleep(1)
 
 @with_setup(init, clean)
 def test_bad_type():
