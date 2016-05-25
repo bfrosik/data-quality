@@ -25,12 +25,6 @@ def init():
     schemas_test = os.path.join(os.getcwd(),"test/schemas_test")
     if not os.path.exists(schemas):
         os.makedirs(schemas)
-    else:
-        os.remove(os.path.join(schemas, "dependencies.json"))
-        os.remove(os.path.join(schemas, "limits.json"))
-        os.remove(os.path.join(schemas, "pvs.json"))
-        os.remove(os.path.join(schemas, "tags.json"))
-        
         
     shutil.copyfile(os.path.join(schemas_test,"dependencies.json"),os.path.join(schemas,"dependencies.json"))
     shutil.copyfile(os.path.join(schemas_test,"limits.json"),os.path.join(schemas,"limits.json"))
