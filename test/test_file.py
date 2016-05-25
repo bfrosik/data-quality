@@ -15,7 +15,7 @@ config_file = os.path.join(os.getcwd(),"test/dqconfig.ini")
 
 def print_log():
     f = open(logfile, 'r')
-    print (f)
+    print (f.read())
     
 def init():
     config = os.path.join(os.getcwd(),"test/dqconfig.ini")
