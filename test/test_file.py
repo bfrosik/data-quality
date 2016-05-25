@@ -34,10 +34,10 @@ def init():
 def clean():
     schemas = os.path.join(os.getcwd(),"test/schemas")
     if os.path.isdir(schemas):
-        os.remove(os.path.join(schemas, "dependencies.json")
-        os.remove(os.path.join(schemas, "limits.json")
-        os.remove(os.path.join(schemas, "pvs.json")
-        os.remove(os.path.join(schemas, "tags.json")
+        os.remove(os.path.join(schemas, "dependencies.json"))
+        os.remove(os.path.join(schemas, "limits.json"))
+        os.remove(os.path.join(schemas, "pvs.json"))
+        os.remove(os.path.join(schemas, "tags.json"))
 
 
     config = os.path.join(os.getcwd(),"test/schemas")
