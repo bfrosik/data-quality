@@ -14,7 +14,7 @@ logfile = os.path.join(os.getcwd(),"default.log")
 config_file = os.path.join(os.getcwd(),"test/dqconfig.ini")
 
 def init():
-    config = os.path.join(os.getcwd(),"test/schemas")
+    config = os.path.join(os.getcwd(),"test/dqconfig.ini")
     config_test = os.path.join(os.getcwd(),"test/dqconfig_test.ini")
     shutil.copyfile(config_test, config)
 
