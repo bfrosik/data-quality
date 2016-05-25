@@ -99,87 +99,87 @@ def test_conf_error_no_type():
         file.verify(config_file, None)
     except:
         pass
-    print_log()
     assert res.is_text_in_file(logfile, 'config error: verification type not configured')
-
-@with_setup(init, clean)
-def test_bad_type():
-    find = 'hdf_structure'
-    replace = 'hdf_structurex'
-    mod.replace_text_in_file(config_file, find, replace)
-    # the file.verify will exit with -1
-    try:
-        file.verify(config_file, None)
-    except:
-        pass
-    assert res.is_text_in_file(logfile, 'configured verification type hdf_structurex is not supported')
     print_log()
+    
+# @with_setup(init, clean)
+# def test_bad_type():
+#     find = 'hdf_structure'
+#     replace = 'hdf_structurex'
+#     mod.replace_text_in_file(config_file, find, replace)
+#     # the file.verify will exit with -1
+#     try:
+#         file.verify(config_file, None)
+#     except:
+#         pass
+#     assert res.is_text_in_file(logfile, 'configured verification type hdf_structurex is not supported')
+#     print_log()
 
 
-@with_setup(init, clean)
-def test_bad_file():
-    data_file = "data/test_datax.h5"
-    # the file.verify will exit with -1
-    try:
-        file.verify(config_file, data_file)
-    except:
-        pass
-    assert res.is_text_in_file(logfile, 'parameter error: file data/test_datax.h5 does not exist')
-    print_log()
+# @with_setup(init, clean)
+# def test_bad_file():
+#     data_file = "data/test_datax.h5"
+#     # the file.verify will exit with -1
+#     try:
+#         file.verify(config_file, data_file)
+#     except:
+#         pass
+#     assert res.is_text_in_file(logfile, 'parameter error: file data/test_datax.h5 does not exist')
+#     print_log()
 
 
-@with_setup(init, clean)
-def test_tags_missing_tags():
-    schema_file = os.path.join(os.getcwd(),"test/schemas/tags.json")
-    find = 'hdf_structure'
-    replace = 'hdf_tags'
-    mod.replace_text_in_file(config_file, find, replace)
-    data_file = os.path.join(os.getcwd(),"test/data/test_data.h5")
-    file.verify(config_file, data_file)
-    assert res.is_text_in_file(logfile, '/exchange/missing')
-    assert res.is_text_in_file(logfile, '/exchange/missing1')
-    print_log()
+# @with_setup(init, clean)
+# def test_tags_missing_tags():
+#     schema_file = os.path.join(os.getcwd(),"test/schemas/tags.json")
+#     find = 'hdf_structure'
+#     replace = 'hdf_tags'
+#     mod.replace_text_in_file(config_file, find, replace)
+#     data_file = os.path.join(os.getcwd(),"test/data/test_data.h5")
+#     file.verify(config_file, data_file)
+#     assert res.is_text_in_file(logfile, '/exchange/missing')
+#     assert res.is_text_in_file(logfile, '/exchange/missing1')
+#     print_log()
 
 
-@with_setup(init, clean)
-def test_tags_no_missing_tags():
-    schema_file = os.path.join(os.getcwd(),"test/schemas/tags.json")
-    find = 'hdf_structure'
-    replace = 'hdf_tags'
-    mod.replace_text_in_file(config_file, find, replace)
-    match = 'missing'
-    mod.delete_line_in_file(schema_file, match)
-    data_file = os.path.join(os.getcwd(),"test/data/test_data.h5")
-    file.verify(config_file, data_file)
-    assert not res.is_text_in_file(logfile, 'not found')
-    print_log()
+# @with_setup(init, clean)
+# def test_tags_no_missing_tags():
+#     schema_file = os.path.join(os.getcwd(),"test/schemas/tags.json")
+#     find = 'hdf_structure'
+#     replace = 'hdf_tags'
+#     mod.replace_text_in_file(config_file, find, replace)
+#     match = 'missing'
+#     mod.delete_line_in_file(schema_file, match)
+#     data_file = os.path.join(os.getcwd(),"test/data/test_data.h5")
+#     file.verify(config_file, data_file)
+#     assert not res.is_text_in_file(logfile, 'not found')
+#     print_log()
 
 
-@with_setup(init, clean)
-def test_struct_missing_tags_attrib():
-    schema_file = os.path.join(os.getcwd(),"test/schemas/tags.json")
-    data_file = os.path.join(os.getcwd(),"test/data/test_data.h5")
-    file.verify(config_file, data_file)
-    assert res.is_text_in_file(logfile, '/exchange/missing')
-    assert res.is_text_in_file(logfile, '/exchange/missing1')
-    assert res.is_text_in_file(logfile, 'should be axes:theta_dark:y:x')
-    assert res.is_text_in_file(logfile, 'should be axes:theta_white:y:x')
-    assert res.is_text_in_file(logfile, 'attributes are missing in tag /exchange/theta')
-    print_log()
+# @with_setup(init, clean)
+# def test_struct_missing_tags_attrib():
+#     schema_file = os.path.join(os.getcwd(),"test/schemas/tags.json")
+#     data_file = os.path.join(os.getcwd(),"test/data/test_data.h5")
+#     file.verify(config_file, data_file)
+#     assert res.is_text_in_file(logfile, '/exchange/missing')
+#     assert res.is_text_in_file(logfile, '/exchange/missing1')
+#     assert res.is_text_in_file(logfile, 'should be axes:theta_dark:y:x')
+#     assert res.is_text_in_file(logfile, 'should be axes:theta_white:y:x')
+#     assert res.is_text_in_file(logfile, 'attributes are missing in tag /exchange/theta')
+#     print_log()
 
 
-@with_setup(init, clean)
-def test_struct_no_missing():
-    schema_file = os.path.join(os.getcwd(),"test/schemas/tags.json")
-    match = 'missing'
-    mod.delete_line_in_file(schema_file, match)
-    match = 'axes'
-    mod.delete_line_in_file(schema_file, match)
-    match = 'degrees'
-    mod.delete_line_in_file(schema_file, match)
-    data_file = os.path.join(os.getcwd(),"test/data/test_data.h5")
-    file.verify(config_file, data_file)
-    assert os.stat(logfile).st_size == 0
-    print_log()
+# @with_setup(init, clean)
+# def test_struct_no_missing():
+#     schema_file = os.path.join(os.getcwd(),"test/schemas/tags.json")
+#     match = 'missing'
+#     mod.delete_line_in_file(schema_file, match)
+#     match = 'axes'
+#     mod.delete_line_in_file(schema_file, match)
+#     match = 'degrees'
+#     mod.delete_line_in_file(schema_file, match)
+#     data_file = os.path.join(os.getcwd(),"test/data/test_data.h5")
+#     file.verify(config_file, data_file)
+#     assert os.stat(logfile).st_size == 0
+#     print_log()
 
 
