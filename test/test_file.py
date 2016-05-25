@@ -94,6 +94,7 @@ def test_conf_error_no_type():
         file.verify(config_file, None)
     except:
         pass
+    time.sleep(1)
     assert res.is_text_in_file(logfile, 'config error: verification type not configured')
 
 
