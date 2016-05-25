@@ -24,18 +24,21 @@ def init():
     schemas = os.path.join(os.getcwd(),"test/schemas")
     schemas_test = os.path.join(os.getcwd(),"test/schemas_test")
     if os.path.isdir(schemas):
-        os.remove(os.path.join(schemas, "tags.json"))
-        os.remove(os.path.join(schemas, "dependencies.json"))
-        os.remove(os.path.join(schemas, "limits.json"))
-        os.remove(os.path.join(schemas, "pvs.json"))
-        shutil.rmtree(schemas)
-    shutil.copytree(schemas_test, schemas)
-    os.chmod(schemas, '+w')
+        shutil.copyfile(os.path.join(schemas_test,"dependencies.json"),os.path.join(schemas,"dependencies.json"))
+        shutil.copyfile(os.path.join(schemas_test,"limits.json"),os.path.join(schemas,"limits.json"))
+        shutil.copyfile(os.path.join(schemas_test,"pvs.json"),os.path.join(schemas,"pvs.json"))
+        shutil.copyfile(os.path.join(schemas_test,"tags.json"),os.path.join(schemas,"tags.json"))
+    else:
+        shutil.copytree(schemas_test, schemas)
 
 def clean():
     schemas = os.path.join(os.getcwd(),"test/schemas")
     if os.path.isdir(schemas):
-        shutil.rmtree(schemas)
+        os.remove(os.path.join(schemas, "dependencies.json")
+        os.remove(os.path.join(schemas, "limits.json")
+        os.remove(os.path.join(schemas, "pvs.json")
+        os.remove(os.path.join(schemas, "tags.json")
+
 
     config = os.path.join(os.getcwd(),"test/schemas")
     if os.path.isfile(config):
