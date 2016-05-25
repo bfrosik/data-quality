@@ -73,18 +73,17 @@ def test_conf_error_no_schema():
     open(logfile, 'w').close()
 
 
-# @with_setup(init, clean)
-# def test_no_schema():
-#     conf_file = "dqconfig.ini"
-#     find = 'tags'
-#     replace = 'tagsx'
-#     mod.replace_text_in_file(conf_file, find, replace)
-#     # the file.verify will exit with -1
-#     try:
-#         file.verify(conf_file, None)
-#     except:
-#         pass
-#     assert res.is_text_in_file(logfile, 'configuration error: file schemas/tagsx.json does not exist')
+@with_setup(init, clean)
+def test_no_schema():
+    find = 'tags'
+    replace = 'tagsx'
+    mod.replace_text_in_file(config_file, find, replace)
+    # the file.verify will exit with -1
+    try:
+        file.verify(config_file, None)
+    except:
+        pass
+    assert res.is_text_in_file(logfile, 'configuration error: file schemas/tagsx.json does not exist')
 
 # @with_setup(init, clean)
 # def test_conf_error_no_type():
