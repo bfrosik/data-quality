@@ -53,10 +53,10 @@ def test_conf_error_no_schema():
 
     find = 'schema'
     replace = 'schemax'
-    mod.replace_text_in_file(conf_file, find, replace)
+    mod.replace_text_in_file(config_file, find, replace)
     # the file.verify will exit with -1
     try:
-        file.verify(conf_file, None)
+        file.verify(config_file, None)
     except:
         pass
     on_exit_test(test_no_schema)
