@@ -23,13 +23,14 @@ def init():
 
     schemas = os.path.join(os.getcwd(),"test/schemas")
     schemas_test = os.path.join(os.getcwd(),"test/schemas_test")
-    if os.path.isdir(schemas):
-        shutil.copyfile(os.path.join(schemas_test,"dependencies.json"),os.path.join(schemas,"dependencies.json"))
-        shutil.copyfile(os.path.join(schemas_test,"limits.json"),os.path.join(schemas,"limits.json"))
-        shutil.copyfile(os.path.join(schemas_test,"pvs.json"),os.path.join(schemas,"pvs.json"))
-        shutil.copyfile(os.path.join(schemas_test,"tags.json"),os.path.join(schemas,"tags.json"))
-    else:
-        shutil.copytree(schemas_test, schemas)
+    if not os.path.exists(schemas):
+        os.makedirs(schemas)
+        
+    shutil.copyfile(os.path.join(schemas_test,"dependencies.json"),os.path.join(schemas,"dependencies.json"))
+    shutil.copyfile(os.path.join(schemas_test,"limits.json"),os.path.join(schemas,"limits.json"))
+    shutil.copyfile(os.path.join(schemas_test,"pvs.json"),os.path.join(schemas,"pvs.json"))
+    shutil.copyfile(os.path.join(schemas_test,"tags.json"),os.path.join(schemas,"tags.json"))
+
 
 def clean():
     schemas = os.path.join(os.getcwd(),"test/schemas")
