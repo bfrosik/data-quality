@@ -21,6 +21,9 @@ def init(id):
     config = 'test/conf' + id + '.ini'
     config =  os.path.join(os.getcwd(),config)
     shutil.copyfile(config_test, config)
+    find = 'tags'
+    replace = 'tags'+ id
+    mod.replace_text_in_file(config, find, replace)
     tags = 'test/tags' + id + '.json'
     tags = os.path.join(os.getcwd(), tags)
     shutil.copyfile(tags_test, tags)
