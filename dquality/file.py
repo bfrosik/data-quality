@@ -208,7 +208,7 @@ def structure(file, required_tags, logger):
                                           tag + ': is ' +
                                           key + ':' +
                                           attr + ' but should be ' +
-                                          key + ':' +
+                                          key.decode("utf-8") + ':' +
                                           tag_attribs.get(key))
                                 attrib_list.remove(key)
                 report_items(
