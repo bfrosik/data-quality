@@ -1,4 +1,5 @@
 import os
+import time
 import test.test_utils.modify_settings as mod
 import test.test_utils.verify_results as res
 
@@ -40,8 +41,8 @@ def test_conf_error_no_schema():
         file.verify(config, None)
     except:
         pass
+    time.sleep(1)
     assert res.is_text_in_file(logfile, 'configuration error: schema is not configured')
-
     clean()
 
 
@@ -55,7 +56,7 @@ def test_no_schema():
         file.verify(config, None)
     except:
         pass
-
+    time.sleep(1)
     assert res.is_text_in_file(logfile, 'configuration error: file test/schemas/tagsx.json does not exist')
     clean()
 
@@ -70,7 +71,7 @@ def test_conf_error_no_type():
         file.verify(config, None)
     except:
         pass
-
+    time.sleep(1)
     assert res.is_text_in_file(logfile, 'config error: verification type not configured')
     clean()
 
@@ -85,6 +86,7 @@ def test_bad_type():
         file.verify(config, None)
     except:
         pass
+    time.sleep(1)
     assert res.is_text_in_file(logfile, 'configured verification type hdf_structurex is not supported')
     clean()
 
@@ -97,6 +99,7 @@ def test_bad_file():
         file.verify(config, data_file)
     except:
         pass
+    time.sleep(1)
     assert res.is_text_in_file(logfile, 'parameter error: file data/test_datax.h5 does not exist')
     clean()
 
@@ -106,6 +109,7 @@ def test_tags_missing_tags():
     replace = 'hdf_tags'
     mod.replace_text_in_file(config, find, replace)
     file.verify(config, data_file)
+    time.sleep(1)
     assert res.is_text_in_file(logfile, '/exchange/missing')
     assert res.is_text_in_file(logfile, '/exchange/missing1')
     clean()
@@ -118,6 +122,7 @@ def test_tags_no_missing_tags():
     mod.replace_text_in_file(config, find, replace)
     match = 'missing'
     mod.delete_line_in_file(tags, match)
+    time.sleep(1)
     file.verify(config, data_file)
     assert not res.is_text_in_file(logfile, 'not found')
     clean()
@@ -126,6 +131,7 @@ def test_tags_no_missing_tags():
 def test_struct_missing_tags_attrib():
     config, tags = init('h')
     file.verify(config, data_file)
+    time.sleep(1)
     assert res.is_text_in_file(logfile, '/exchange/missing')
     assert res.is_text_in_file(logfile, '/exchange/missing1')
     assert res.is_text_in_file(logfile, 'should be axes:theta_dark:y:x')
@@ -143,6 +149,7 @@ def test_struct_no_missing():
     match = 'degrees'
     mod.delete_line_in_file(tags, match)
     file.verify(config, data_file)
+    time.sleep(1)
     assert os.stat(logfile).st_size == 0
     clean
 
