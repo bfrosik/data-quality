@@ -17,8 +17,7 @@ def print_log():
     f = open(logfile, 'r')
     print (f.read())
 
-def init():
-    id += 1
+def init(id):
     config = 'test/conf' + id
     config =  os.path.join(os.getcwd(),config)
     shutil.copyfile(config_test, config)
@@ -33,7 +32,8 @@ def clean():
 
 
 def test_conf_error_no_schema():
-    config, tags = init()
+    id += 1
+    config, tags = init(id)
     find = 'schema'
     replace = 'schemax'
     mod.replace_text_in_file(config, find, replace)
@@ -48,7 +48,8 @@ def test_conf_error_no_schema():
 
 
 def test_no_schema():
-    config, tags = init()
+    id += 1
+    config, tags = init(id)
     find = 'tags'
     replace = 'tagsx'
     mod.replace_text_in_file(config, find, replace)
@@ -63,7 +64,8 @@ def test_no_schema():
 
 
 def test_conf_error_no_type():
-    config, tags = init()
+    id += 1
+    config, tags = init(id)
     find = 'verification_type'
     replace = 'verification_typex'
     mod.replace_text_in_file(config, find, replace)
@@ -78,7 +80,8 @@ def test_conf_error_no_type():
 
 
 def test_bad_type():
-    config, tags = init()
+    id += 1
+    config, tags = init(id)
     find = 'hdf_structure'
     replace = 'hdf_structurex'
     mod.replace_text_in_file(config, find, replace)
@@ -92,7 +95,8 @@ def test_bad_type():
 
 
 def test_bad_file():
-    config, tags = init()
+    id += 1
+    config, tags = init(id)
     data_file = "data/test_datax.h5"
     # the file.verify will exit with -1
     try:
@@ -103,7 +107,8 @@ def test_bad_file():
     clean()
 
 def test_tags_missing_tags():
-    config, tags = init()
+    id += 1
+    config, tags = init(id)
     find = 'hdf_structure'
     replace = 'hdf_tags'
     mod.replace_text_in_file(config, find, replace)
@@ -114,7 +119,8 @@ def test_tags_missing_tags():
 
 
 def test_tags_no_missing_tags():
-    config, tags = init()
+    id += 1
+    config, tags = init(id)
     find = 'hdf_structure'
     replace = 'hdf_tags'
     mod.replace_text_in_file(config, find, replace)
@@ -126,7 +132,8 @@ def test_tags_no_missing_tags():
 
 
 def test_struct_missing_tags_attrib():
-    config, tags = init()
+    id += 1
+    config, tags = init(id)
     file.verify(config, data_file)
     assert res.is_text_in_file(logfile, '/exchange/missing')
     assert res.is_text_in_file(logfile, '/exchange/missing1')
@@ -137,7 +144,8 @@ def test_struct_missing_tags_attrib():
 
 
 def test_struct_no_missing():
-    config, tags = init()
+    id += 1
+    config, tags = init(id)
     match = 'missing'
     mod.delete_line_in_file(tags, match)
     match = 'axes'
