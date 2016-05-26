@@ -60,7 +60,7 @@ def test_no_schema():
     except:
         pass
     time.sleep(1)
-    assert res.is_text_in_file(logfile, 'configuration error: file test/schemas/tagsx.json does not exist')
+    assert res.is_text_in_file(logfile, 'configuration error: file test/schemas/tagsxb.json does not exist')
     clean()
 
 
