@@ -58,9 +58,8 @@ def test_conf_error_no_schema():
     open(logfile, 'w').close()
 
 
-#@with_setup(init, clean)
+@with_setup(init, clean)
 def test_no_schema():
-    init()
     find = 'tags'
     replace = 'tagsx'
     mod.replace_text_in_file(config, find, replace)
@@ -69,9 +68,7 @@ def test_no_schema():
         file.verify(config, None)
     except:
         pass
-    print_log()
-    assert res.is_text_in_file(logfile, 'configuration error: file schemas/tagsx.json does not exist')
-    clean()
+    assert res.is_text_in_file(logfile, 'configuration error: file test/schemas/tagsx.json does not exist')
 
 @with_setup(init, clean)
 def test_conf_error_no_type():
