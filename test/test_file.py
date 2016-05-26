@@ -69,6 +69,7 @@ def test_no_schema():
         file.verify(config, None)
     except:
         pass
+    print (logfile.read())
     assert res.is_text_in_file(logfile, 'configuration error: file schemas/tagsx.json does not exist')
     clean()
 
