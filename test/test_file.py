@@ -25,7 +25,7 @@ def init(id):
     find = 'tags'
     replace = 'tags'+ id
     mod.replace_text_in_file(config, find, replace)
-    if not os.path.isdir(schemas)
+    if not os.path.isdir(schemas):
         shutil.copytree(schemas_test, schemas)
     tags = 'test/schemas/tags' + id + '.json'
     tags = os.path.join(os.getcwd(), tags)
