@@ -1,6 +1,6 @@
 import os
 import time
-import shutils
+import shutil
 import test.test_utils.modify_settings as mod
 import test.test_utils.verify_results as res
 
