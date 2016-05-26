@@ -48,6 +48,7 @@ def test_conf_error_no_schema():
         file.verify(config, None)
     except:
         pass
+    print_log()
     assert res.is_text_in_file(logfile, 'configuration error: schema is not configured')
 
     os.remove(tags)
