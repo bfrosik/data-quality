@@ -207,8 +207,8 @@ def structure(file, required_tags, logger):
                                     logger.warning('incorrect attribute in ' +
                                           tag + ': is ' +
                                           key + ':' +
-                                          attr + ' but should be ' +
-                                          key.decode("utf-8") + ':' +
+                                          attr.decode('utf-8') + ' but should be ' +
+                                          key + ':' +
                                           tag_attribs.get(key))
                                 attrib_list.remove(key)
                 report_items(
