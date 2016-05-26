@@ -18,10 +18,10 @@ def print_log():
     print (f.read())
 
 def init(id):
-    config = 'test/conf' + id
+    config = 'test/conf' + id + '.ini'
     config =  os.path.join(os.getcwd(),config)
     shutil.copyfile(config_test, config)
-    tags = 'test/tags' + id
+    tags = 'test/tags' + id + '.json'
     tags = os.path.join(os.getcwd(), tags)
     shutil.copyfile(tags_test, tags)
     return config, tags
