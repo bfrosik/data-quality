@@ -24,7 +24,7 @@ def print_log():
     
 def init():
     shutil.copyfile(config_test, config)
-    if not os.path.isdir(schema):
+    if not os.path.isdir(schemas):
         shutil.copytree(schemas_test, schemas)
     else:
         shutil.copyfile(tags_test, tags)
