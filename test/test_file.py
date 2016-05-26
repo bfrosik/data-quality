@@ -24,7 +24,10 @@ def print_log():
     
 def init():
     shutil.copyfile(config_test, config)
-    shutil.copyfile(tags_test, tags)
+    if not os.path.isdir(schema):
+        shutil.copytree(schemas_test, schemas)
+    else:
+        shutil.copyfile(tags_test, tags)
 
 
 def clean():
