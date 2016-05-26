@@ -1,5 +1,6 @@
 import os
 import time
+import shutils
 import test.test_utils.modify_settings as mod
 import test.test_utils.verify_results as res
 
@@ -11,7 +12,7 @@ config_test = os.path.join(os.getcwd(),"test/dqconfig_test.ini")
 schemas_test = os.path.join(os.getcwd(),"test/schemas_test")
 tags_test = os.path.join(schemas_test,"tags.json")
 data_file = os.path.join(os.getcwd(),"test/data/test_data.h5")
-
+schemas = os.path.join(os.getcwd(),"test/schemas")
 
 def print_log():
     f = open(logfile, 'r')
@@ -24,7 +25,9 @@ def init(id):
     find = 'tags'
     replace = 'tags'+ id
     mod.replace_text_in_file(config, find, replace)
-    tags = 'test/tags' + id + '.json'
+    if not os.path.isdir(schemas)
+        shutil.copytree(schemas_test, schemas)
+    tags = 'test/schemas/tags' + id + '.json'
     tags = os.path.join(os.getcwd(), tags)
     shutil.copyfile(tags_test, tags)
     return config, tags
