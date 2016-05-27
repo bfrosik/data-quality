@@ -203,11 +203,12 @@ def structure(file, required_tags, logger):
                         else:
                             attr = dset.attrs.get(key)
                             if attr is not None:
-                                if attr != tag_attribs.get(key):
+                                       att_str = attr.decode('utf-8')
+                                if attr_str != tag_attribs.get(key):
                                     logger.warning('incorrect attribute in ' +
                                           tag + ': is ' +
                                           key + ':' +
-                                          attr.decode('utf-8') + ' but should be ' +
+                                          attr_str + ' but should be ' +
                                           key + ':' +
                                           tag_attribs.get(key))
                                 attrib_list.remove(key)
