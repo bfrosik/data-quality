@@ -28,7 +28,7 @@ install:
   - python setup.py build_ext --inplace
 
 script: 
-  - py.test --with-coverage
+  - py.test coveralls/tests.py
   
 after_success:
   - coveralls
