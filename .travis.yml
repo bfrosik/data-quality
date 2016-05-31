@@ -21,12 +21,15 @@ before_install:
   - conda update conda
 
 install:
-  - conda install python=$TRAVIS_PYTHON_VERSION pytest numpy h5py nose ConfigObj
+  - conda install python=$TRAVIS_PYTHON_VERSION pytest numpy h5py nose ConfigObj python-coveralls
   - conda info -a
   - python setup.py build_ext --inplace
 
 script: 
-  - py.test
+  - py.test --with-coverage
+  
+after_success:
+  - coveralls
 
 
 
