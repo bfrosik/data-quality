@@ -4,7 +4,7 @@ $PYTHON setup.py install
 # Add more build steps here, if they are necessary.
 
 mkdir -p ~/.dquality
-cp config/* ~/.dquality
+cp -rf config/* ~/.dquality
 
 # See
 # http://docs.continuum.io/conda/build.html
