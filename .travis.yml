@@ -26,7 +26,7 @@ install:
   - python setup.py build_ext --inplace
 
 script: 
-  - py.test --cov=myproj tests/
+  - py.test --cov=data-quality tests/
   
 
 
