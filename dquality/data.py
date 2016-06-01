@@ -59,6 +59,7 @@ quality check are returned back.
 import os.path
 import json
 import sys
+import string
 from multiprocessing import Queue, Process
 import dquality.common.utilities as utils
 import dquality.handler as handler
@@ -107,9 +108,7 @@ def init(config):
     with open(limitsfile) as limits_file:
         limits = json.loads(limits_file.read())['limits']
 
-    report_file = utils.get_file(conf, 'report_file', logger)
-
-    return logger, limits, report_file
+    return logger, limits
 
 def process_data(data_type, aggregateq, fp, data_tag, limits):
     """
@@ -239,11 +238,13 @@ def verify(conf, file):
         (i.e. data_dark, data_white,data)
     """
 
-    logger, limits, report_file = init(conf)
+    logger, limits = init(conf)
     if not os.path.isfile(file):
         logger.error(
             'parameter error: file ' +
             file + ' does not exist')
         sys.exit(-1)
+
+    report_file = string.replace(file,'h5','report')
 
     return verify_file(logger, file, limits, report_file)

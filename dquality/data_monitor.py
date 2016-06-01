@@ -114,11 +114,9 @@ def init(config):
     with open(limitsfile) as limits_file:
         limits = json.loads(limits_file.read())['limits']
 
-    report_file = utils.get_file(conf, 'report_file', logger)
-
     extensions = conf['extensions']
 
-    return logger, limits, report_file, extensions
+    return logger, limits, extensions
 
 
 def directory(directory, patterns):
@@ -189,7 +187,7 @@ def verify(conf, folder, num_files):
     -------
     None
     """
-    logger, limits, report_file, extensions = init(conf)
+    logger, limits, extensions = init(conf)
     if not os.path.isdir(folder):
         logger.error(
             'parameter error: directory ' +
@@ -231,15 +229,6 @@ def verify(conf, folder, num_files):
         if file_count == num_files:
             print ('file_count, num_files',file_count, num_files)
             interrupted = True
-
-    if report_file is not None:
-        try:
-            report_file = open(report_file, 'w')
-        except:
-            logger.warning('Cannot open report file, writing report on console')
-            report_file = None
-
-    report.report_bad_indexes(bad_indexes, report_file)
 
     return bad_indexes
 
