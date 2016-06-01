@@ -229,37 +229,6 @@ def get_logger(name, conf):
         logging.basicConfig(filename='default.log', level=logging.DEBUG)
     return logger
 
-def get_directory(conf, logger):
-    """
-    This function returns a directory object. It reads the directory from a configuration file.
-    If the directory is not configured or does not exist a message is logged into a log file,
-    and None is returned.
-
-    Parameters
-    ----------
-    conf : config Object
-        a configuration object
-
-    logger : Logger Object
-        a logger object
-
-    Returns
-    -------
-    folder : str
-    """
-    try:
-        # check if directory exists, try absolute path
-        folder = conf['directory']
-        if not os.path.isdir(folder):
-            logger.error(
-                'configuration error: directory ' +
-                folder + ' does not exist')
-            return None
-    except KeyError:
-        logger.error('config error: directory to monitor not configured')
-        return None
-    return folder
-
 
 def get_file(conf, config_name, logger):
     """

@@ -107,10 +107,6 @@ def init(config):
 
     logger = utils.get_logger(__name__, conf)
 
-    dir = utils.get_directory(conf, logger)
-    if dir is None:
-        sys.exit(-1)
-
     limitsfile = utils.get_file(conf, 'limits', logger)
     if limitsfile is None:
         sys.exit(-1)
