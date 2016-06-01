@@ -61,6 +61,7 @@ The results will be sent to an EPICS PV (printed on screen for now).
 import os
 import sys
 import pyinotify
+import string
 from pyinotify import WatchManager
 from multiprocessing import Queue
 import json
@@ -224,10 +225,11 @@ def verify(conf, folder, num_files):
                 break
             else:
                 file_count += 1
-                bad_indexes[file] = dataver.verify_file(logger, file, limits, None)
-                print (bad_indexes.keys())
+                report_file = string.replace(file, 'h5', 'report')
+                bad_indexes[file] = dataver.verify_file(logger, file, limits, report_file)
+                print (bad_indexes[file])
+                #print (bad_indexes.keys())
         if file_count == num_files:
-            print ('file_count, num_files',file_count, num_files)
             interrupted = True
 
     return bad_indexes

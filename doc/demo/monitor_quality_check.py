@@ -81,4 +81,3 @@ folder = args[2]
 num_files = args[3]
 
 bad_indexes = dmonitor.verify(conf, folder, int(num_files))
-print json.dumps(bad_indexes)

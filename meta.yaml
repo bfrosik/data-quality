@@ -3,7 +3,7 @@ package:
   version: '0.0.1'
 
 source:
-  git_url: https://github.com/ravescovi/data-quality.git
+  path: .
   
 build:
   number: 0
