@@ -219,14 +219,14 @@ def get_logger(name, conf):
     logger = logging.getLogger(name)
     try:
         # try absolute path
-        log_file_name = conf['log_file']
-        logging.basicConfig(filename=log_file_name, level=logging.DEBUG)
+        lfile_ = conf['log_file']
     except KeyError:
         print('config error: log file is not configured, logging to default.log')
-        logging.basicConfig(filename='default.log', level=logging.DEBUG)
+        lfile = 'default.log'
     except:
         print('config error: log file directory does not exist')
-        logging.basicConfig(filename='default.log', level=logging.DEBUG)
+        lfile = 'default.log'
+    logging.basicConfig(filename=lfile, level=logging.DEBUG, format='%(asctime)s:  %(levelname)s:  %(name)s:  %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
     return logger
 
 
