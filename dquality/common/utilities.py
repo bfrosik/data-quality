@@ -54,6 +54,8 @@ import os
 import h5py
 import logging
 from configobj import ConfigObj
+import pytz
+import datetime
 
 __author__ = "Barbara Frosik"
 __copyright__ = "Copyright (c) 2016, UChicago Argonne, LLC."
@@ -212,21 +214,49 @@ def get_logger(name, conf):
     conf : config Object
         a configuration object
 
+    timezone : str
+        a standard string defining local timezone, for convenience initialized to known location
+
     Returns
     -------
     logger : logger
     """
-    logger = logging.getLogger(name)
+
     try:
         # try absolute path
-        lfile_ = conf['log_file']
+        lfile = conf['log_file']
     except KeyError:
         print('config error: log file is not configured, logging to default.log')
         lfile = 'default.log'
     except:
         print('config error: log file directory does not exist')
         lfile = 'default.log'
-    logging.basicConfig(filename=lfile, level=logging.DEBUG, format='%(asctime)s:  %(levelname)s:  %(name)s:  %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
+
+    try:
+        timezone = conf['time_zone']
+    except KeyError:
+        timezone = 'America/Chicago'
+
+    tz = pytz.timezone(timezone)
+
+    class Formatter(logging.Formatter):
+        def converter(self, timestamp):
+            return datetime.datetime.fromtimestamp(timestamp, tz)
+
+        def formatTime(self, record, datefmt=None):
+            dt = self.converter(record.created)
+            if datefmt:
+                s = dt.strftime(datefmt)
+            else:
+                t = dt.strftime(self.default_time_format)
+                s = self.default_msec_format % (t, record.msecs)
+            return s
+
+    logger = logging.getLogger(name)
+    handler = logging.FileHandler(lfile)
+    handler.setFormatter(Formatter("%(asctime)s:  %(levelname)s:  %(name)s:  %(message)s", "%Y-%m-%dT%H:%M:%S%z"))
+    logger.addHandler(handler)
+    logger.setLevel(logging.DEBUG)
     return logger
 
 
