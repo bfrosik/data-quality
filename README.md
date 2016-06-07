@@ -1,12 +1,8 @@
 # data-quality
 
-.. image:: https://readthedocs.org/projects/data-quality/badge/?version=latest
-   :target: https://readthedocs.org/projects/data-quality/?badge=latest
-   :alt: Read the Docs
-
-.. image:: https://travis-ci.org/bfrosik/data-quality.svg?branch=master
-   :target: https://travis-ci.org/bfrosik/data-quality
-   :alt: Travis CI
+[![Build Status](https://readthedocs.org/projects/data-quality/badge/?version=latest](https://readthedocs.org/projects/data-quality/?badge=latest)
+[![Build Status](https://travis-ci.org/bfrosik/data-quality.svg?branch=master)](https://travis-ci.org/bfrosik/data-quality)
+[![codecov.io](http://codecov.io/github/bfrosik/data-quality/coverage.svg?branch=master)](http://codecov.io/github/bfrosik/data-quality?branch=master)
 
 The Data Quality project will research, evaluate, and then design and implement solution to ensure quality of scientific data collected at the Advanced Photon Source.
 
