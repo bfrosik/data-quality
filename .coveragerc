@@ -1,6 +1,6 @@
 # .coveragerc to control coverage.py
 [run]
-data-quality
+dquality
 [report]
 omit =
     */python?.?/*
