@@ -1,6 +1,6 @@
 # .coveragerc to control coverage.py
 [run]
-dquality
+source=dquality
 [report]
 omit =
     */python?.?/*
