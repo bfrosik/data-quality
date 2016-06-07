@@ -28,7 +28,7 @@ install:
   - python setup.py build_ext --inplace
 
 script: 
-  - py.test
+  - coverage run --source=data-quality setup.py test
   
 after_success:
     - coveralls
