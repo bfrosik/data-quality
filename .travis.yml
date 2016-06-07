@@ -23,7 +23,8 @@ before_install:
 install:
   - conda install python=$TRAVIS_PYTHON_VERSION numpy h5py nose ConfigObj pytz
   - pip install pytest pytest-cov
-  - pip install coveralls
+  - pip install codecov
+  #- pip install coveralls
   - conda info -a
   - python setup.py build_ext --inplace
 
@@ -31,5 +32,6 @@ script:
   - coverage run --source=data-quality setup.py test
   
 after_success:
-    - coveralls
+    #- coveralls
+    - codecov
   
