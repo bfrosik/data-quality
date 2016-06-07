@@ -6,6 +6,10 @@ omit =
     */python?.?/*
     */site-packages/nose/*
     *test*
+    *__init__.py*
+    *common.__init__.py*
+    *common.constants.py*
+   
 exclude_lines =
     def set_default
 
