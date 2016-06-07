@@ -4,7 +4,7 @@ sudo: false
 python:
   - "2.7"
   - "3.4"
-  #- "3.5"
+  - "3.5"
 
 env:
   - PATH=$HOME/miniconda/bin:$PATH LD_LIBRARY_PATH=$HOME/miniconda/lib C_INCLUDE_PATH=$HOME/miniconda/include
@@ -24,15 +24,12 @@ install:
   - conda install python=$TRAVIS_PYTHON_VERSION numpy h5py nose ConfigObj pytz
   - pip install pytest pytest-cov
   - pip install codecov
-  #- pip install coveralls
   - conda info -a
   - python setup.py build_ext --inplace
 
 script: 
-  #- coverage run --source=data-quality setup.py test
   - py.test --cov=./
   
 after_success:
-    #- coveralls
     - codecov
   
