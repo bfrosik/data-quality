@@ -4,7 +4,7 @@ sudo: false
 python:
   - "2.7"
   - "3.4"
-  - "3.5"
+  #- "3.5"
 
 env:
   - PATH=$HOME/miniconda/bin:$PATH LD_LIBRARY_PATH=$HOME/miniconda/lib C_INCLUDE_PATH=$HOME/miniconda/include
