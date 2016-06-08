@@ -151,17 +151,17 @@ def test_struct_missing_tags_attrib():
     clean()
 
 
-# def test_struct_no_missing():
-#     config, tags = init('i')
-#     match = 'missing'
-#     mod.delete_line_in_file(tags, match)
-#     match = 'axes'
-#     mod.delete_line_in_file(tags, match)
-#     match = 'degrees'
-#     mod.delete_line_in_file(tags, match)
-#     file.verify(config, data_file)
-#     time.sleep(1)
-#     print_log()
-#     assert os.stat(logfile).st_size == 0
-#     clean
+def test_struct_no_missing():
+    config, tags = init('i')
+    match = 'missing'
+    mod.delete_line_in_file(tags, match)
+    match = 'axes'
+    mod.delete_line_in_file(tags, match)
+    match = 'degrees'
+    mod.delete_line_in_file(tags, match)
+    file.verify(config, data_file)
+    time.sleep(1)
+    print_log()
+    assert os.stat(logfile).st_size == 0
+    clean
 
