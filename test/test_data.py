@@ -81,8 +81,8 @@ def test_conf_error_no_limits():
 
 def test_no_limit():
     config = init('c')
-    find = 'limits'
-    replace = 'limitsx'
+    find = 'limits.json'
+    replace = 'limitsx.json'
     mod.replace_text_in_file(config, find, replace)
     # the file.verify will exit with -1
     try:
