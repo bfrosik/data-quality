@@ -2,16 +2,16 @@
 "limits" : {
     "data" : {
         "mean" : {
-             "low_limit" : 400,
-             "high_limit" : 600
+             "low_limit" : 1.0,
+             "high_limit" : 3.5
              },
         "stat_mean" : {
-             "low_limit" : -150,
-             "high_limit" : 150
+             "low_limit" : -2,
+             "high_limit" : 1
              },
         "std" : {
-             "low_limit" : 150,
-             "high_limit" : 200
+             "low_limit" : 0,
+             "high_limit" : 0
              }
         },
     "data_dark" : {
@@ -30,16 +30,16 @@
         },
     "data_white" : {
         "mean" : {
-             "low_limit" : 650,
-             "high_limit" : 600
+             "low_limit" : 0,
+             "high_limit" : 6000
              },
         "stat_mean" : {
-             "low_limit" : -150,
-             "high_limit" : 150
+             "low_limit" : 260,
+             "high_limit" : 500
              },
         "std" : {
-             "low_limit" : 100,
-             "high_limit" : 260
+             "low_limit" : 130,
+             "high_limit" : 450
              }
         }
     }

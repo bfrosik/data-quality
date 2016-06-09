@@ -138,15 +138,15 @@ def process_data(data_type, aggregateq, fp, data_tag, limits):
     -------
     None
     """
-    data = fp[data_tag]
+    dt = fp[data_tag]
 
     dataq = Queue()
 
     p = Process(target=handler.handle_data, args=(dataq, limits[data_type], aggregateq, ))
     p.start()
 
-    for i in range(0,data.shape[0]):
-        dataq.put(Data(data[i]))
+    for i in range(0,dt.shape[0]):
+        dataq.put(Data(dt[i]))
     dataq.put('all_data')
 
 
@@ -197,6 +197,7 @@ def verify_file(logger, file, limits, report_file):
 
     for type in queues.keys():
         queue = queues[type]
+        data_tag = '/exchange/'+ type
         process_data(type, queue, fp, data_tag, limits)
 
 
