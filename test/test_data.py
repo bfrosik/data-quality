@@ -46,8 +46,8 @@ def test_qualitychecks():
     assert 4 in bad_data
     assert 0 in bad_data_dark
     assert 1 in bad_data_dark
-    #assert 2 in bad_data_dark
-    assert 3 in bad_data_dark
+    assert 2 in bad_data_dark
+    #assert 3 in bad_data_dark
     assert 4 in bad_data_dark
     clean()
 
@@ -89,7 +89,6 @@ def test_no_limit():
         data.verify(config, None)
     except:
         pass
-    time.sleep(2)
-    print_log()
+    time.sleep(1)
     assert res.is_text_in_file(logfile, 'configuration error: file test/schemas/limitsx.json does not exist')
     clean()
