@@ -90,5 +90,5 @@ def test_no_limit():
     except:
         pass
     time.sleep(1)
-    assert res.is_text_in_file(logfile, 'configuration error: file test/schemas/limitsxc.json does not exist')
+    assert res.is_text_in_file(logfile, 'configuration error: file test/schemas/limitsx.json does not exist')
     clean()
