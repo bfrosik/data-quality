@@ -1,10 +1,11 @@
 import os
-import time
 import shutil
-import test.test_utils.modify_settings as mod
+import time
+from multiprocessing import Process
 import test.test_utils.verify_results as res
+import test.test_utils.modify_settings as mod
+import dquality.data_monitor as monitor
 
-import dquality.data as data
 
 logfile = os.path.join(os.getcwd(),"default.log")
 config_test = os.path.join(os.getcwd(),"test/dqconfig_test.ini")
@@ -30,10 +31,23 @@ def init(id):
 def clean():
     open(logfile, 'w').close()
 
+def copy_file(source, dest):
+    time.sleep(1)
+    shutil.copyfile(source, dest)
+
 
 def test_qualitychecks():
     config = init('a')
-    bad_indexes = data.verify(config, data_file)
+    data_path = os.path.join(os.getcwd(),"test/data1")
+    new_data = os.path.join(data_path,"test_data.h5")
+
+    if not os.path.exists(data_path):
+        os.makedirs(data_path)
+    p = Process(target=copy_file, args=(data_file, new_data,))
+    p.start()
+
+    bad_indexes_file = monitor.verify(config, data_path, 1)
+    bad_indexes = bad_indexes_file[new_data]
     bad_data_white = bad_indexes['data_white']
     bad_data = bad_indexes['data']
     bad_data_dark = bad_indexes['data_dark']
@@ -52,25 +66,26 @@ def test_qualitychecks():
     clean()
 
 
-def test_bad_file():
-    data_file = "data/test_datax.h5"
+def test_bad_directory():
+    config = init('b')
+    directory = "bad_dir"
     # the file.verify will exit with -1
     try:
-        data.verify(config_test, data_file)
+        monitor.verify(config, directory, 1)
     except:
         pass
     time.sleep(1)
-    assert res.is_text_in_file(logfile, 'parameter error: file data/test_datax.h5 does not exist')
+    assert res.is_text_in_file(logfile, 'parameter error: directory bad_dir does not exist')
     clean()
 
 def test_conf_error_no_limits():
-    config = init('b')
+    config = init('c')
     find = 'limits'
     replace = 'limitsx'
     mod.replace_text_in_file(config, find, replace)
     # the file.verify will exit with -1
     try:
-        data.verify(config, None)
+        monitor.verify(config, None, 1)
     except:
         pass
     time.sleep(1)
@@ -85,7 +100,7 @@ def test_no_limit():
     mod.replace_text_in_file(config, find, replace)
     # the file.verify will exit with -1
     try:
-        data.verify(config, None)
+        monitor.verify(config, None, 1)
     except:
         pass
     time.sleep(1)

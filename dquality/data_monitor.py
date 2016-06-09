@@ -225,7 +225,7 @@ def verify(conf, folder, num_files):
                 break
             else:
                 file_count += 1
-                report_file = string.replace(file, 'h5', 'report')
+                report_file = file.rsplit(".",)[0] + '.report'
                 bad_indexes[file] = dataver.verify_file(logger, file, limits, report_file)
                 print (bad_indexes[file])
                 #print (bad_indexes.keys())
