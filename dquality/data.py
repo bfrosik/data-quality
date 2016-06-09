@@ -246,6 +246,6 @@ def verify(conf, file):
             file + ' does not exist')
         sys.exit(-1)
 
-    report_file = string.replace(file,'h5','report')
+    report_file = file.rsplit(".",)[0] + '.report'
 
     return verify_file(logger, file, limits, report_file)
