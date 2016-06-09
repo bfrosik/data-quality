@@ -89,6 +89,7 @@ def test_no_limit():
         data.verify(config, None)
     except:
         pass
-    time.sleep(1)
+    time.sleep(2)
+    print_log()
     assert res.is_text_in_file(logfile, 'configuration error: file test/schemas/limitsx.json does not exist')
     clean()
