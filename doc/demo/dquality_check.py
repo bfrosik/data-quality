@@ -65,16 +65,23 @@ The detailed results are stored into configured report file.
 import sys
 import dquality.data as data
 import json
+import argparse
 
-args = sys.argv
 
-if args is None or len(args) < 2:
-    print ('incorrect number of arguments')
-    sys.exit(-1)
+def main(arg):
 
-conf = args[1]
-file = args[2]
+    parser = argparse.ArgumentParser()
+    parser.add_argument("cfname", help="configuration file name")
+    parser.add_argument("fname", help="file name to do the quality checks on")    
+    
+    args = parser.parse_args()
 
-bad_indexes = data.verify(conf, file)
-print json.dumps(bad_indexes)
 
+    conf = args.cfname
+    fname = args.fname
+
+    bad_indexes = data.verify(conf, fname)
+    print json.dumps(bad_indexes)
+
+if __name__ == "__main__":
+    main(sys.argv[1:])
