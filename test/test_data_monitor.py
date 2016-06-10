@@ -66,43 +66,43 @@ def copy_file(source, dest):
 #     clean()
 
 
-# def test_bad_directory():
-#     config = init('b')
-#     directory = "bad_dir"
-#     # the file.verify will exit with -1
-#     try:
-#         monitor.verify(config, directory, 1)
-#     except:
-#         pass
-#     time.sleep(1)
-#     assert res.is_text_in_file(logfile, 'parameter error: directory bad_dir does not exist')
-#     clean()
+def test_bad_directory():
+    config = init('b')
+    directory = "bad_dir"
+    # the file.verify will exit with -1
+    try:
+        monitor.verify(config, directory, 1)
+    except:
+        pass
+    time.sleep(1)
+    assert res.is_text_in_file(logfile, 'parameter error: directory bad_dir does not exist')
+    clean()
 
-# def test_conf_error_no_limits():
-#     config = init('c')
-#     find = 'limits'
-#     replace = 'limitsx'
-#     mod.replace_text_in_file(config, find, replace)
-#     # the file.verify will exit with -1
-#     try:
-#         monitor.verify(config, None, 1)
-#     except:
-#         pass
-#     time.sleep(1)
-#     assert res.is_text_in_file(logfile, 'configuration error: limits is not configured')
-#     clean()
+def test_conf_error_no_limits():
+    config = init('c')
+    find = 'limits'
+    replace = 'limitsx'
+    mod.replace_text_in_file(config, find, replace)
+    # the file.verify will exit with -1
+    try:
+        monitor.verify(config, None, 1)
+    except:
+        pass
+    time.sleep(1)
+    assert res.is_text_in_file(logfile, 'configuration error: limits is not configured')
+    clean()
 
 
-# def test_no_limit():
-#     config = init('c')
-#     find = 'limits.json'
-#     replace = 'limitsx.json'
-#     mod.replace_text_in_file(config, find, replace)
-#     # the file.verify will exit with -1
-#     try:
-#         monitor.verify(config, None, 1)
-#     except:
-#         pass
-#     time.sleep(1)
-#     assert res.is_text_in_file(logfile, 'configuration error: file test/schemas/limitsx.json does not exist')
-#     clean()
+def test_no_limit():
+    config = init('c')
+    find = 'limits.json'
+    replace = 'limitsx.json'
+    mod.replace_text_in_file(config, find, replace)
+    # the file.verify will exit with -1
+    try:
+        monitor.verify(config, None, 1)
+    except:
+        pass
+    time.sleep(1)
+    assert res.is_text_in_file(logfile, 'configuration error: file test/schemas/limitsx.json does not exist')
+    clean()
