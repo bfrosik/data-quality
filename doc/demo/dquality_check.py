@@ -56,8 +56,7 @@ file: a file to be verified.
 The configuration file will have the following definitions:
 'limits' - file name including path that contains dictionary of limit values that will be applied to verify quality check calculations.
            Example of limits file: doc/source/config/dqschemas/limits.json
-'log_file' - defines log file. If not configured, the software will create default.log file in the working directory. 
-'report_file' - report file that will be created when the given file is verified. This file will contain the quality checks results.
+'log_file' - defines log file. If not configured, the software will create default.log file in the working directory.
 
 The detailed results are stored into configured report file.
 
@@ -76,12 +75,12 @@ def main(arg):
     
     args = parser.parse_args()
 
-
     conf = args.cfname
     fname = args.fname
 
     bad_indexes = data.verify(conf, fname)
     print json.dumps(bad_indexes)
+    return bad_indexes
 
 if __name__ == "__main__":
     main(sys.argv[1:])

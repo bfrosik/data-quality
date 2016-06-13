@@ -1,0 +1,30 @@
+{
+"equal" : [
+        [
+            "/exchange/data dim 2",
+            "/exchange/data_dark dim 2",
+            "/exchange/data_white dim 2",
+            "/measurement/instrument/detector/dimension_x"
+        ],
+        [
+            "/exchange/data dim 1",
+            "/exchange/data_dark dim 1",
+            "/exchange/data_white dim 1",
+            "/measurement/instrument/detector/dimension_y"
+        ],
+        [
+            "/exchange/data dim 0",
+            "/exchange/theta dim 0"
+        ]
+    ],
+"less_or_equal" : [
+        [
+            "/exchange/data dim 2",
+            "/measurement/instrument/detector/roi/x2"
+        ],
+        [
+            "/exchange/data dim 1",
+            "/measurement/instrument/detector/roi/y2"
+        ]
+    ]
+}
