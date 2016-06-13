@@ -1,0 +1,46 @@
+{
+"limits" : {
+    "data" : {
+        "mean" : {
+             "low_limit" : 400,
+             "high_limit" : 600
+             },
+        "stat_mean" : {
+             "low_limit" : -150,
+             "high_limit" : 150
+             },
+        "std" : {
+             "low_limit" : 150,
+             "high_limit" : 200
+             }
+        },
+    "data_dark" : {
+        "mean" : {
+             "low_limit" : 0,
+             "high_limit" : 110
+             },
+        "stat_mean" : {
+             "low_limit" : -5,
+             "high_limit" : 5
+             },
+        "std" : {
+             "low_limit" : 1.5,
+             "high_limit" : 10
+             }
+        },
+    "data_white" : {
+        "mean" : {
+             "low_limit" : 650,
+             "high_limit" : 600
+             },
+        "stat_mean" : {
+             "low_limit" : -150,
+             "high_limit" : 150
+             },
+        "std" : {
+             "low_limit" : 100,
+             "high_limit" : 260
+             }
+        }
+    }
+}

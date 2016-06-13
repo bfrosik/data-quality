@@ -1,3 +1,4 @@
+
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
@@ -48,44 +49,41 @@
 """
 Please make sure the installation :ref:`pre-requisite-reference-label` are met.
 
-This example shows how to verify newly created or modified files in a monitored folder.
-This example takes three mandatory command line arguments:
-conf: a string defining the configuration file. If only path is defined, the name 'dqconfig_test.ini'
-will be added as default
-folder: the folder to monitor
-num_files: an integer value specifying how many files will be processed
+This script is specific for beamline 32id.
 
-The configuration file will have the following definitions:
-'limits' - file name including path that contains dictionary of limit values that will be applied to verify quality check calculations.
-           Example of limits file: doc/source/config/dqschemas/limits.json
-'log_file' - defines log file. If not configured, the software will create default.log file in the working directory.
-'extensions' - list of file extensions that the script will monitor for.
+This example takes two mandatory parameters:
+instrument: a string defining the detector that will be used. User can enter one of these choices:
+'nanotomo', 'microtomo'.
+The instrument determines a configuration file that will be used.
+file: a file to be verified for dependencies according to schema.
 
-This test can be done at during data collection to confirm data quality
-values are within acceptable range.
+This script calls hdf_check verifier.
 
 """
 import sys
-import dquality.data_monitor as dmonitor
+import os
 import argparse
-
+import dquality.doc.demo.pv_check as pv
 
 def main(arg):
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("cfname", help="configuration file name")
-    parser.add_argument("fname", help="folder name to monitor for files")
-    parser.add_argument("numfiles", help="number of files to monitor for")
+    parser.add_argument("instrument", help="the detector indicator, can be nanotomo or microtomo")
 
     args = parser.parse_args()
+    instrument = args.instrument
 
-    conf = args.cfname
-    fname = args.fname
-    num_files = args.numfiles
+    conf = os.path.join("/home/beams/USR32IDC/.dquality/b32id/", instrument)
 
-    bad_indexes = dmonitor.verify(conf, fname, int(num_files))
+    args = ['dquality', conf]
+    bad_indexes = pv.main(args)
     return bad_indexes
 
 
 if __name__ == "__main__":
     main(sys.argv[1:])
+
+
+
+
+
