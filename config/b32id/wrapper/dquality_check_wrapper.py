@@ -55,9 +55,9 @@ This example takes two mandatory parameters:
 instrument: a string defining the detector that will be used. User can enter one of these choices: 
 'nanotomo', 'microtomo'.
 The instrument determines a configuration file that will be used.
-file: a file to be verified for dependencies according to schema.
+fname: a file to be verified for data quality.
 
-This script calls quality_check verifier.
+This script calls quality_check demo.
 
 """
 import sys

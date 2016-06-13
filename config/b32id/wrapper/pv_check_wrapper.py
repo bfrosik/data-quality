@@ -51,13 +51,12 @@ Please make sure the installation :ref:`pre-requisite-reference-label` are met.
 
 This script is specific for beamline 32id.
 
-This example takes two mandatory parameters:
+This example takes one mandatory parameter:
 instrument: a string defining the detector that will be used. User can enter one of these choices:
 'nanotomo', 'microtomo'.
 The instrument determines a configuration file that will be used.
-file: a file to be verified for dependencies according to schema.
 
-This script calls hdf_check verifier.
+This script calls pv_check demo.
 
 """
 import sys
