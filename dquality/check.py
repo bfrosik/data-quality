@@ -98,7 +98,10 @@ def hdf_check(arg):
 
     conf = args.cfname
     fname = args.fname
-
+    
+    conf = arg[1]
+    fname = arg[2]
+    
     if hdf.verify(conf, fname):
         print ('All tags exist and meet conditions')
     else:

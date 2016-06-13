@@ -48,7 +48,7 @@
 import sys
 import os
 import argparse
-import dquality.doc.demo.monitor_quality_check as monitor
+from dquality.check import monitor_quality_check as monitor
 from os.path import expanduser
 
 def main(arg):
@@ -64,10 +64,10 @@ def main(arg):
     num_files = args.numfiles
 
     home = expanduser("~")
-    conf = os.path.join(home, instrument)
+    conf = os.path.join(home, ".dquality", instrument)
 
     args = ['monitor', conf, fname, num_files]
-    bad_indexes = monitor.main(args)
+    bad_indexes = monitor(args)
     return bad_indexes
 
 

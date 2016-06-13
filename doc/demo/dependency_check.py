@@ -62,7 +62,7 @@ This script calls dependency_check verifier.
 import sys
 import os
 import argparse
-import dquality.doc.demo.dependency_check as dependency
+from dquality.check import dependency_check as dependency
 from os.path import expanduser
 
 def main(arg):
@@ -76,10 +76,10 @@ def main(arg):
     fname = args.fname
 
     home = expanduser("~")
-    conf = os.path.join(home, instrument)
+    conf = os.path.join(home, ".dquality", instrument)
 
     args = ['dependency', conf, fname]
-    bad_indexes = dependency.main(args)
+    bad_indexes = dependency(args)
     return bad_indexes
 
 

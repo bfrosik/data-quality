@@ -48,7 +48,7 @@
 import sys
 import os
 import argparse
-import dquality.doc.demo.monitor_check as monitor
+from dquality.check import monitor_check as monitor
 from os.path import expanduser
 
 def main(arg):
@@ -68,10 +68,10 @@ def main(arg):
     by_file = args.repbyfile
 
     home = expanduser("~")
-    conf = os.path.join(home, instrument)
+    conf = os.path.join(home, ".dquality", instrument)
 
     args = ['dquality', conf, fname, dtype, num_files, by_file]
-    bad_indexes = monitor.main(args)
+    bad_indexes = monitor(args)
     return bad_indexes
 
 
