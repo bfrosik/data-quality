@@ -58,8 +58,7 @@ num_files: an integer value specifying how many files will be processed
 The configuration file will have the following definitions:
 'limits' - file name including path that contains dictionary of limit values that will be applied to verify quality check calculations.
            Example of limits file: doc/source/config/dqschemas/limits.json
-'log_file' - defines log file. If not configured, the software will create default.log file in the working directory. 
-'report_file' - report file that will be created when the given file is verified. This file will contain the quality checks results.
+'log_file' - defines log file. If not configured, the software will create default.log file in the working directory.
 'extensions' - list of file extensions that the script will monitor for.
 
 This test can be done at during data collection to confirm data quality
@@ -67,17 +66,26 @@ values are within acceptable range.
 
 """
 import sys
-import json
 import dquality.data_monitor as dmonitor
+import argparse
 
-args = sys.argv
 
-if args is None or len(args) < 3:
-    print ('incorrect number of arguments')
-    sys.exit(-1)
+def main(arg):
 
-conf = args[1]
-folder = args[2]
-num_files = args[3]
+    parser = argparse.ArgumentParser()
+    parser.add_argument("cfname", help="configuration file name")
+    parser.add_argument("fname", help="folder name to monitor for files")
+    parser.add_argument("numfiles", help="number of files to monitor for")
 
-bad_indexes = dmonitor.verify(conf, folder, int(num_files))
+    args = parser.parse_args()
+
+    conf = args.cfname
+    fname = args.fname
+    num_files = args.numfiles
+
+    bad_indexes = dmonitor.verify(conf, fname, int(num_files))
+    return bad_indexes
+
+
+if __name__ == "__main__":
+    main(sys.argv[1:])

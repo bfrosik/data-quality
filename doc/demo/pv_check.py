@@ -63,18 +63,22 @@ variables are accessible and their values are within acceptable range.
 """
 import sys
 import dquality.pv as pv
+import argparse
 
-args = sys.argv
 
-if args is None or len(args) < 1:
-    print ('incorrect number of arguments')
-    sys.exit(-1)
+def main(arg):
 
-conf = args[1]
+    parser = argparse.ArgumentParser()
+    parser.add_argument("cfname", help="configuration file name")
 
-if pv.verify(conf):
-    print ('All PVs listed in pvs.json exist and meet conditions')
-else:
-    print ('Some of the PVs listed in pvs.json do not exist or do not meet conditions')
+    args = parser.parse_args()
+    conf = args.cfname
 
+    if pv.verify(conf):
+        print ('All PVs listed in pvs.json exist and meet conditions')
+    else:
+        print ('Some of the PVs listed in pvs.json do not exist or do not meet conditions')
+
+if __name__ == "__main__":
+    main(sys.argv[1:])
 

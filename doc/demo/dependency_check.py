@@ -65,19 +65,27 @@ corrupted.
 """
 import sys
 import dquality.dependency as dependency
+import argparse
 
-args = sys.argv
 
-if args is None or len(args) < 2:
-    print ('incorrect number of arguments')
-    sys.exit(-1)
+def main(arg):
 
-conf = args[1]
-file = args[2]
+    parser = argparse.ArgumentParser()
+    parser.add_argument("cfname", help="configuration file name")
+    parser.add_argument("fname", help="file name to do the quality checks on")
 
-if dependency.verify(conf, file):
-    print ('All dependecies are satisfied')
-else:
-    print ('Some dependecies are not satisfied, see log file')
+    args = parser.parse_args()
+
+    conf = args.cfname
+    fname = args.fname
+
+    if dependency.verify(conf, file):
+        print ('All dependecies are satisfied')
+    else:
+        print ('Some dependecies are not satisfied, see log file')
+
+if __name__ == "__main__":
+    main(sys.argv[1:])
+
 
 
