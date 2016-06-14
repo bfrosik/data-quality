@@ -151,7 +151,7 @@ def state(value, limit):
 
 def verify(conf):
     """
-    This function reads the :download:`dqschemas/pvs.json <../config/dqschemas/pvs.json>`
+    This function reads the :download:`schemas/pvs.json <../../../config/default/schemas/pvs.json>`
     as set in the :download:`dqconfig.ini <../../../config/default/dqconfig.ini>` file.
     This file contains dictionary with keys of mandatory process variables.
     The values is a dictionary of attributes, each attribute being either

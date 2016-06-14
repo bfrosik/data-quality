@@ -152,7 +152,7 @@ def structure(file, required_tags, logger):
     """
     This method is used when a file of hdf type is given.
     All tags and array dimensions are verified against a schema.
-    (see :download:`dqschemas/basicHDF.json <../config/dqschemas/basicHDF.json>` 
+    (see :download:`schemas/tags.json <../../../config/default/schemas/tags.json>` 
     example file).
 
     Parameters
