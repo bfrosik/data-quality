@@ -20,7 +20,7 @@ The schemas can point to different files, in different paths, but it is advised 
 
 - :download:`dqschemas/pvs.json.json <config/dqschemas/pvs.json>` containing the list of Process variable (PV) of your beamline PVs with their acceptable value range.
 
-- :download:`dqschemas/tags.json <config/dqschemas/tags.json>` containing the list valid HDF file tags, attributes and array dimentions.
+- :download:`dqschemas/tags.json <../../config/default/schemas/tags.json>` containing the list valid HDF file tags, attributes and array dimentions.
 
 - :download:`dqschemas/dependencies.json <config/dqschemas/dependencies.json>` containing the list of valid relation among data sets in the same HDF file.
 

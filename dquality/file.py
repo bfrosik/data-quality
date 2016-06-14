@@ -118,9 +118,10 @@ def init(config):
 
 def report_items(list, text1, text2, logger):
     """
-   This function takes a list and strings. If the list is not
-   empty it prints the two string parameters as a title,
-   and prints formatted output for each item in a list.
+
+    This function takes a list and strings. If the list is not
+    empty it prints the two string parameters as a title,
+    and prints formatted output for each item in a list.
 
     Parameters
     ----------

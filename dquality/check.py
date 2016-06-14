@@ -46,18 +46,19 @@
 # POSSIBILITY OF SUCH DAMAGE.                                             #
 # #########################################################################
 """
-This module contains command line interface to data-quality
+This module contains command line interface to data-quality. 
+To use Please make sure the installation :ref:`pre-requisite-reference-label` are met.
 
 """
 
 import sys
 import json
 import argparse
-import dquality.file as hdf
+import dquality.file as dqfile
 import dquality.data as data
-import dquality.monitor as monitor
-import dquality.data_monitor as dmonitor
-import dquality.pv as pv
+import dquality.monitor as dqmonitor
+import dquality.data_monitor as dqdmonitor
+import dquality.pv as dqpv
 
 __author__ = "Barbara Frosik"
 __copyright__ = "Copyright (c) 2016, UChicago Argonne, LLC."
@@ -69,52 +70,47 @@ __all__ = ['hdf',
            'dquality',
            'dependency']
 
-
 def hdf(conf, fname):
     """
-    Please make sure the installation :ref:`pre-requisite-reference-label` are met.
+    HDF file structure verifier.
 
-    This example shows how to verify an HDF file structure.
-    This example takes two mandatory command line arguments:
-    conf: a string defining the configuration file. If only path is defined, the name 'dqconfig_test.ini'
-    file: a file to be verified.
+    Parameters
+    ----------
+    conf : str
+        configuration file name, including path
 
-    The configuration file will have the following definitions:
-    'schema' - file name including path that contains schema that the file is checked against.
-               Example of schema file: doc/source/config/dqschemas/basicHDF.json
-    'log_file' - defines log file. If not configured, the software will create default.log file in the working directory. 
-    'verification_type' - defines how the file is verified. If the type is "hdf_tags", the file will be checked for the presence
-    of listed tags; if the type is "hdf_structure", the tags, and listed attributes are checked.
+    file : str
+        File Name to verify including path
 
-    This test can be done at the end of data collection to verify that the collected data file is not
-    corrupted.
+    Returns
+    -------
+    boolean
+
 
     """
     
-    if hdf.verify(conf, fname):
+    if dqfile.verify(conf, fname):
         print ('All tags exist and meet conditions')
     else:
         print ('Some of the tags do not exist or do not meet conditions, check log file')
 
 def pv(conf):
     """
-    Please make sure the installation :ref:`pre-requisite-reference-label` are met.
 
-    This example shows how to verify that the list of PV/PV-value conditions listed
-    in the pvs.jason configured file are satisfied.
-    This example takes one mandatory command line argument:
-    conf: a string defining the configuration file. If only path is defined, the name 'dqconfig_test.ini'
+    PV verifier.
 
-    The configuration file will have the following definitions:
-    'pv_file' - file name including path that contain process variables requirements. Example of pv file: 
-                     doc/source/config/dqschemas/pvs.json
-    'log_file' - defines log file. If not configured, the software will create default.log file in the working directory.
+    Parameters
+    ----------
+    conf : str
+        configuration file name, including path
 
-    This test can be done at the beginning of a scan to confirm mandatory process 
-    variables are accessible and their values are within acceptable range.
+    Returns
+    -------
+    boolean
+
     """
 
-    if pv.verify(conf):
+    if dqpv.verify(conf):
         print ('All PVs listed in pvs.json exist and meet conditions')
     else:
         print ('Some of the PVs listed in pvs.json do not exist or do not meet conditions')
@@ -122,80 +118,79 @@ def pv(conf):
 
 def monitor_quality(conf, fname, num_files):
     """
-    Please make sure the installation :ref:`pre-requisite-reference-label` are met.
+    Data quality monitor verifier.
+    
+    Parameters
+    ----------
+    conf : str
+        configuration file name including path
 
-    This example shows how to verify newly created or modified files in a monitored folder.
-    This example takes three mandatory command line arguments:
-    conf: a string defining the configuration file. If only path is defined, the name 'dqconfig_test.ini'
-    will be added as default
-    folder: the folder to monitor
-    num_files: an integer value specifying how many files will be processed
+    folder : str
+        folder name to monitor
 
-    The configuration file will have the following definitions:
-    'limits' - file name including path that contains dictionary of limit values that will be applied to verify quality check calculations.
-               Example of limits file: doc/source/config/dqschemas/limits.json
-    'log_file' - defines log file. If not configured, the software will create default.log file in the working directory.
-    'extensions' - list of file extensions that the script will monitor for.
+    num_files : int
+        expected number of files. This script will exit after detecting and
+        processing given number of files.
 
-    This test can be done at during data collection to confirm data quality
-    values are within acceptable range.
+    Returns
+    -------
+    None
 
     """
 
-    bad_indexes = dmonitor.verify(conf, fname, int(num_files))
+    bad_indexes = dqdmonitor.verify(conf, fname, int(num_files))
     return bad_indexes
 
 def monitor(conf, fname, dtype, num_files, report_by_file):
     """
-    Please make sure the installation :ref:`pre-requisite-reference-label` are met.
+    Data Quality monitor.
+    
+    Parameters
+    ----------
+    conf : str
+        configuration file name, including path
 
-    This example shows how to verify newly created or modified files in a monitored folder. This test
-    will be used if the data of the same type (i.e. "data" or "data_dark" or "data_white) is collected
-    in multiple files.
+    folder : str
+        monitored directory
 
-    This example takes four mandatory and one optional command line arguments:
-    conf: a string defining the configuration file. If only path is defined, the name 'dqconfig_test.ini'
-    will be added as default
-    folder: the folder to monitor
-    type: a string defining data type being processed; i.e. 'data_dark', 'data_white' or 'data'.
-    num_files: an integer value specifying how many files will be processed
-    report_by_files: a boolean value defining how the bad indexes should be reported. If True,
-    the bad indexes will be sorted by files the image belongs to, and the indexes will be relative
-    to the files. If False, the bad indexes are reported as a list of all indexes in sequence that
-    did not pass quality checks.
+    data_type : str
+        defines which data type is being evaluated
 
-    The configuration file will have the following definitions:
-    'limits' - file name including path that contains dictionary of limit values that will be applied to verify quality check calculations.
-               Example of limits file: doc/source/config/dqschemas/limits.json
-    'log_file' - defines log file. If not configured, the software will create default.log file in the working directory.
-    'extensions' - list of file extensions that the script will monitor for.
+    num_files : int
+        number of files that will be processed
 
-    This test can be done at during data collection to confirm data quality
-    values are within acceptable range.
+    report_by_files : boolean
+        this variable directs how to present the bad indexes in a report. If True, the indexes
+        are related to the files, and a filename is included in the report. Otherwise, the
+        report contains a list of bad indexes.
 
+    Returns
+    -------
+    bad_indexes : dict
+        a dictionary or list containing bad indexes
     """
     
-    bad_indexes = monitor.verify(conf, fname, dtype, int(num_files), report_by_file)
+    bad_indexes = dqmonitor.verify(conf, fname, dtype, int(num_files), report_by_file)
     print json.dumps(bad_indexes)
     return bad_indexes
 
 
 def dquality(conf, fname):
     """
-    Please make sure the installation :ref:`pre-requisite-reference-label` are met.
+    Data Quality verifier.
+    
+    Parameters
+    ----------
+    conf : str
+        name of the configuration file including path. If contains only directory, 'dqconfig_test.ini' will a default
+        file name.
 
-    This example shows how to verify the quality of data in an HDF file.
-    This example takes two mandatory command line arguments:
-    conf: a string defining the configuration file. If only path is defined, the name 'dqconfig_test.ini'
-    file: a file to be verified.
+    file : str
+        file name to do the quality checks on
 
-    The configuration file will have the following definitions:
-    'limits' - file name including path that contains dictionary of limit values that will be applied to verify quality check calculations.
-               Example of limits file: doc/source/config/dqschemas/limits.json
-    'log_file' - defines log file. If not configured, the software will create default.log file in the working directory.
-
-    The detailed results are stored into configured report file.
-
+    Returns
+    -------
+    bad_indexes : Dict
     """
 
     bad_indexes = data.verify(conf, fname)
@@ -205,22 +200,20 @@ def dquality(conf, fname):
 
 def dependency(conf, fname):
     """
-    Please make sure the installation :ref:`pre-requisite-reference-label` are met.
+    Dependency verifier.
 
-    This example shows how to verify an HDF file dependencies.
+    Parameters
+    ----------
+    conf : str
+        configuration file name, including path
 
-    This example takes two mandatory command line arguments:
-    conf: a string defining the configuration file. If only path is defined, the name 'dqconfig_test.ini'
-    file: a file to be verified for dependencies according to schema.
+    file : str
+        File Name to verify including path
 
-    The configuration file will have the following definitions:
-    'dependencies' - file name including path that contain dependecy schema. Example of dependency schema: 
-                     doc/source/config/dqschemas/dependencies.json
-    'log_file' - defines log file. If not configured, the software will create default.log file in the working directory.
-
-    This test can be done at the end of data collection to verify that the collected data file is not
-    corrupted.
-
+    Returns
+    -------
+    boolean
+    
     """
 
     if dependency.verify(conf, fname):

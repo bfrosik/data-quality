@@ -19,6 +19,7 @@ API reference
 
 .. toctree::
 
+   api/dquality.check
    api/dquality.pv
    api/dquality.file
    api/dquality.data
