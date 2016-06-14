@@ -12,12 +12,12 @@ This section covers the basics of how to download and install `DQuality <https:/
 Pre-requisites 
 ==============
 
-Each of the verifier requires a parameter configuration file. The configuration files must define schemas and verifire's properties and be located
+Each of the verifier requires a parameter configuration file. The configuration files must define schemas and verifier's properties and be located
 in the user account home directory under a .dquality/default folder. 
     
 - :download:`~/.dquality/default/dqconfig.ini <../../config/default/dqconfig.ini>`
 
-The schemas can point to different files, in different paths, but it is advised to create a relative "*default/schemas*" folder containing the following files:
+The schemas should be saved under "*default/schemas*" folder and contain the following files:
 
 - :download:`~/.dquality/default/schemas/pvs.json <../../config/default/schemas/pvs.json>` containing the list of Process variable (PV) of your beamline PVs with their acceptable value range.
 
@@ -28,7 +28,7 @@ The schemas can point to different files, in different paths, but it is advised 
 - :download:`~/.dquality/default/schemas/limits.json <../../config/default/schemas/limits.json>` containing the threshold values for the quality check calculations.
 
 Different instruments generating data that require different sets of configuration files can be configured as ~/.dquality/instrument1, 
-~/.dquality/instrument2 etc.
+~/.dquality/instrument2 etc. with the same schemas subfolder structure.
 
 Installing from source
 ======================
