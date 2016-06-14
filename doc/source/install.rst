@@ -14,7 +14,7 @@ Pre-requisites
 
 Each of the verifier requires parameter: configuration file. The configuration file must define schemas, and verifire's properties.
     
-- :download:`dqconfig.ini <../../config/default/dqconfig.ini>`
+- :download:`default/dqconfig.ini <../../config/default/dqconfig.ini>`
 
 The schemas can point to different files, in different paths, but it is advised to create a relative "*default/schemas*" folder containing the following files:
 
