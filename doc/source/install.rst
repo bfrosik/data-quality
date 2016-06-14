@@ -12,19 +12,23 @@ This section covers the basics of how to download and install `DQuality <https:/
 Pre-requisites 
 ==============
 
-Each of the verifier requires parameter: configuration file. The configuration file must define schemas, and verifire's properties.
+Each of the verifier requires a parameter configuration file. The configuration files must define schemas and verifire's properties and be located
+in the user account home directory under a .dquality/default folder. 
     
-- :download:`default/dqconfig.ini <../../config/default/dqconfig.ini>`
+- :download:`~/.dquality/default/dqconfig.ini <../../config/default/dqconfig.ini>`
 
 The schemas can point to different files, in different paths, but it is advised to create a relative "*default/schemas*" folder containing the following files:
 
-- :download:`default/schemas/pvs.json <../../config/default/schemas/pvs.json>` containing the list of Process variable (PV) of your beamline PVs with their acceptable value range.
+- :download:`~/.dquality/default/schemas/pvs.json <../../config/default/schemas/pvs.json>` containing the list of Process variable (PV) of your beamline PVs with their acceptable value range.
 
-- :download:`default/schemas/tags.json <../../config/default/schemas/tags.json>` containing the list valid HDF file tags, attributes and array dimentions.
+- :download:`~/.dquality/default/schemas/tags.json <../../config/default/schemas/tags.json>` containing the list valid HDF file tags, attributes and array dimentions.
 
-- :download:`schemas/dependencies.json <../../config/default/schemas/dependencies.json>` containing the list of valid relation among data sets in the same HDF file.
+- :download:`~/.dquality/default/schemas/dependencies.json <../../config/default/schemas/dependencies.json>` containing the list of valid relation among data sets in the same HDF file.
 
-- :download:`default/schemas/limits.json <../../config/default/schemas/limits.json>` containing the threshold values for the quality check calculations.
+- :download:`~/.dquality/default/schemas/limits.json <../../config/default/schemas/limits.json>` containing the threshold values for the quality check calculations.
+
+Different instruments generating data that require different sets of configuration files can be configured as ~/.dquality/instrument1, 
+~/.dquality/instrument2 etc.
 
 Installing from source
 ======================
