@@ -62,7 +62,7 @@ This script calls hdf_check verifier.
 import sys
 import os
 import argparse
-from dquality.check import pv_check as pv
+from dquality.check import pv as pv_check
 from os.path import expanduser
 
 def main(arg):
@@ -76,7 +76,7 @@ def main(arg):
     home = expanduser("~")
     conf = os.path.join(home, ".dquality", instrument)
 
-    bad_indexes = pv(conf)
+    bad_indexes = pv_check(conf)
     return bad_indexes
 
 

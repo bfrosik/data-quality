@@ -48,7 +48,7 @@
 import sys
 import os
 import argparse
-from dquality.check import hdf_check as hdf
+from dquality.check import hdf as hdf_check
 from os.path import expanduser
 
 def main(arg):
@@ -64,7 +64,7 @@ def main(arg):
     home = expanduser("~")
     conf = os.path.join(home, ".dquality", instrument)
 
-    bad_indexes = hdf(conf, fname)
+    bad_indexes = hdf_check(conf, fname)
     return bad_indexes
 
 

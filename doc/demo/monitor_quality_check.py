@@ -48,7 +48,7 @@
 import sys
 import os
 import argparse
-from dquality.check import monitor_quality_check as monitor
+from dquality.check import monitor_quality as monitor_check
 from os.path import expanduser
 
 def main(arg):
@@ -66,7 +66,7 @@ def main(arg):
     home = expanduser("~")
     conf = os.path.join(home, ".dquality", instrument)
 
-    bad_indexes = monitor(conf, fname, num_files)
+    bad_indexes = monitor_check(conf, fname, num_files)
     return bad_indexes
 
 

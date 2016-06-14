@@ -62,7 +62,7 @@ This script calls quality_check verifier.
 import sys
 import os
 import argparse
-from dquality.check import dquality_check as dquality
+from dquality.check import dquality as dquality_check
 from os.path import expanduser
 
 def main(arg):
@@ -78,7 +78,7 @@ def main(arg):
     home = expanduser("~")
     conf = os.path.join(home, ".dquality", instrument)
 
-    bad_indexes = dquality(conf, fname)
+    bad_indexes = dquality_check(conf, fname)
     return bad_indexes
 
 

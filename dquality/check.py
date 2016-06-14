@@ -62,15 +62,15 @@ import dquality.pv as pv
 __author__ = "Barbara Frosik"
 __copyright__ = "Copyright (c) 2016, UChicago Argonne, LLC."
 __docformat__ = 'restructuredtext en'
-__all__ = ['hdf_check',
-           'pv_check',
-           'monitor_quality_check',
-           'monitor_check',
-           'dquality_check',
-           'dependency_check']
+__all__ = ['hdf',
+           'pv',
+           'monitor_quality',
+           'monitor',
+           'dquality',
+           'dependency']
 
 
-def hdf_check(conf, fname):
+def hdf(conf, fname):
     """
     Please make sure the installation :ref:`pre-requisite-reference-label` are met.
 
@@ -96,7 +96,7 @@ def hdf_check(conf, fname):
     else:
         print ('Some of the tags do not exist or do not meet conditions, check log file')
 
-def pv_check(conf):
+def pv(conf):
     """
     Please make sure the installation :ref:`pre-requisite-reference-label` are met.
 
@@ -120,7 +120,7 @@ def pv_check(conf):
         print ('Some of the PVs listed in pvs.json do not exist or do not meet conditions')
 
 
-def monitor_quality_check(conf, fname, num_files):
+def monitor_quality(conf, fname, num_files):
     """
     Please make sure the installation :ref:`pre-requisite-reference-label` are met.
 
@@ -145,7 +145,7 @@ def monitor_quality_check(conf, fname, num_files):
     bad_indexes = dmonitor.verify(conf, fname, int(num_files))
     return bad_indexes
 
-def monitor_check(conf, fname, dtype, num_files, report_by_file):
+def monitor(conf, fname, dtype, num_files, report_by_file):
     """
     Please make sure the installation :ref:`pre-requisite-reference-label` are met.
 
@@ -180,7 +180,7 @@ def monitor_check(conf, fname, dtype, num_files, report_by_file):
     return bad_indexes
 
 
-def dquality_check(conf, fname):
+def dquality(conf, fname):
     """
     Please make sure the installation :ref:`pre-requisite-reference-label` are met.
 
@@ -203,7 +203,7 @@ def dquality_check(conf, fname):
     return bad_indexes
 
 
-def dependency_check(conf, fname):
+def dependency(conf, fname):
     """
     Please make sure the installation :ref:`pre-requisite-reference-label` are met.
 
