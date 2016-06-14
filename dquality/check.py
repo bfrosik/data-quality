@@ -70,7 +70,7 @@ __all__ = ['hdf_check',
            'dependency_check']
 
 
-def hdf_check(arg):
+def hdf_check(conf, fname):
     """
     Please make sure the installation :ref:`pre-requisite-reference-label` are met.
 
@@ -90,24 +90,13 @@ def hdf_check(arg):
     corrupted.
 
     """
-    parser = argparse.ArgumentParser()
-    parser.add_argument("cfname", help="configuration file name")
-    parser.add_argument("fname", help="file name to do the quality checks on")
-
-    args = parser.parse_args()
-
-    conf = args.cfname
-    fname = args.fname
-    
-    conf = arg[1]
-    fname = arg[2]
     
     if hdf.verify(conf, fname):
         print ('All tags exist and meet conditions')
     else:
         print ('Some of the tags do not exist or do not meet conditions, check log file')
 
-def pv_check(arg):
+def pv_check(conf):
     """
     Please make sure the installation :ref:`pre-requisite-reference-label` are met.
 
@@ -124,11 +113,6 @@ def pv_check(arg):
     This test can be done at the beginning of a scan to confirm mandatory process 
     variables are accessible and their values are within acceptable range.
     """
-    parser = argparse.ArgumentParser()
-    parser.add_argument("cfname", help="configuration file name")
-
-    args = parser.parse_args()
-    conf = args.cfname
 
     if pv.verify(conf):
         print ('All PVs listed in pvs.json exist and meet conditions')
@@ -136,7 +120,7 @@ def pv_check(arg):
         print ('Some of the PVs listed in pvs.json do not exist or do not meet conditions')
 
 
-def monitor_quality_check(arg):
+def monitor_quality_check(conf, fname, num_files):
     """
     Please make sure the installation :ref:`pre-requisite-reference-label` are met.
 
@@ -157,21 +141,11 @@ def monitor_quality_check(arg):
     values are within acceptable range.
 
     """
-    parser = argparse.ArgumentParser()
-    parser.add_argument("cfname", help="configuration file name")
-    parser.add_argument("fname", help="folder name to monitor for files")
-    parser.add_argument("numfiles", help="number of files to monitor for")
-
-    args = parser.parse_args()
-
-    conf = args.cfname
-    fname = args.fname
-    num_files = args.numfiles
 
     bad_indexes = dmonitor.verify(conf, fname, int(num_files))
     return bad_indexes
 
-def monitor_check(arg):
+def monitor_check(conf, fname, dtype, num_files, report_by_file):
     """
     Please make sure the installation :ref:`pre-requisite-reference-label` are met.
 
@@ -201,27 +175,12 @@ def monitor_check(arg):
 
     """
     
-    parser = argparse.ArgumentParser()
-    parser.add_argument("cfname", help="configuration file name")
-    parser.add_argument("fname", help="folder name to monitor for files")
-    parser.add_argument("type", help="data type to be verified (i.e. data_dark, data_white, or data)")
-    parser.add_argument("numfiles", help="number of files to monitor for")
-    parser.add_argument("repbyfile", help="boolean value defining how the bad indexes should be reported.")
-
-    args = parser.parse_args()
-
-    conf = args.cfname
-    fname = args.fname
-    dtype = args.type
-    num_files = args.numfiles
-    report_by_file = args.repbyfile
-
     bad_indexes = monitor.verify(conf, fname, dtype, int(num_files), report_by_file)
     print json.dumps(bad_indexes)
     return bad_indexes
 
 
-def dquality_check(arg):
+def dquality_check(conf, fname):
     """
     Please make sure the installation :ref:`pre-requisite-reference-label` are met.
 
@@ -238,21 +197,13 @@ def dquality_check(arg):
     The detailed results are stored into configured report file.
 
     """
-    parser = argparse.ArgumentParser()
-    parser.add_argument("cfname", help="configuration file name")
-    parser.add_argument("fname", help="file name to do the quality checks on")    
-    
-    args = parser.parse_args()
-
-    conf = args.cfname
-    fname = args.fname
 
     bad_indexes = data.verify(conf, fname)
     print json.dumps(bad_indexes)
     return bad_indexes
 
 
-def dependency_check(arg):
+def dependency_check(conf, fname):
     """
     Please make sure the installation :ref:`pre-requisite-reference-label` are met.
 
@@ -271,16 +222,8 @@ def dependency_check(arg):
     corrupted.
 
     """
-    parser = argparse.ArgumentParser()
-    parser.add_argument("cfname", help="configuration file name")
-    parser.add_argument("fname", help="file name to do the quality checks on")
 
-    args = parser.parse_args()
-
-    conf = args.cfname
-    fname = args.fname
-
-    if dependency.verify(conf, file):
+    if dependency.verify(conf, fname):
         print ('All dependecies are satisfied')
     else:
         print ('Some dependecies are not satisfied, see log file')

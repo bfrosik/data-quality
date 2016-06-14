@@ -66,8 +66,7 @@ def main(arg):
     home = expanduser("~")
     conf = os.path.join(home, ".dquality", instrument)
 
-    args = ['monitor', conf, fname, num_files]
-    bad_indexes = monitor(args)
+    bad_indexes = monitor(conf, fname, num_files)
     return bad_indexes
 
 

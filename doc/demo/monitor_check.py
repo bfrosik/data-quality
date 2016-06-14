@@ -65,13 +65,12 @@ def main(arg):
     fname = args.fname
     dtype = args.type
     num_files = args.numfiles
-    by_file = args.repbyfile
+    report_by_file = args.repbyfile
 
     home = expanduser("~")
     conf = os.path.join(home, ".dquality", instrument)
 
-    args = ['dquality', conf, fname, dtype, num_files, by_file]
-    bad_indexes = monitor(args)
+    bad_indexes = monitor(conf, fname, dtype, num_files, report_by_file)
     return bad_indexes
 
 

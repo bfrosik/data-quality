@@ -78,8 +78,7 @@ def main(arg):
     home = expanduser("~")
     conf = os.path.join(home, ".dquality", instrument)
 
-    args = ['dquality', conf, fname]
-    bad_indexes = dquality(args)
+    bad_indexes = dquality(conf, fname)
     return bad_indexes
 
 
