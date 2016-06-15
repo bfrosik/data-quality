@@ -55,7 +55,8 @@ import sys
 import json
 import argparse
 import dquality.file as dqfile
-import dquality.data as data
+import dquality.data as dqdata
+import dquality.dependency as dqdependency
 import dquality.monitor as dqmonitor
 import dquality.data_monitor as dqdmonitor
 import dquality.pv as dqpv
@@ -193,7 +194,7 @@ def dquality(conf, fname):
     bad_indexes : Dict
     """
 
-    bad_indexes = data.verify(conf, fname)
+    bad_indexes = dqdata.verify(conf, fname)
     print json.dumps(bad_indexes)
     return bad_indexes
 
@@ -216,7 +217,7 @@ def dependency(conf, fname):
     
     """
 
-    if dependency.verify(conf, fname):
+    if dqdependency.verify(conf, fname):
         print ('All dependecies are satisfied')
     else:
         print ('Some dependecies are not satisfied, see log file')

@@ -72,7 +72,7 @@ def main(arg):
 
     args = parser.parse_args()
     instrument = args.instrument
-
+       
     home = expanduser("~")
     conf = os.path.join(home, ".dquality", instrument)
 
