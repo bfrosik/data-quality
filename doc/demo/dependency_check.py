@@ -48,44 +48,43 @@
 """
 Please make sure the installation :ref:`pre-requisite-reference-label` are met.
 
-This example shows how to verify an HDF file dependencies.
+This script is specific for beamline 32id.
 
-This example takes two mandatory command line arguments:
-conf: a string defining the configuration file. If only path is defined, the name 'dqconfig_test.ini'
+This example takes two mandatory parameters:
+instrument: a string defining the detector that will be used. User can enter one of these choices:
+'nanotomo', 'microtomo'.
+The instrument determines a configuration file that will be used.
 file: a file to be verified for dependencies according to schema.
 
-The configuration file will have the following definitions:
-'dependencies' - file name including path that contain dependecy schema. Example of dependency schema: 
-                 doc/source/config/dqschemas/dependencies.json
-'log_file' - defines log file. If not configured, the software will create default.log file in the working directory.
-
-This test can be done at the end of data collection to verify that the collected data file is not
-corrupted.
+This script calls dependency_check verifier.
 
 """
 import sys
-import dquality.dependency as dependency
+import os
 import argparse
-
+from dquality.check import dependency as dependency_check
+from os.path import expanduser
 
 def main(arg):
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("cfname", help="configuration file name")
-    parser.add_argument("fname", help="file name to do the quality checks on")
+    parser.add_argument("instrument", help="instrument name, name should have a matching directory in the .dquality folder")
+    parser.add_argument("fname", help="file name to do the tag dependencies checks on")
 
     args = parser.parse_args()
-
-    conf = args.cfname
+    instrument = args.instrument
     fname = args.fname
 
-    if dependency.verify(conf, file):
-        print ('All dependecies are satisfied')
-    else:
-        print ('Some dependecies are not satisfied, see log file')
+    home = expanduser("~")
+    conf = os.path.join(home, ".dquality", instrument)
+
+    bad_indexes = dependency_check(conf, fname)
+    return bad_indexes
+
 
 if __name__ == "__main__":
     main(sys.argv[1:])
+
 
 
 

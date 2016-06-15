@@ -48,37 +48,42 @@
 """
 Please make sure the installation :ref:`pre-requisite-reference-label` are met.
 
-This example shows how to verify that the list of PV/PV-value conditions listed
-in the pvs.jason configured file are satisfied.
-This example takes one mandatory command line argument:
-conf: a string defining the configuration file. If only path is defined, the name 'dqconfig_test.ini'
+This script is specific for beamline 32id.
 
-The configuration file will have the following definitions:
-'pv_file' - file name including path that contain process variables requirements. Example of pv file: 
-                 doc/source/config/dqschemas/pvs.json
-'log_file' - defines log file. If not configured, the software will create default.log file in the working directory.
+This example takes two mandatory parameters:
+instrument: a string defining the detector that will be used. User can enter one of these choices:
+'nanotomo', 'microtomo'.
+The instrument determines a configuration file that will be used.
+file: a file to be verified for dependencies according to schema.
 
-This test can be done at the beginning of a scan to confirm mandatory process 
-variables are accessible and their values are within acceptable range.
+This script calls hdf_check verifier.
+
 """
 import sys
-import dquality.pv as pv
+import os
 import argparse
-
+from dquality.check import pv as pv_check
+from os.path import expanduser
 
 def main(arg):
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("cfname", help="configuration file name")
+    parser.add_argument("instrument", help="instrument name, name should have a matching directory in the .dquality folder")
 
     args = parser.parse_args()
-    conf = args.cfname
+    instrument = args.instrument
+       
+    home = expanduser("~")
+    conf = os.path.join(home, ".dquality", instrument)
 
-    if pv.verify(conf):
-        print ('All PVs listed in pvs.json exist and meet conditions')
-    else:
-        print ('Some of the PVs listed in pvs.json do not exist or do not meet conditions')
+    bad_indexes = pv_check(conf)
+    return bad_indexes
+
 
 if __name__ == "__main__":
     main(sys.argv[1:])
+
+
+
+
 

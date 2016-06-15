@@ -118,9 +118,10 @@ def init(config):
 
 def report_items(list, text1, text2, logger):
     """
-   This function takes a list and strings. If the list is not
-   empty it prints the two string parameters as a title,
-   and prints formatted output for each item in a list.
+
+    This function takes a list and strings. If the list is not
+    empty it prints the two string parameters as a title,
+    and prints formatted output for each item in a list.
 
     Parameters
     ----------
@@ -151,7 +152,7 @@ def structure(file, required_tags, logger):
     """
     This method is used when a file of hdf type is given.
     All tags and array dimensions are verified against a schema.
-    (see :download:`dqschemas/basicHDF.json <../config/dqschemas/basicHDF.json>` 
+    (see :download:`schemas/tags.json <../../../config/default/schemas/tags.json>` 
     example file).
 
     Parameters

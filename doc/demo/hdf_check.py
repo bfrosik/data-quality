@@ -45,45 +45,27 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE         #
 # POSSIBILITY OF SUCH DAMAGE.                                             #
 # #########################################################################
-"""
-Please make sure the installation :ref:`pre-requisite-reference-label` are met.
-
-This example shows how to verify an HDF file structure.
-This example takes two mandatory command line arguments:
-conf: a string defining the configuration file. If only path is defined, the name 'dqconfig_test.ini'
-file: a file to be verified.
-
-The configuration file will have the following definitions:
-'schema' - file name including path that contains schema that the file is checked against.
-           Example of schema file: doc/source/config/dqschemas/basicHDF.json
-'log_file' - defines log file. If not configured, the software will create default.log file in the working directory. 
-'verification_type' - defines how the file is verified. If the type is "hdf_tags", the file will be checked for the presence
-of listed tags; if the type is "hdf_structure", the tags, and listed attributes are checked.
-
-This test can be done at the end of data collection to verify that the collected data file is not
-corrupted.
-
-"""
 import sys
-import dquality.file as hdf
+import os
 import argparse
-
+from dquality.check import hdf as hdf_check
+from os.path import expanduser
 
 def main(arg):
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("cfname", help="configuration file name")
-    parser.add_argument("fname", help="file name to do the quality checks on")
+    parser.add_argument("instrument", help="instrument name, name should have a matching directory in the .dquality folder")
+    parser.add_argument("fname", help="file name to do the tag dependencies checks on")
 
     args = parser.parse_args()
-
-    conf = args.cfname
+    instrument = args.instrument
     fname = args.fname
 
-    if hdf.verify(conf, fname):
-        print ('All tags exist and meet conditions')
-    else:
-        print ('Some of the tags do not exist or do not meet conditions, check log file')
+    home = expanduser("~")
+    conf = os.path.join(home, ".dquality", instrument)
+
+    bad_indexes = hdf_check(conf, fname)
+    return bad_indexes
 
 
 if __name__ == "__main__":

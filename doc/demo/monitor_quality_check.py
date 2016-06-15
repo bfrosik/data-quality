@@ -45,47 +45,32 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE         #
 # POSSIBILITY OF SUCH DAMAGE.                                             #
 # #########################################################################
-"""
-Please make sure the installation :ref:`pre-requisite-reference-label` are met.
-
-This example shows how to verify newly created or modified files in a monitored folder.
-This example takes three mandatory command line arguments:
-conf: a string defining the configuration file. If only path is defined, the name 'dqconfig_test.ini'
-will be added as default
-folder: the folder to monitor
-num_files: an integer value specifying how many files will be processed
-
-The configuration file will have the following definitions:
-'limits' - file name including path that contains dictionary of limit values that will be applied to verify quality check calculations.
-           Example of limits file: doc/source/config/dqschemas/limits.json
-'log_file' - defines log file. If not configured, the software will create default.log file in the working directory.
-'extensions' - list of file extensions that the script will monitor for.
-
-This test can be done at during data collection to confirm data quality
-values are within acceptable range.
-
-"""
 import sys
-import dquality.data_monitor as dmonitor
+import os
 import argparse
-
+from dquality.check import monitor_quality as monitor_check
+from os.path import expanduser
 
 def main(arg):
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("cfname", help="configuration file name")
+    parser.add_argument("instrument", help="instrument name, name should have a matching directory in the .dquality folder")
     parser.add_argument("fname", help="folder name to monitor for files")
     parser.add_argument("numfiles", help="number of files to monitor for")
 
     args = parser.parse_args()
-
-    conf = args.cfname
+    instrument = args.instrument
     fname = args.fname
     num_files = args.numfiles
 
-    bad_indexes = dmonitor.verify(conf, fname, int(num_files))
+    home = expanduser("~")
+    conf = os.path.join(home, ".dquality", instrument)
+
+    bad_indexes = monitor_check(conf, fname, num_files)
     return bad_indexes
 
 
 if __name__ == "__main__":
     main(sys.argv[1:])
+
+

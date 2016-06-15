@@ -48,39 +48,42 @@
 """
 Please make sure the installation :ref:`pre-requisite-reference-label` are met.
 
-This example shows how to verify the quality of data in an HDF file.
-This example takes two mandatory command line arguments:
-conf: a string defining the configuration file. If only path is defined, the name 'dqconfig_test.ini'
-file: a file to be verified.
+This script is specific for beamline 32id.
 
-The configuration file will have the following definitions:
-'limits' - file name including path that contains dictionary of limit values that will be applied to verify quality check calculations.
-           Example of limits file: doc/source/config/dqschemas/limits.json
-'log_file' - defines log file. If not configured, the software will create default.log file in the working directory.
+This example takes two mandatory parameters:
+instrument: a string defining the detector that will be used. User can enter one of these choices: 
+'nanotomo', 'microtomo'.
+The instrument determines a configuration file that will be used.
+file: a file to be verified for dependencies according to schema.
 
-The detailed results are stored into configured report file.
+This script calls quality_check verifier.
 
 """
 import sys
-import dquality.data as data
-import json
+import os
 import argparse
-
+from dquality.check import dquality as dquality_check
+from os.path import expanduser
 
 def main(arg):
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("cfname", help="configuration file name")
-    parser.add_argument("fname", help="file name to do the quality checks on")    
-    
-    args = parser.parse_args()
+    parser.add_argument("instrument", help="instrument name, name should have a matching directory in the .dquality folder")
+    parser.add_argument("fname", help="file name to do the tag dependencies checks on")
 
-    conf = args.cfname
+    args = parser.parse_args()
+    instrument = args.instrument
     fname = args.fname
 
-    bad_indexes = data.verify(conf, fname)
-    print json.dumps(bad_indexes)
+    home = expanduser("~")
+    conf = os.path.join(home, ".dquality", instrument)
+
+    bad_indexes = dquality_check(conf, fname)
     return bad_indexes
+
 
 if __name__ == "__main__":
     main(sys.argv[1:])
+
+
+
