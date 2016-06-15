@@ -192,12 +192,13 @@ def get_config(conf_path):
         a configuration object
     """
     if os.path.isdir(conf_path):
-        config = os.path.join(conf_path, 'dqconfig_test.ini')
+        config = os.path.join(conf_path, 'dqconfig.ini')
     elif os.path.isfile(conf_path):
         config = conf_path
     else:
         print ('configuration file ' + conf_path + ' not found')
         return None
+
     return ConfigObj(config)
 
 

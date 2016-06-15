@@ -95,7 +95,7 @@ def init(config):
 
     logger = utils.get_logger(__name__, conf)
 
-    pvfile = utils.get_file(conf, 'pvs', logger)
+    pvfile = utils.get_file(conf, 'pv_file', logger)
     if pvfile is None:
         sys.exit(-1)
 

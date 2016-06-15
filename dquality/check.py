@@ -110,7 +110,6 @@ def pv(conf):
     boolean
 
     """
-
     if dqpv.verify(conf):
         print ('All PVs listed in pvs.json exist and meet conditions')
     else:
