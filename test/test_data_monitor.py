@@ -12,6 +12,7 @@ config_test = os.path.join(os.getcwd(),"test/dqconfig_test.ini")
 schemas_test = os.path.join(os.getcwd(),"test/schemas_test")
 data_file = os.path.join(os.getcwd(),"test/data/test_data.h5")
 report_file = os.path.join(os.getcwd(),"test/data/test_data.report")
+interrupt_file = os.path.join(os.getcwd(),"test/data/INTERRUPT.h5")
 schemas = os.path.join(os.getcwd(),"test/schemas")
 limits = os.path.join(schemas,"limits.json")
 
@@ -65,30 +66,25 @@ def test_qualitychecks():
     assert 4 in bad_data_dark
     clean()
 
-# def test_no_extentions_interrupt():
-#     config = init('bb')
-#     data_path = os.path.join(os.getcwd(),"test/data1")
-#     new_data = os.path.join(data_path,"INTERRUPT")
 
-#     find = 'extensions'
-#     replace = 'extensionsx'
-#     mod.replace_text_in_file(config, find, replace)
+def test_no_extentions_interrupt():
+    config = init('bb')
+    data_path = os.path.join(os.getcwd(),"test/data1")
+    new_data = os.path.join(data_path,"INTERRUPT")
 
-#     if not os.path.exists(data_path):
-#         os.makedirs(data_path)
-#     p = Process(target=copy_file, args=(interrupt_file, new_data,))
-#     p.start()
+    find = 'extensions'
+    replace = 'extensionsx'
+    mod.replace_text_in_file(config, find, replace)
 
-#     bad_indexes_file = monitor.verify(config, data_path, 2)
-#     bad_indexes = bad_indexes_file[new_data]
-#     bad_data_white = bad_indexes['data_white']
-#     bad_data = bad_indexes['data']
-#     bad_data_dark = bad_indexes['data_dark']
-#     assert len(bad_data_white) is 0
-#     assert len(bad_data) is 0
-#     assert len(bad_data_dark) is 0
-#     assert res.is_text_in_file(logfile, 'no file extension specified. Monitoring for all files')
-#     clean()
+    if not os.path.exists(data_path):
+        os.makedirs(data_path)
+    p = Process(target=copy_file, args=(interrupt_file, new_data,))
+    p.start()
+
+    bad_indexes = monitor.verify(config, data_path, 2)
+    assert len(bad_indexes) is 0
+    assert res.is_text_in_file(logfile, 'no file extension specified. Monitoring for all files')
+    clean()
 
 
 def test_bad_directory():

@@ -119,7 +119,7 @@ def init(config):
         extensions = conf['extensions']
     except KeyError:
         logger.warning('no file extension specified. Monitoring for all files.')
-        extensions = ['*']
+        extensions = ['']
 
     return logger, limits, extensions
 
