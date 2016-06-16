@@ -65,9 +65,34 @@ def test_qualitychecks():
     assert 4 in bad_data_dark
     clean()
 
+# def test_no_extentions_interrupt():
+#     config = init('bb')
+#     data_path = os.path.join(os.getcwd(),"test/data1")
+#     new_data = os.path.join(data_path,"INTERRUPT")
+
+#     find = 'extensions'
+#     replace = 'extensionsx'
+#     mod.replace_text_in_file(config, find, replace)
+
+#     if not os.path.exists(data_path):
+#         os.makedirs(data_path)
+#     p = Process(target=copy_file, args=(interrupt_file, new_data,))
+#     p.start()
+
+#     bad_indexes_file = monitor.verify(config, data_path, 2)
+#     bad_indexes = bad_indexes_file[new_data]
+#     bad_data_white = bad_indexes['data_white']
+#     bad_data = bad_indexes['data']
+#     bad_data_dark = bad_indexes['data_dark']
+#     assert len(bad_data_white) is 0
+#     assert len(bad_data) is 0
+#     assert len(bad_data_dark) is 0
+#     assert res.is_text_in_file(logfile, 'no file extension specified. Monitoring for all files')
+#     clean()
+
 
 def test_bad_directory():
-    config = init('bb')
+    config = init('cc')
     directory = "bad_dir"
     # the file.verify will exit with -1
     try:
@@ -79,7 +104,7 @@ def test_bad_directory():
     clean()
 
 def test_conf_error_no_limits():
-    config = init('cc')
+    config = init('dd')
     find = 'limits'
     replace = 'limitsx'
     mod.replace_text_in_file(config, find, replace)
@@ -94,7 +119,7 @@ def test_conf_error_no_limits():
 
 
 def test_no_limit():
-    config = init('dd')
+    config = init('ee')
     find = 'limits.json'
     replace = 'limitsx.json'
     mod.replace_text_in_file(config, find, replace)

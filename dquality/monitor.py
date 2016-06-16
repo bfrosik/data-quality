@@ -118,7 +118,13 @@ def init(config):
 
     report_file = utils.get_file(conf, 'report_file', logger)
 
-    extensions = conf['extensions']
+    try:
+        extensions = conf['extensions']
+    except KeyError:
+        logger.warning('no file extension specified. Monitoring for all files.')
+        extensions = ['*']
+
+    return logger, limits, extensions
 
     return logger, limits, report_file, extensions
 
@@ -215,11 +221,7 @@ def verify(conf, folder, data_type, num_files, report_by_files=True):
             folder + ' does not exist')
         sys.exit(-1)
 
-    try:
-        notifier = directory(folder, extensions)
-    except KeyError:
-        logger.warning('no file extension specified. Monitoring for all files.')
-        notifier = directory(folder, None)
+    notifier = directory(folder, extensions)
 
     interrupted = False
     file_indexes = {}
@@ -241,7 +243,7 @@ def verify(conf, folder, data_type, num_files, report_by_files=True):
         # processes for each new file
         while not files.empty():
             file = files.get()
-            if file == INTERRUPT:
+            if file.find('INTERRUPT') >= 0:
                 # the calling function may use a 'interrupt' command to stop the monitoring
                 # and processing.
                 dataq.put('all_data')
@@ -249,6 +251,8 @@ def verify(conf, folder, data_type, num_files, report_by_files=True):
                 interrupted = True
                 break
             else:
+                if file_index == 0:
+                    report_file = file.rsplit(".",)[0] + '.report'
                 fp, tags = utils.get_data_hd5(file)
                 data_tag = tags['/exchange/'+data_type]
                 data = np.asarray(fp[data_tag])
@@ -274,8 +278,8 @@ def verify(conf, folder, data_type, num_files, report_by_files=True):
 
     report.report_results(aggregate, data_type, None, report_file)
     bad_indexes = {}
-    print report_by_files
-    if report_by_files:
+
+    if report_by_files == 'True':
         report.add_bad_indexes_per_file(aggregate, data_type, bad_indexes, file_indexes)
     else:
         report.add_bad_indexes(aggregate, data_type, bad_indexes)

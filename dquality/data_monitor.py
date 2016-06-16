@@ -115,7 +115,13 @@ def init(config):
     with open(limitsfile) as limits_file:
         limits = json.loads(limits_file.read())['limits']
 
-    extensions = conf['extensions']
+    try:
+        extensions = conf['extensions']
+    except KeyError:
+        logger.warning('no file extension specified. Monitoring for all files.')
+        extensions = ['*']
+
+    return logger, limits, extensions
 
     return logger, limits, extensions
 
@@ -195,11 +201,7 @@ def verify(conf, folder, num_files):
             folder + ' does not exist')
         sys.exit(-1)
 
-    try:
-        notifier = directory(folder, extensions)
-    except KeyError:
-        logger.warning('no file extension specified. Monitoring for all files.')
-        notifier = directory(folder, None)
+    notifier = directory(folder, extensions)
 
     bad_indexes = {}
     file_count = 0
@@ -216,8 +218,7 @@ def verify(conf, folder, num_files):
         # processes for each new file
         while not files.empty():
             file = files.get()
-            print ('file', file)
-            if file == INTERRUPT:
+            if file.find('INTERRUPT') >= 0:
                 # the calling function may use a 'interrupt' command to stop the monitoring
                 # and processing.
                 notifier.stop()
@@ -228,7 +229,7 @@ def verify(conf, folder, num_files):
                 report_file = file.rsplit(".",)[0] + '.report'
                 bad_indexes[file] = dataver.verify_file(logger, file, limits, report_file)
                 print (bad_indexes[file])
-                #print (bad_indexes.keys())
+
         if file_count == num_files:
             interrupted = True
 
