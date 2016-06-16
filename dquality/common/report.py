@@ -123,7 +123,7 @@ def add_bad_indexes(aggregate, type, bad_indexes):
     bad_indexes[type] = list
 
 
-def add_bad_indexes_per_file(aggregate, type, bad_indexes, file_indexes):
+def add_bad_indexes_per_file(aggregate, type, bad_indexes, file_list, offset_list):
     """
     This function gets bad indexes from aggregate instance and creates an entry in
     bad_indexes dictionary. The bad_indexes dictionary will have added an entry for the given type.
@@ -141,42 +141,32 @@ def add_bad_indexes_per_file(aggregate, type, bad_indexes, file_indexes):
     bad_indexes : dictionary
         a dictionary structure that the bad indexes will be written to
 
-    file_indexes : dictionary
-        a dictionary with filenames as keys, and starting indexes as values
+    file_list : list
+        a list of filenames that were processed
+
+    offset_list : list
+        a list of offsets in the processed files
 
     Returns
     -------
     None
     """
-
-    def get_next_file_index(files_count, file_indexes):
-        files_count -= 1
-        if files_count > 0:
-            next_file = it.next()
-            next_file_index = file_indexes[next_file]
-        else:
-            next_file_index = -1
-            next_file = None
-        return next_file_index, next_file, files_count
-
     list = []
-    files_count = len(file_indexes)
     dict = {}
     offset = 0
-    it = iter(file_indexes.keys())
-    current_file = it.next()
-    current_file_index = file_indexes[current_file]
-    next_file_index, next_file, files_count = get_next_file_index(files_count, file_indexes)
+    index = 0
+    current_file = file_list[index]
+    current_offset = offset_list[index]
+
     for key in aggregate['bad_indexes'].keys():
-        if key == current_file_index:
+        if key == current_offset:
             dict[current_file] = list
             list = []
-            offset = current_file_index
-            current_file = next_file
-            current_file_index = next_file_index
-            next_file_index, next_file, files_count = get_next_file_index(files_count, file_indexes)
+            offset = current_offset
+            index += 1
+            current_file = file_list[index]
+            current_offset = offset_list[index]
         list.append(key - offset)
-
     dict[current_file] = list
     bad_indexes[type] = dict
 

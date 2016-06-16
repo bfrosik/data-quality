@@ -122,11 +122,9 @@ def init(config):
         extensions = conf['extensions']
     except KeyError:
         logger.warning('no file extension specified. Monitoring for all files.')
-        extensions = ['*']
+        extensions = ['']
 
     return logger, limits, extensions
-
-    return logger, limits, report_file, extensions
 
 
 def directory(directory, patterns):
@@ -214,7 +212,7 @@ def verify(conf, folder, data_type, num_files, report_by_files=True):
         a dictionary or list containing bad indexes
 
     """
-    logger, limits, report_file, extensions = init(conf)
+    logger, limits, extensions = init(conf)
     if not os.path.isdir(folder):
         logger.error(
             'parameter error: directory ' +
@@ -224,7 +222,8 @@ def verify(conf, folder, data_type, num_files, report_by_files=True):
     notifier = directory(folder, extensions)
 
     interrupted = False
-    file_indexes = {}
+    file_list = []
+    offset_list = []
     dataq = Queue()
     aggregateq = Queue()
     p = Process(target=datahandler.handle_data, args=(dataq, limits[data_type], aggregateq, ))
@@ -257,7 +256,8 @@ def verify(conf, folder, data_type, num_files, report_by_files=True):
                 data_tag = tags['/exchange/'+data_type]
                 data = np.asarray(fp[data_tag])
                 slice_index += data.shape[0]
-                file_indexes[file] = slice_index
+                file_list.append(file)
+                offset_list.append(slice_index)
                 for i in range(0, data.shape[0]):
                     dataq.put(Data(data[i]))
                 file_index += 1
@@ -269,18 +269,17 @@ def verify(conf, folder, data_type, num_files, report_by_files=True):
 
     aggregate = aggregateq.get()
 
-    if report_file is not None:
-        try:
-            report_file = open(report_file, 'w')
-        except:
-            logger.warning('Cannot open report file, writing report on console')
-            report_file = None
+    try:
+        report_file = open(report_file, 'w')
+    except:
+        logger.warning('Cannot open report file, writing report on console')
+        report_file = None
 
     report.report_results(aggregate, data_type, None, report_file)
     bad_indexes = {}
 
     if report_by_files == 'True':
-        report.add_bad_indexes_per_file(aggregate, data_type, bad_indexes, file_indexes)
+        report.add_bad_indexes_per_file(aggregate, data_type, bad_indexes, file_list, offset_list)
     else:
         report.add_bad_indexes(aggregate, data_type, bad_indexes)
     report.report_bad_indexes(bad_indexes, report_file)

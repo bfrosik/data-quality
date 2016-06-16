@@ -51,9 +51,7 @@ To use Please make sure the installation :ref:`pre-requisite-reference-label` ar
 
 """
 
-import sys
 import json
-import argparse
 import dquality.file as dqfile
 import dquality.data as dqdata
 import dquality.dependency as dqdependency
