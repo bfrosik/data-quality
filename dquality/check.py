@@ -169,7 +169,7 @@ def monitor(conf, fname, dtype, num_files, report_by_file):
     """
     
     bad_indexes = dqmonitor.verify(conf, fname, dtype, int(num_files), report_by_file)
-    print json.dumps(bad_indexes)
+    print (json.dumps(bad_indexes))
     return bad_indexes
 
 
@@ -192,7 +192,7 @@ def dquality(conf, fname):
     """
 
     bad_indexes = dqdata.verify(conf, fname)
-    print json.dumps(bad_indexes)
+    print (json.dumps(bad_indexes))
     return bad_indexes
 
 
