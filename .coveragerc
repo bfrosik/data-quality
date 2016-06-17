@@ -9,6 +9,7 @@ omit =
     *__init__.py*
     *common.__init__.py*
     *common.constants.py*
+    *setup.py*
    
 exclude_lines =
     def set_default

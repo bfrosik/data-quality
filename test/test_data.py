@@ -3,6 +3,7 @@ import time
 import shutil
 import test.test_utils.modify_settings as mod
 import test.test_utils.verify_results as res
+import dquality.check as check
 
 import dquality.data as data
 
@@ -85,7 +86,7 @@ def test_no_limit():
     mod.replace_text_in_file(config, find, replace)
     # the file.verify will exit with -1
     try:
-        data.verify(config, None)
+        check.dquality(config, None)
     except:
         pass
     time.sleep(1)

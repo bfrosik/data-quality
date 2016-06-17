@@ -3,6 +3,7 @@ import time
 import shutil
 import test.test_utils.modify_settings as mod
 import test.test_utils.verify_results as res
+import dquality.check as check
 
 import dquality.file as file
 
@@ -159,7 +160,7 @@ def test_struct_no_missing():
     mod.delete_line_in_file(tags, match)
     match = 'degrees'
     mod.delete_line_in_file(tags, match)
-    file.verify(config, data_file)
+    check.hdf(config, data_file)
     time.sleep(1)
     print_log()
     assert os.stat(logfile).st_size == 0

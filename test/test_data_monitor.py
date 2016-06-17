@@ -5,6 +5,7 @@ from multiprocessing import Process
 import test.test_utils.verify_results as res
 import test.test_utils.modify_settings as mod
 import dquality.data_monitor as monitor
+import dquality.check as check
 
 
 logfile = os.path.join(os.getcwd(),"default.log")
@@ -121,7 +122,7 @@ def test_no_limit():
     mod.replace_text_in_file(config, find, replace)
     # the file.verify will exit with -1
     try:
-        monitor.verify(config, None, 1)
+        check.monitor_quality(config, None, 1)
     except:
         pass
     time.sleep(1)
