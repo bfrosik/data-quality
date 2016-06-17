@@ -5,6 +5,7 @@ import dquality.check as check
 import test.test_utils.verify_results as res
 
 config = "test/dqconfig_test.ini"
+data_file = "test/data/test_data.h5"
 logfile = "default.log"
 schemas = "test/schemas"
 
@@ -20,12 +21,11 @@ def clean():
 
 def test_check_hdf():
     try:
-        check.hdf(config, "something")
+        check.hdf(config, data_file)
     except:
         pass
 
     time.sleep(1)
-    assert res.is_text_in_file(logfile, 'parameter error: file something does not exist')
     clean()
 
 
@@ -48,7 +48,6 @@ def test_check_monitor_quality():
         pass
 
     time.sleep(1)
-    assert res.is_text_in_file(logfile, 'parameter error: directory something does not exist')
     clean()
 
 
@@ -65,22 +64,20 @@ def test_check_monitor():
 
 def test_check_data():
     try:
-        check.dquality(config, "something")
+        check.dquality(config, data_file)
     except:
         pass
 
     time.sleep(1)
-    assert res.is_text_in_file(logfile, 'parameter error: file something does not exist')
     clean()
 
 
 def test_check_dependency():
     try:
-        check.dependency(config, "something")
+        check.dependency(config, data_file)
     except:
         pass
 
     time.sleep(1)
-    assert res.is_text_in_file(logfile, 'parameter error: file something does not exist')
     clean()
 
