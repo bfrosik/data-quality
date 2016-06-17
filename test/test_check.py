@@ -9,7 +9,7 @@ logfile = "default.log"
 schemas = "test/schemas"
 
 def test_setup():
-    shutil.copyfile("test/epics.py", "epics.py")
+    # shutil.copyfile("test/epics.py", "epics.py")
     if not os.path.isdir(schemas):
         shutil.copytree("test/schemas_test", schemas)
 
