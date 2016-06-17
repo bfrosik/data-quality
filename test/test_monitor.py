@@ -153,7 +153,7 @@ def test_no_limit():
     mod.replace_text_in_file(config, find, replace)
     # the file.verify will exit with -1
     try:
-        check.monitor(config, None, data_type, 1, True)
+        monitor.verify(config, None, data_type, 1, True)
     except:
         pass
     time.sleep(1)

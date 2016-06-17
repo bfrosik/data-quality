@@ -160,7 +160,7 @@ def test_struct_no_missing():
     mod.delete_line_in_file(tags, match)
     match = 'degrees'
     mod.delete_line_in_file(tags, match)
-    check.hdf(config, data_file)
+    file.verify(config, data_file)
     time.sleep(1)
     print_log()
     assert os.stat(logfile).st_size == 0
