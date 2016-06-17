@@ -64,8 +64,8 @@ def test_qualitychecks_report_for_file():
     assert 0 in bad_data2
     assert 1 in bad_data1
     assert 1 in bad_data2
-    #assert 3 in bad_data1
-    #assert 3 in bad_data2
+    assert 3 in bad_data1
+    assert 3 in bad_data2
     assert 4 in bad_data1
     assert 4 in bad_data2
     assert not res.is_text_in_file(logfile, 'no file extension specified. Monitoring for all files')
