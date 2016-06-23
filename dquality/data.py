@@ -90,6 +90,9 @@ def init(config):
     logger : Logger
         logger instance
 
+    data_tags : dict
+        a dictionary od data_type/hdf tag
+
     limits : dictionary
         a dictionary containing limit values read from the configured 'limit' file
 
@@ -101,6 +104,13 @@ def init(config):
 
     logger = utils.get_logger(__name__, conf)
 
+    tagsfile = utils.get_file(conf, 'data_tags', logger)
+    if tagsfile is None:
+        sys.exit(-1)
+
+    with open(tagsfile) as tags_file:
+        data_tags = json.loads(tags_file.read())
+
     limitsfile = utils.get_file(conf, 'limits', logger)
     if limitsfile is None:
         sys.exit(-1)
@@ -108,7 +118,7 @@ def init(config):
     with open(limitsfile) as limits_file:
         limits = json.loads(limits_file.read())['limits']
 
-    return logger, limits
+    return logger, data_tags, limits
 
 def process_data(data_type, aggregateq, fp, data_tag, limits):
     """
@@ -150,7 +160,7 @@ def process_data(data_type, aggregateq, fp, data_tag, limits):
     dataq.put('all_data')
 
 
-def verify_file(logger, file, limits, report_file):
+def verify_file(logger, file, data_tags, limits, report_file):
     """
     This method creates and starts a new handler process. The handler is initialized with data queue,
     the data type, and a result queue. The data type can be 'data_dark', 'data_white' or 'data'.
@@ -164,6 +174,9 @@ def verify_file(logger, file, limits, report_file):
 
     file : str
         a filename including path that will be verified
+
+    data_tags : dict
+        a dictionary od data_type/hdf tag
 
     limits : dict
         a dictionary of limits values
@@ -186,20 +199,15 @@ def verify_file(logger, file, limits, report_file):
             logger.warning('Cannot open report file')
             report_file = None
 
-    types = ['data_dark', 'data_white', 'data']
     queues = {}
     bad_indexes = {}
 
-    for type in types:
-        data_tag = '/exchange/'+ type
+    for type in data_tags.keys():
+        data_tag = data_tags[type]
         if data_tag in tags:
-            queues[type] = Queue()
-
-    for type in queues.keys():
-        queue = queues[type]
-        data_tag = '/exchange/'+ type
-        process_data(type, queue, fp, data_tag, limits)
-
+            queue = Queue()
+            queues[type] = queue
+            process_data(type, queue, fp, data_tag, limits)
 
     # receive the results
     for type in queues.keys():
@@ -239,7 +247,7 @@ def verify(conf, file):
         (i.e. data_dark, data_white,data)
     """
 
-    logger, limits = init(conf)
+    logger, data_tags, limits = init(conf)
     if not os.path.isfile(file):
         logger.error(
             'parameter error: file ' +
@@ -248,4 +256,4 @@ def verify(conf, file):
 
     report_file = file.rsplit(".",)[0] + '.report'
 
-    return verify_file(logger, file, limits, report_file)
+    return verify_file(logger, file, data_tags, limits, report_file)

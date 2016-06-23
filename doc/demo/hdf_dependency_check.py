@@ -51,18 +51,18 @@ Please make sure the installation :ref:`pre-requisite-reference-label` are met.
 This script is specific for beamline 32id.
 
 This example takes two mandatory parameters:
-instrument: a string defining the detector that will be used. User can enter one of these choices: 
+instrument: a string defining the detector that will be used. User can enter one of these choices:
 'nanotomo', 'microtomo'.
 The instrument determines a configuration file that will be used.
 file: a file to be verified for dependencies according to schema.
 
-This script calls quality_check verifier.
+This script calls dependency_check verifier.
 
 """
 import sys
 import os
 import argparse
-from dquality.check import dquality as dquality_check
+from dquality.check import hdf_dependency as dependency_check
 from os.path import expanduser
 
 def main(arg):
@@ -78,12 +78,13 @@ def main(arg):
     home = expanduser("~")
     conf = os.path.join(home, ".dquality", instrument)
 
-    bad_indexes = dquality_check(conf, fname)
+    bad_indexes = dependency_check(conf, fname)
     return bad_indexes
 
 
 if __name__ == "__main__":
     main(sys.argv[1:])
+
 
 
 

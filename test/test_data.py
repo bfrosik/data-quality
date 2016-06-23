@@ -86,7 +86,7 @@ def test_no_limit():
     mod.replace_text_in_file(config, find, replace)
     # the file.verify will exit with -1
     try:
-        check.dquality(config, None)
+        check.data(config, None)
     except:
         pass
     time.sleep(1)

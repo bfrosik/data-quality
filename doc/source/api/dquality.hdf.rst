@@ -1,7 +1,7 @@
-:mod:`dquality.file`
+:mod:`dquality.hdf`
 ====================
 
-.. automodule:: dquality.file
+.. automodule:: dquality.hdf
    :members:
    :show-inheritance:
    :undoc-members:

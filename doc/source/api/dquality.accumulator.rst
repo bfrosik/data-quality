@@ -1,7 +1,7 @@
-:mod:`dquality.data_monitor`
-============================
+:mod:`dquality.accumulator`
+=======================
 
-.. automodule:: dquality.data_monitor
+.. automodule:: dquality.accumulator
    :members:
    :show-inheritance:
    :undoc-members:
