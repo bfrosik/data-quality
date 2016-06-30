@@ -1,7 +1,7 @@
-:mod:`dquality.dependency`
+:mod:`dquality.hdf_dependency`
 ==========================
 
-.. automodule:: dquality.dependency
+.. automodule:: dquality.hdf_dependency
    :members:
    :show-inheritance:
    :undoc-members:

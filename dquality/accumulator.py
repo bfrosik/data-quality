@@ -61,13 +61,14 @@ The results will be sent to an EPICS PV (printed on screen for now).
 import os
 import sys
 import pyinotify
-import string
 from pyinotify import WatchManager
-from multiprocessing import Queue
+from multiprocessing import Process, Queue
 import json
+import numpy as np
 import dquality.common.utilities as utils
+import dquality.handler as datahandler
 import dquality.common.report as report
-import dquality.data as dataver
+from dquality.common.containers import Data
 
 __author__ = "Barbara Frosik"
 __copyright__ = "Copyright (c) 2016, UChicago Argonne, LLC."
@@ -115,13 +116,13 @@ def init(config):
     with open(limitsfile) as limits_file:
         limits = json.loads(limits_file.read())['limits']
 
+    report_file = utils.get_file(conf, 'report_file', logger)
+
     try:
         extensions = conf['extensions']
     except KeyError:
         logger.warning('no file extension specified. Monitoring for all files.')
         extensions = ['']
-
-    return logger, limits, extensions
 
     return logger, limits, extensions
 
@@ -136,12 +137,11 @@ def directory(directory, patterns):
 
     Parameters
     ----------
-    directory : str
-        Directory to monitor
+    file : str
+        File Name including path
 
     patterns : list
-        A list of strings representing file extension. Closing matching files will generate
-        event.
+        A list of strings representing file extension
 
     Returns
     -------
@@ -163,36 +163,54 @@ def directory(directory, patterns):
     wdd = wm.add_watch(directory, mask, rec=False)
     return notifier
 
-def verify(conf, folder, num_files):
+def verify(conf, folder, data_type, num_files, report_by_files=True):
     """
     This is the main function called when the verifier application starts.
-    The configuration and the directory to monitor are passed as parameters,
-    as well as number of files that will be accepted. If the files to
-    monitor for should have certain extension, a list of acceptable
-    file extensions can be defined in a configuration file.
+    It reads the configuration for the directory to monitor, for pattern
+    that represents a file extension to look for, and for a number of
+    files that are expected for the experiment. The number of files
+    configuration parameter is added for experiments that generate
+    multiple files. In some cases the experiment data is collected
+    into a single file, which is organized with data sets.
 
     The function calls directory function that sets up the monitoring
     and returns notifier. After the monitoring is initialized, it starts
-    a loop that reads the global "*files*" queue. If there is any new file,
-    the file is removed and validate with data.verify function.
+    a loop that reads the global "*files*" queue and then the global
+    "*results*" queue. If there is any new file, the file is removed
+    from the queue, and the data in the file is validated by a sequence
+    of validation methods. If there is any new result, the result is
+    removed from the queue, corresponding process is terminated, and
+    the result is presented. (currently printed on console, later will
+    be pushed into an EPICS process variable)
 
-    The loop is interrupted when all expected files produced results.
+    The loop is interrupted when all expected processes produced results.
+    The number of expected processes is determined by number of files and
+    number of validation functions.
 
     Parameters
     ----------
     conf : str
-        configuration file name including path
+        configuration file name, including path
 
     folder : str
-        folder name to monitor
+        monitored directory
+
+    data_type : str
+        defines which data type is being evaluated
 
     num_files : int
-        expected number of files. This script will exit after detecting and
-        processing given number of files.
+        number of files that will be processed
+
+    report_by_files : boolean
+        this variable directs how to present the bad indexes in a report. If True, the indexes
+        are related to the files, and a filename is included in the report. Otherwise, the
+        report contains a list of bad indexes.
 
     Returns
     -------
-    None
+    bad_indexes : dict
+        a dictionary or list containing bad indexes
+
     """
     logger, limits, extensions = init(conf)
     if not os.path.isdir(folder):
@@ -203,10 +221,16 @@ def verify(conf, folder, num_files):
 
     notifier = directory(folder, extensions)
 
-    bad_indexes = {}
-    file_count = 0
     interrupted = False
+    file_list = []
+    offset_list = []
+    dataq = Queue()
+    aggregateq = Queue()
+    p = Process(target=datahandler.handle_data, args=(dataq, limits[data_type], aggregateq, ))
+    p.start()
 
+    file_index = 0
+    slice_index = 0
     while not interrupted:
         # The notifier will put a new file into a newFiles queue if one was
         # detected
@@ -221,17 +245,44 @@ def verify(conf, folder, num_files):
             if file.find('INTERRUPT') >= 0:
                 # the calling function may use a 'interrupt' command to stop the monitoring
                 # and processing.
+                dataq.put('all_data')
                 notifier.stop()
                 interrupted = True
                 break
             else:
-                file_count += 1
-                report_file = file.rsplit(".",)[0] + '.report'
-                bad_indexes[file] = dataver.verify_file(logger, file, limits, report_file)
-                print (bad_indexes[file])
+                if file_index == 0:
+                    report_file = file.rsplit(".",)[0] + '.report'
+                fp, tags = utils.get_data_hd5(file)
+                data_tag = tags['/exchange/'+data_type]
+                data = np.asarray(fp[data_tag])
+                slice_index += data.shape[0]
+                file_list.append(file)
+                offset_list.append(slice_index)
+                for i in range(0, data.shape[0]):
+                    dataq.put(Data(data[i]))
+                file_index += 1
+                if file_index == num_files:
+                    dataq.put('all_data')
+                    notifier.stop()
+                    interrupted = True
+                    break
 
-        if file_count == num_files:
-            interrupted = True
+    aggregate = aggregateq.get()
+
+    try:
+        report_file = open(report_file, 'w')
+    except:
+        logger.warning('Cannot open report file, writing report on console')
+        report_file = None
+
+    report.report_results(aggregate, data_type, None, report_file)
+    bad_indexes = {}
+
+    if report_by_files == 'True':
+        report.add_bad_indexes_per_file(aggregate, data_type, bad_indexes, file_list, offset_list)
+    else:
+        report.add_bad_indexes(aggregate, data_type, bad_indexes)
+    report.report_bad_indexes(bad_indexes, report_file)
 
     return bad_indexes
 

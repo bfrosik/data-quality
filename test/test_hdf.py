@@ -3,9 +3,8 @@ import time
 import shutil
 import test.test_utils.modify_settings as mod
 import test.test_utils.verify_results as res
-import dquality.check as check
 
-import dquality.file as file
+import dquality.hdf as hdf
 
 logfile = os.path.join(os.getcwd(),"default.log")
 config_test = os.path.join(os.getcwd(),"test/dqconfig_test.ini")
@@ -44,7 +43,7 @@ def test_conf_error_no_schema():
     mod.replace_text_in_file(config, find, replace)
     # the file.verify will exit with -1
     try:
-        file.verify(config, None)
+        hdf.verify(config, None)
     except:
         pass
     time.sleep(1)
@@ -59,7 +58,7 @@ def test_no_schema():
     mod.replace_text_in_file(config, find, replace)
     # the file.verify will exit with -1
     try:
-        file.verify(config, None)
+        hdf.verify(config, None)
     except:
         pass
     time.sleep(1)
@@ -74,7 +73,7 @@ def test_conf_error_no_type():
     mod.replace_text_in_file(config, find, replace)
     # the file.verify will exit with -1
     try:
-        file.verify(config, None)
+        hdf.verify(config, None)
     except:
         pass
     time.sleep(1)
@@ -90,7 +89,7 @@ def test_bad_type():
     mod.replace_text_in_file(config, find, replace)
     # the file.verify will exit with -1
     try:
-        file.verify(config, None)
+        hdf.verify(config, None)
     except:
         pass
     time.sleep(1)
@@ -104,7 +103,7 @@ def test_bad_file():
     data_file = "data/test_datax.h5"
     # the file.verify will exit with -1
     try:
-        file.verify(config, data_file)
+        hdf.verify(config, data_file)
     except:
         pass
     time.sleep(1)
@@ -117,7 +116,7 @@ def test_tags_missing_tags():
     find = 'hdf_structure'
     replace = 'hdf_tags'
     mod.replace_text_in_file(config, find, replace)
-    file.verify(config, data_file)
+    hdf.verify(config, data_file)
     time.sleep(1)
     print_log()
     assert res.is_text_in_file(logfile, '/exchange/missing')
@@ -133,7 +132,7 @@ def test_tags_no_missing_tags():
     match = 'missing'
     mod.delete_line_in_file(tags, match)
     time.sleep(1)
-    file.verify(config, data_file)
+    hdf.verify(config, data_file)
     print_log()
     assert not res.is_text_in_file(logfile, 'not found')
     clean()
@@ -141,7 +140,7 @@ def test_tags_no_missing_tags():
 
 def test_struct_missing_tags_attrib():
     config, tags = init('h')
-    file.verify(config, data_file)
+    hdf.verify(config, data_file)
     time.sleep(1)
     print_log()
     assert res.is_text_in_file(logfile, '/exchange/missing')
@@ -160,7 +159,7 @@ def test_struct_no_missing():
     mod.delete_line_in_file(tags, match)
     match = 'degrees'
     mod.delete_line_in_file(tags, match)
-    file.verify(config, data_file)
+    hdf.verify(config, data_file)
     time.sleep(1)
     print_log()
     assert os.stat(logfile).st_size == 0

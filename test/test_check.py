@@ -41,9 +41,9 @@ def test_check_pv():
     clean()
 
 
-def test_check_monitor_quality():
+def test_check_monitor():
     try:
-        check.monitor_quality(config, "something", 1)
+        check.monitor(config, "something", 1)
     except:
         pass
 
@@ -51,9 +51,9 @@ def test_check_monitor_quality():
     clean()
 
 
-def test_check_monitor():
+def test_check_accumulator():
     try:
-        check.monitor(config, "something", "data_white", 1, True)
+        check.accumulator(config, "something", "data_white", 1, True)
     except:
         pass
 
@@ -64,7 +64,7 @@ def test_check_monitor():
 
 def test_check_data():
     try:
-        check.dquality(config, data_file)
+        check.data(config, data_file)
     except:
         pass
 
@@ -72,9 +72,9 @@ def test_check_data():
     clean()
 
 
-def test_check_dependency():
+def test_check_hdf_dependency():
     try:
-        check.dependency(config, data_file)
+        check.hdf_dependency(config, data_file)
     except:
         pass
 
