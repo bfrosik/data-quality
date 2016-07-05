@@ -103,7 +103,6 @@ def handle_result(result, aggregate, statq, limits, quality_checks):
     """
     ret = 0
     if aggregate.handle_result(result):
-        print 'result', result.quality_id, result.index
         for function_id in quality_checks[result.quality_id]:
             function = calc.function_mapper[function_id]
             p = Process(target=function, args=(result, aggregate, statq, limits,))
