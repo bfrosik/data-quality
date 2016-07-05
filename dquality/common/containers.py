@@ -130,4 +130,6 @@ class Aggregate:
                 bad_index = good_index
                 bad_index[result.quality_id] = result.res
                 self.bad_indexes[index] = bad_index
+        if result.quality_id >= const.STAT_START:
+            res = False
         return res

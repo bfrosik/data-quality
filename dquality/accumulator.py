@@ -99,8 +99,8 @@ def init(config):
     limits : dictionary
         a dictionary containing limit values read from the configured 'limit' file
 
-    report_file : str
-        a report file configured in a given configuration file
+    quality_checks : dict
+        a dictionary containing quality check functions ids
 
     extensions : list
         a list containing extensions of files to be monitored read from the configuration file
@@ -124,7 +124,15 @@ def init(config):
         logger.warning('no file extension specified. Monitoring for all files.')
         extensions = ['']
 
-    return logger, limits, extensions
+    qcfile = utils.get_file(conf, 'quality_checks', logger)
+    if qcfile is None:
+        sys.exit(-1)
+
+    with open(qcfile) as qc_file:
+        dict = json.loads(qc_file.read())
+    quality_checks = utils.parse_quality_checks(dict)
+
+    return logger, limits, quality_checks, extensions
 
 
 def directory(directory, patterns):
@@ -212,7 +220,7 @@ def verify(conf, folder, data_type, num_files, report_by_files=True):
         a dictionary or list containing bad indexes
 
     """
-    logger, limits, extensions = init(conf)
+    logger, limits, quality_checks, extensions = init(conf)
     if not os.path.isdir(folder):
         logger.error(
             'parameter error: directory ' +
@@ -226,7 +234,7 @@ def verify(conf, folder, data_type, num_files, report_by_files=True):
     offset_list = []
     dataq = Queue()
     aggregateq = Queue()
-    p = Process(target=datahandler.handle_data, args=(dataq, limits[data_type], aggregateq, ))
+    p = Process(target=datahandler.handle_data, args=(dataq, limits[data_type], aggregateq, quality_checks,))
     p.start()
 
     file_index = 0

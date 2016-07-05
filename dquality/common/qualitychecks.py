@@ -63,6 +63,7 @@ __all__ = ['find_result',
            'validate_signal_intensity_standard_deviation',
            'validate_stat_mean']
 
+
 def find_result(res, index, quality_id, limits):
     """
     This is a helper method. It evaluates given result against limits, and creates
@@ -164,6 +165,37 @@ def validate_signal_intensity_standard_deviation(data, index, results, all_limit
     result = find_result(res, index, const.QUALITYCHECK_STD, limits)
     results.put(result)
 
+def validate_saturation(data, index, results, all_limits):
+    """
+    This is one of the validation methods. It has a "quality_id"
+    property that identifies this validation step. This function
+    calculates standard deviation signal intensity from the data parameter. The
+    result is compared with threshhold values to determine the
+    quality of the data. The result, comparison result, index, and
+    quality_id values are saved in a new Result object. This object
+    is then enqueued into the "results" queue.
+
+    Parameters
+    ----------
+    data : Data
+        data instance that includes slice 2D data
+
+    index : int
+        slice index
+
+    results : Queue
+        A multiprocessing.Queue instance that is used to pass the
+        results from validating processes to the main
+
+    all_limits : dictionary
+        a dictionary containing threshold values
+
+    Returns
+    -------
+    None
+    """
+    pass
+
 def validate_stat_mean(result, aggregate, results, all_limits):
     """
     This is one of the statistical validation methods. It has a "quality_id"
@@ -207,4 +239,7 @@ def validate_stat_mean(result, aggregate, results, all_limits):
     result = find_result(delta, index, const.STAT_MEAN, limits)
     results.put(result)
 
-
+function_mapper = {const.QUALITYCHECK_MEAN : validate_mean_signal_intensity,
+                   const.QUALITYCHECK_STD : validate_signal_intensity_standard_deviation,
+                   const.QUALITYCHECK_SATURATION : validate_saturation,
+                   const.STAT_MEAN : validate_stat_mean}

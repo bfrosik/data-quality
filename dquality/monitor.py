@@ -61,12 +61,10 @@ The results will be sent to an EPICS PV (printed on screen for now).
 import os
 import sys
 import pyinotify
-import string
 from pyinotify import WatchManager
 from multiprocessing import Queue
 import json
 import dquality.common.utilities as utils
-import dquality.common.report as report
 import dquality.data as dataver
 
 __author__ = "Barbara Frosik"
@@ -101,8 +99,8 @@ def init(config):
     limits : dictionary
         a dictionary containing limit values read from the configured 'limit' file
 
-    report_file : str
-        a report file configured in a given configuration file
+    quality_checks : dict
+        a dictionary containing quality check functions ids
 
     extensions : list
         a list containing extensions of files to be monitored read from the configuration file
@@ -131,7 +129,15 @@ def init(config):
         logger.warning('no file extension specified. Monitoring for all files.')
         extensions = ['']
 
-    return logger, data_tags, limits, extensions
+    qcfile = utils.get_file(conf, 'quality_checks', logger)
+    if qcfile is None:
+        sys.exit(-1)
+
+    with open(qcfile) as qc_file:
+        dict = json.loads(qc_file.read())
+    quality_checks = utils.parse_quality_checks(dict)
+
+    return logger, data_tags, limits, quality_checks, extensions
 
 
 def directory(directory, patterns):
@@ -202,7 +208,7 @@ def verify(conf, folder, num_files):
     -------
     None
     """
-    logger, data_tags, limits, extensions = init(conf)
+    logger, data_tags, limits, quality_checks, extensions = init(conf)
     if not os.path.isdir(folder):
         logger.error(
             'parameter error: directory ' +
@@ -235,7 +241,7 @@ def verify(conf, folder, num_files):
             else:
                 file_count += 1
                 report_file = file.rsplit(".",)[0] + '.report'
-                bad_indexes[file] = dataver.verify_file(logger, file, data_tags, limits, report_file)
+                bad_indexes[file] = dataver.verify_file(logger, file, data_tags, limits, quality_checks, report_file)
                 print (bad_indexes[file])
 
         if file_count == num_files:

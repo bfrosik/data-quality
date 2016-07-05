@@ -96,8 +96,8 @@ def init(config):
     limits : dictionary
         a dictionary containing limit values read from the configured 'limit' file
 
-    report_file : str
-        a report file configured in a given configuration file
+    quality_checks : dict
+        a dictionary containing quality check functions ids
     """
 
     conf = utils.get_config(config)
@@ -118,9 +118,17 @@ def init(config):
     with open(limitsfile) as limits_file:
         limits = json.loads(limits_file.read())['limits']
 
-    return logger, data_tags, limits
+    qcfile = utils.get_file(conf, 'quality_checks', logger)
+    if qcfile is None:
+        sys.exit(-1)
 
-def process_data(data_type, aggregateq, fp, data_tag, limits):
+    with open(qcfile) as qc_file:
+        dict = json.loads(qc_file.read())
+    quality_checks = utils.parse_quality_checks(dict)
+
+    return logger, data_tags, limits, quality_checks
+
+def process_data(data_type, aggregateq, fp, data_tag, limits, quality_checks):
     """
     This method creates and starts a new handler process. The handler is initialized with data queue,
     the data type, and a result queue. The data type can be 'data_dark', 'data_white' or 'data'.
@@ -152,7 +160,7 @@ def process_data(data_type, aggregateq, fp, data_tag, limits):
 
     dataq = Queue()
 
-    p = Process(target=handler.handle_data, args=(dataq, limits[data_type], aggregateq, ))
+    p = Process(target=handler.handle_data, args=(dataq, limits[data_type], aggregateq, quality_checks))
     p.start()
 
     for i in range(0,dt.shape[0]):
@@ -160,7 +168,7 @@ def process_data(data_type, aggregateq, fp, data_tag, limits):
     dataq.put('all_data')
 
 
-def verify_file(logger, file, data_tags, limits, report_file):
+def verify_file(logger, file, data_tags, limits, quality_checks, report_file):
     """
     This method creates and starts a new handler process. The handler is initialized with data queue,
     the data type, and a result queue. The data type can be 'data_dark', 'data_white' or 'data'.
@@ -207,7 +215,7 @@ def verify_file(logger, file, data_tags, limits, report_file):
         if data_tag in tags:
             queue = Queue()
             queues[type] = queue
-            process_data(type, queue, fp, data_tag, limits)
+            process_data(type, queue, fp, data_tag, limits, quality_checks)
 
     # receive the results
     for type in queues.keys():
@@ -247,7 +255,7 @@ def verify(conf, file):
         (i.e. data_dark, data_white,data)
     """
 
-    logger, data_tags, limits = init(conf)
+    logger, data_tags, limits, quality_checks = init(conf)
     if not os.path.isfile(file):
         logger.error(
             'parameter error: file ' +
@@ -256,4 +264,4 @@ def verify(conf, file):
 
     report_file = file.rsplit(".",)[0] + '.report'
 
-    return verify_file(logger, file, data_tags, limits, report_file)
+    return verify_file(logger, file, data_tags, limits, quality_checks, report_file)

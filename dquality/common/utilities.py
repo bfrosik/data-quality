@@ -57,6 +57,7 @@ from configobj import ConfigObj
 import pytz
 import datetime
 
+
 __author__ = "Barbara Frosik"
 __copyright__ = "Copyright (c) 2016, UChicago Argonne, LLC."
 __docformat__ = 'restructuredtext en'
@@ -299,8 +300,8 @@ def get_file(conf, config_name, logger):
 
 def get_data_hd5(file):
     """
-   This function takes a file of HD5 format, traverses through tags,
-   finds "shape" data sets and returns the sets in a dictionary.
+    This function takes a file of HD5 format, traverses through tags,
+    finds "shape" data sets and returns the sets in a dictionary.
 
     Parameters
     ----------
@@ -327,7 +328,7 @@ def get_data_hd5(file):
 
 def copy_list(list):
     """
-   This function takes a list and returns a hardcopy.
+    This function takes a list and returns a hardcopy.
 
     Parameters
     ----------
@@ -347,7 +348,7 @@ def copy_list(list):
 
 def key_list(dict):
     """
-   This function takes a dictionary and returns a new list of keys.
+    This function takes a dictionary and returns a new list of keys.
 
     Parameters
     ----------
@@ -356,7 +357,7 @@ def key_list(dict):
 
     Returns
     -------
-    lisle : list
+    list : list
         A new list of keys in dictionary
     """
     list = []
@@ -365,3 +366,40 @@ def key_list(dict):
     return list
 
 
+def parse_quality_checks(dict):
+    """
+    This function takes a dictionary with all elements as strings, that are defined as constants in the
+    dquality/common.constants.py file. This function translates the strings into the actual numerical values.
+
+    Note: this simple parsing function assumes that the constants are defined with using spaces (i.e.
+    QUALITYCHECK_MEAN = 1).
+
+    Parameters
+    ----------
+    dict : dictionary
+        A dictionary with string elements
+
+    Returns
+    -------
+    quality_checks : dict
+        A new dictionary with all elements replaced by the actual value the string represented
+    """
+    const = {}
+    file = os.path.join(os.getcwd(), 'dquality/common/constants.py')
+    with open(file, 'r') as f:
+        lines = f.readlines()
+        for line in lines:
+            split_line = line.split()
+            if len(split_line) == 3:
+                const[split_line[0]] = split_line[2]
+    f.close()
+
+    quality_checks = {}
+    for key in dict.keys():
+        value = dict[key]
+        list = []
+        for item in value:
+            list.append(int(const[item]))
+        quality_checks[int(const[key])] = list
+
+    return quality_checks
