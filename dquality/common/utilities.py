@@ -58,6 +58,7 @@ from configobj import ConfigObj
 import pytz
 import datetime
 import dquality.common.constants as const
+import numpy as np
 
 
 __author__ = "Barbara Frosik"
@@ -345,7 +346,9 @@ def get_data_ge(logger, file):
     fp = open(file, 'r')
     offset = 8192
     fp.seek(18)
-    size, nframes = st.unpack('<ih',fp.read(6))
+    attr = fp.read(6)
+    attr.encode('utf-8')
+    size, nframes = st.unpack('<ih',attr)
     if size != 2048:
         logger.error('GE image size unexpected: '+str(size))
         return None, 0, 0
