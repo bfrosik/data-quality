@@ -345,25 +345,27 @@ def get_data_ge(logger, file):
     """
     fp = open(file, 'r')
     offset = 8192
-    fp.seek(18)
-    attr = fp.read(6)
-    attr.encode('utf-8')
-    size, nframes = st.unpack('<ih',attr)
-    if size != 2048:
-        logger.error('GE image size unexpected: '+str(size))
-        return None, 0, 0
+    size = 2048
+
+    # fp.seek(18)
+    # attr = fp.read(6)
+    # attr.encode('utf-8')
+    # size, nframes = st.unpack('<ih',attr)
+    # if size != 2048:
+    #     logger.error('GE image size unexpected: '+str(size))
+    #     return None, 0, 0
 
     fsize = os.stat(str(fp).split("'")[1]).st_size
     nframes_calc = (fsize - offset)/(2*size**2)
 
-    if nframes != nframes_calc:
-        logger.error('GE number frames unexpected: '+str(nframes))
-        return None, 0, 0
+    # if nframes != nframes_calc:
+    #     logger.error('GE number frames unexpected: '+str(nframes))
+    #     return None, 0, 0
 
     pos = offset
     fp.seek(pos)
 
-    return fp, nframes, size*size
+    return fp, nframes_calc, size*size
 
 
 def copy_list(list):
