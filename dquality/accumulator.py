@@ -114,7 +114,7 @@ def init(config):
         sys.exit(-1)
 
     with open(limitsfile) as limits_file:
-        limits = json.loads(limits_file.read())['limits']
+        limits = json.loads(limits_file.read())
 
     report_file = utils.get_file(conf, 'report_file', logger)
 
@@ -130,7 +130,7 @@ def init(config):
 
     with open(qcfile) as qc_file:
         dict = json.loads(qc_file.read())
-    quality_checks = utils.parse_quality_checks(dict)
+    quality_checks = utils.get_quality_checks(dict)
 
     return logger, limits, quality_checks, extensions
 
@@ -260,7 +260,7 @@ def verify(conf, folder, data_type, num_files, report_by_files=True):
             else:
                 if file_index == 0:
                     report_file = file.rsplit(".",)[0] + '.report'
-                fp, tags = utils.get_data_hd5(file)
+                fp, tags = utils.get_data_hdf(file)
                 data_tag = tags['/exchange/'+data_type]
                 data = np.asarray(fp[data_tag])
                 slice_index += data.shape[0]

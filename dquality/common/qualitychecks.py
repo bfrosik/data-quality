@@ -169,7 +169,7 @@ def validate_saturation(data, index, results, all_limits):
     """
     This is one of the validation methods. It has a "quality_id"
     property that identifies this validation step. This function
-    calculates standard deviation signal intensity from the data parameter. The
+    calculates the number of saturated pixels in the given frame. The
     result is compared with threshhold values to determine the
     quality of the data. The result, comparison result, index, and
     quality_id values are saved in a new Result object. This object
@@ -194,7 +194,11 @@ def validate_saturation(data, index, results, all_limits):
     -------
     None
     """
-    pass
+    sat_high = (all_limits['sat'])['high_limit']
+    res = (data > sat_high).sum()
+    limits = all_limits['sat_points']
+    result = find_result(res, index, const.QUALITYCHECK_SAT, limits)
+    results.put(result)
 
 def validate_stat_mean(result, aggregate, results, all_limits):
     """
@@ -239,7 +243,9 @@ def validate_stat_mean(result, aggregate, results, all_limits):
     result = find_result(delta, index, const.STAT_MEAN, limits)
     results.put(result)
 
+
 function_mapper = {const.QUALITYCHECK_MEAN : validate_mean_signal_intensity,
                    const.QUALITYCHECK_STD : validate_signal_intensity_standard_deviation,
-                   const.QUALITYCHECK_SATURATION : validate_saturation,
+                   const.QUALITYCHECK_SAT : validate_saturation,
                    const.STAT_MEAN : validate_stat_mean}
+

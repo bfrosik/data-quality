@@ -65,6 +65,7 @@ from pyinotify import WatchManager
 from multiprocessing import Queue
 import json
 import dquality.common.utilities as utils
+import dquality.common.constants as const
 import dquality.data as dataver
 
 __author__ = "Barbara Frosik"
@@ -109,19 +110,27 @@ def init(config):
 
     logger = utils.get_logger(__name__, conf)
 
-    tagsfile = utils.get_file(conf, 'data_tags', logger)
-    if tagsfile is None:
-        sys.exit(-1)
+    try:
+        file_type = conf['file_type']
+        file_type = const.globals(file_type)
+    except KeyError:
+        file_type = const.FILE_TYPE_HDF
 
-    with open(tagsfile) as tags_file:
-        data_tags = json.loads(tags_file.read())
+    if file_type == const.FILE_TYPE_HDF:
+        tagsfile = utils.get_file(conf, 'data_tags', logger)
+        if tagsfile is None:
+            sys.exit(-1)
+        with open(tagsfile) as tags_file:
+            data_tags = json.loads(tags_file.read())
+    else:
+        data_tags = None
 
     limitsfile = utils.get_file(conf, 'limits', logger)
     if limitsfile is None:
         sys.exit(-1)
 
     with open(limitsfile) as limits_file:
-        limits = json.loads(limits_file.read())['limits']
+        limits = json.loads(limits_file.read())
 
     try:
         extensions = conf['extensions']
@@ -135,9 +144,9 @@ def init(config):
 
     with open(qcfile) as qc_file:
         dict = json.loads(qc_file.read())
-    quality_checks = utils.parse_quality_checks(dict)
+    quality_checks = utils.get_quality_checks(dict)
 
-    return logger, data_tags, limits, quality_checks, extensions
+    return logger, data_tags, limits, quality_checks, extensions, file_type
 
 
 def directory(directory, patterns):
@@ -208,7 +217,7 @@ def verify(conf, folder, num_files):
     -------
     None
     """
-    logger, data_tags, limits, quality_checks, extensions = init(conf)
+    logger, data_tags, limits, quality_checks, extensions, file_type = init(conf)
     if not os.path.isdir(folder):
         logger.error(
             'parameter error: directory ' +
@@ -241,7 +250,10 @@ def verify(conf, folder, num_files):
             else:
                 file_count += 1
                 report_file = file.rsplit(".",)[0] + '.report'
-                bad_indexes[file] = dataver.verify_file(logger, file, data_tags, limits, quality_checks, report_file)
+                if file_type == const.FILE_TYPE_GE:
+                    bad_indexes[file] = dataver.verify_file_ge(logger, file, limits, quality_checks, report_file)
+                else:
+                    bad_indexes[file] = dataver.verify_file_hdf(logger, file, data_tags, limits, quality_checks, report_file)
                 print (bad_indexes[file])
 
         if file_count == num_files:

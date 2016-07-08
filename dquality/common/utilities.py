@@ -52,10 +52,12 @@ This file is a suite of utility functions.
 """
 import os
 import h5py
+import struct as st
 import logging
 from configobj import ConfigObj
 import pytz
 import datetime
+import dquality.common.constants as const
 
 
 __author__ = "Barbara Frosik"
@@ -70,7 +72,7 @@ __all__ = ['lt',
            'get_logger',
            'get_directory',
            'get_file',
-           'get_data_hd5',
+           'get_data_hdf',
            'copy_list',
            'key_list']
 
@@ -298,9 +300,9 @@ def get_file(conf, config_name, logger):
     return file
 
 
-def get_data_hd5(file):
+def get_data_hdf(file):
     """
-    This function takes a file of HD5 format, traverses through tags,
+    This function takes a file of HDF format, traverses through tags,
     finds "shape" data sets and returns the sets in a dictionary.
 
     Parameters
@@ -324,6 +326,41 @@ def get_data_hd5(file):
     file_h5 = h5py.File(file, 'r')
     file_h5.visititems(func)
     return file_h5, data
+
+
+def get_data_ge(logger, file):
+    """
+    This function takes a file of GE format.
+
+    Parameters
+    ----------
+    file : str
+        File Name
+
+    Returns
+    -------
+    data : dictionary
+        A dictionary of data sets with the tag keys
+    """
+    fp = open(file, 'r')
+    offset = 8192
+    fp.seek(18)
+    size, nframes = st.unpack('<ih',fp.read(6))
+    if size != 2048:
+        logger.error('GE image size unexpected: '+str(size))
+        return None, 0, 0
+
+    fsize = os.stat(str(fp).split("'")[1]).st_size
+    nframes_calc = (fsize - offset)/(2*size**2)
+
+    if nframes != nframes_calc:
+        logger.error('GE number frames unexpected: '+str(nframes))
+        return None, 0, 0
+
+    pos = offset
+    fp.seek(pos)
+
+    return fp, nframes, size*size
 
 
 def copy_list(list):
@@ -366,13 +403,10 @@ def key_list(dict):
     return list
 
 
-def parse_quality_checks(dict):
+def get_quality_checks(dict):
     """
     This function takes a dictionary with all elements as strings, that are defined as constants in the
     dquality/common.constants.py file. This function translates the strings into the actual numerical values.
-
-    Note: this simple parsing function assumes that the constants are defined with using spaces (i.e.
-    QUALITYCHECK_MEAN = 1).
 
     Parameters
     ----------
@@ -382,24 +416,14 @@ def parse_quality_checks(dict):
     Returns
     -------
     quality_checks : dict
-        A new dictionary with all elements replaced by the actual value the string represented
+        A new dictionary with all elements replaced by the actual value the strings represented
     """
-    const = {}
-    file = os.path.join(os.getcwd(), 'dquality/common/constants.py')
-    with open(file, 'r') as f:
-        lines = f.readlines()
-        for line in lines:
-            split_line = line.split()
-            if len(split_line) == 3:
-                const[split_line[0]] = split_line[2]
-    f.close()
-
     quality_checks = {}
     for key in dict.keys():
         value = dict[key]
         list = []
         for item in value:
-            list.append(int(const[item]))
-        quality_checks[int(const[key])] = list
+            list.append(const.globals(item))
+        quality_checks[const.globals(key)] = list
 
     return quality_checks

@@ -153,7 +153,7 @@ def handle_data(dataq, limits, reportq, quality_checks):
     -------
     None
     """
-    aggregate = Aggregate()
+    aggregate = Aggregate(quality_checks)
     resultsq = Queue()
     interrupted = False
     index = 0

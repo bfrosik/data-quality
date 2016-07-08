@@ -127,3 +127,54 @@ def test_no_limit():
     time.sleep(1)
     assert res.is_text_in_file(logfile, 'configuration error: file test/schemas/limitsx.json does not exist')
     clean()
+
+
+def test_ge():
+    config = init('ef')
+    data_path = os.path.join(os.getcwd(),"test/data1")
+    data_file = os.path.join(os.getcwd(),"test/data/test_data.ge4")
+    new_data = os.path.join(data_path,"test_data.ge4")
+
+    find = 'HDF'
+    replace = 'GE'
+    mod.replace_text_in_file(config, find, replace)
+    mod.delete_line_in_file(config, 'extensions')
+    mod.add_line_to_file(config, "'extensions' = .ge, .ge4, .ge3")
+
+
+    if not os.path.exists(data_path):
+        os.makedirs(data_path)
+    p = Process(target=copy_file, args=(data_file, new_data,))
+    p.start()
+
+    bad_indexes_file = monitor.verify(config, data_path, 1)
+    bad_indexes = bad_indexes_file[new_data]
+    bad_data = bad_indexes['data']
+    assert 2 in bad_data
+    assert 3 in bad_data
+    assert 4 in bad_data
+    clean()
+
+
+def test_ge_corrupted_file():
+    config = init('ef')
+    data_path = os.path.join(os.getcwd(),"test/data1")
+    new_data = os.path.join(data_path,"test_data.ge4")
+
+    find = 'HDF'
+    replace = 'GE'
+    mod.replace_text_in_file(config, find, replace)
+    mod.delete_line_in_file(config, 'extensions')
+    mod.add_line_to_file(config, "'extensions' = .ge, .ge4, .ge3")
+
+
+    if not os.path.exists(data_path):
+        os.makedirs(data_path)
+    p = Process(target=copy_file, args=(data_file, new_data,))
+    p.start()
+
+    bad_indexes_file = monitor.verify(config, data_path, 1)
+    bad_indexes = bad_indexes_file[new_data]
+    assert bad_indexes is None
+    assert res.is_text_in_file(logfile, 'GE image size unexpected:')
+    clean()

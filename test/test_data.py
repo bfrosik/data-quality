@@ -92,3 +92,18 @@ def test_no_limit():
     time.sleep(1)
     assert res.is_text_in_file(logfile, 'configuration error: file test/schemas/limitsx.json does not exist')
     clean()
+
+def test_ge():
+    config = init('d')
+    find = 'HDF'
+    replace = 'GE'
+    mod.replace_text_in_file(config, find, replace)
+    data_file = os.path.join(os.getcwd(),"test/data/test_data.ge4")
+    bad_indexes = data.verify(config, data_file)
+    bad_data = bad_indexes['data']
+    assert 2 in bad_data
+    assert 3 in bad_data
+    assert 4 in bad_data
+    clean()
+
+
