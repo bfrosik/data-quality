@@ -343,22 +343,22 @@ def get_data_ge(logger, file):
     data : dictionary
         A dictionary of data sets with the tag keys
     """
-    fp = open(file, 'r')
+    fp = open(file, 'rb')
     offset = 8192
     size = 2048
 
-    # fp.seek(18)
-    # size, nframes = st.unpack('<ih',fp.read(6))
-    # if size != 2048:
-    #     logger.error('GE image size unexpected: '+str(size))
-    #     return None, 0, 0
+    fp.seek(18)
+    size, nframes = st.unpack('<ih',fp.read(6))
+    if size != 2048:
+        logger.error('GE image size unexpected: '+str(size))
+        return None, 0, 0
 
     fsize = os.stat(str(fp).split("'")[1]).st_size
     nframes_calc = (fsize - offset)/(2*size**2)
 
-    # if nframes != nframes_calc:
-    #     logger.error('GE number frames unexpected: '+str(nframes))
-    #     return None, 0, 0
+    if nframes != nframes_calc:
+        logger.error('GE number frames unexpected: '+str(nframes))
+        return None, 0, 0
 
     pos = offset
     fp.seek(pos)
