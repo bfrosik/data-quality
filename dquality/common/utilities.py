@@ -348,9 +348,7 @@ def get_data_ge(logger, file):
     size = 2048
 
     # fp.seek(18)
-    # attr = fp.read(6)
-    # attr.encode('utf-8')
-    # size, nframes = st.unpack('<ih',attr)
+    # size, nframes = st.unpack('<ih',fp.read(6))
     # if size != 2048:
     #     logger.error('GE image size unexpected: '+str(size))
     #     return None, 0, 0
