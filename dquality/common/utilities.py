@@ -363,7 +363,7 @@ def get_data_ge(logger, file):
     pos = offset
     fp.seek(pos)
 
-    return fp, nframes_calc, size*size
+    return fp, int(nframes_calc), size*size
 
 
 def copy_list(list):
