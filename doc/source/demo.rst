@@ -6,8 +6,12 @@ This section contains various DQuality examples. Please make sure the installati
 
 .. toctree::
 
-   demo/doc.demo.verify_pv
-   demo/doc.demo.verify_file
+   demo/doc.demo.accumulator_check
+   demo/doc.demo.data_check
+   demo/doc.demo.hdf_check
+   demo/doc.demo.hdf_dependency_check
+   demo/doc.demo.monitor_check
+   demo/doc.demo.pv_check
 
 .. automodule:: dquality
    :members:

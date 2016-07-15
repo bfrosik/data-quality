@@ -1,46 +1,52 @@
 {
-"limits" : {
-    "data" : {
-        "mean" : {
-             "low_limit" : 1.0,
-             "high_limit" : 3.5
-             },
-        "stat_mean" : {
-             "low_limit" : -2,
-             "high_limit" : 1
-             },
-        "std" : {
-             "low_limit" : 0,
-             "high_limit" : 0
-             }
-        },
-    "data_dark" : {
-        "mean" : {
-             "low_limit" : 0,
-             "high_limit" : 110
-             },
-        "stat_mean" : {
-             "low_limit" : -5,
-             "high_limit" : 5
-             },
-        "std" : {
-             "low_limit" : 1.5,
-             "high_limit" : 10
-             }
-        },
-    "data_white" : {
-        "mean" : {
-             "low_limit" : 0,
-             "high_limit" : 6000
-             },
-        "stat_mean" : {
-             "low_limit" : 260,
-             "high_limit" : 500
-             },
-        "std" : {
-             "low_limit" : 130,
-             "high_limit" : 450
-             }
-        }
-    }
+  "data" : {
+      "mean" : {
+           "low_limit" : 1.0,
+           "high_limit" : 3.5
+           },
+      "stat_mean" : {
+           "low_limit" : -2,
+           "high_limit" : 1
+           },
+      "std" : {
+           "low_limit" : 0,
+           "high_limit" : 0
+           },
+      "sat" : {
+           "low_limit" : 0,
+           "high_limit" : 2300
+           },
+      "sat_points" : {
+           "low_limit" : 0,
+           "high_limit" : 375
+           }
+      },
+  "data_dark" : {
+      "mean" : {
+           "low_limit" : 0,
+           "high_limit" : 110
+           },
+      "stat_mean" : {
+           "low_limit" : -5,
+           "high_limit" : 5
+           },
+      "std" : {
+           "low_limit" : 1.5,
+           "high_limit" : 10
+           }
+      },
+  "data_white" : {
+      "mean" : {
+           "low_limit" : 0,
+           "high_limit" : 6000
+           },
+      "stat_mean" : {
+           "low_limit" : 260,
+           "high_limit" : 500
+           },
+      "std" : {
+           "low_limit" : 130,
+           "high_limit" : 450
+           }
+      }
 }

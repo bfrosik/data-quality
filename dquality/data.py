@@ -59,19 +59,20 @@ quality check are returned back.
 import os.path
 import json
 import sys
-import string
+import numpy as np
 from multiprocessing import Queue, Process
 import dquality.common.utilities as utils
 import dquality.handler as handler
 from dquality.common.containers import Data
 import dquality.common.report as report
+import dquality.common.constants as const
 
 __author__ = "Barbara Frosik"
 __copyright__ = "Copyright (c) 2016, UChicago Argonne, LLC."
 __docformat__ = 'restructuredtext en'
 __all__ = ['init',
            'process_data',
-           'verify_file',
+           'verify_file_hdf',
            'verify']
 
 
@@ -90,27 +91,53 @@ def init(config):
     logger : Logger
         logger instance
 
+    data_tags : dict
+        a dictionary od data_type/hdf tag
+
     limits : dictionary
         a dictionary containing limit values read from the configured 'limit' file
 
-    report_file : str
-        a report file configured in a given configuration file
+    quality_checks : dict
+        a dictionary containing quality check functions ids
     """
 
     conf = utils.get_config(config)
 
     logger = utils.get_logger(__name__, conf)
 
+    try:
+        file_type = conf['file_type']
+        file_type = const.globals(file_type)
+    except KeyError:
+        file_type = const.FILE_TYPE_HDF
+
+    if file_type == const.FILE_TYPE_HDF:
+        tagsfile = utils.get_file(conf, 'data_tags', logger)
+        if tagsfile is None:
+            sys.exit(-1)
+        with open(tagsfile) as tags_file:
+            data_tags = json.loads(tags_file.read())
+    else:
+        data_tags = None
+
     limitsfile = utils.get_file(conf, 'limits', logger)
     if limitsfile is None:
         sys.exit(-1)
 
     with open(limitsfile) as limits_file:
-        limits = json.loads(limits_file.read())['limits']
+        limits = json.loads(limits_file.read())
 
-    return logger, limits
+    qcfile = utils.get_file(conf, 'quality_checks', logger)
+    if qcfile is None:
+        sys.exit(-1)
 
-def process_data(data_type, aggregateq, fp, data_tag, limits):
+    with open(qcfile) as qc_file:
+        dict = json.loads(qc_file.read())
+    quality_checks = utils.get_quality_checks(dict)
+
+    return logger, data_tags, limits, quality_checks, file_type
+
+def process_data(data_type, aggregateq, fp, data_tag, limits, quality_checks):
     """
     This method creates and starts a new handler process. The handler is initialized with data queue,
     the data type, and a result queue. The data type can be 'data_dark', 'data_white' or 'data'.
@@ -142,7 +169,7 @@ def process_data(data_type, aggregateq, fp, data_tag, limits):
 
     dataq = Queue()
 
-    p = Process(target=handler.handle_data, args=(dataq, limits[data_type], aggregateq, ))
+    p = Process(target=handler.handle_data, args=(dataq, limits[data_type], aggregateq, quality_checks))
     p.start()
 
     for i in range(0,dt.shape[0]):
@@ -150,7 +177,7 @@ def process_data(data_type, aggregateq, fp, data_tag, limits):
     dataq.put('all_data')
 
 
-def verify_file(logger, file, limits, report_file):
+def verify_file_hdf(logger, file, data_tags, limits, quality_checks, report_file):
     """
     This method creates and starts a new handler process. The handler is initialized with data queue,
     the data type, and a result queue. The data type can be 'data_dark', 'data_white' or 'data'.
@@ -165,6 +192,9 @@ def verify_file(logger, file, limits, report_file):
     file : str
         a filename including path that will be verified
 
+    data_tags : dict
+        a dictionary od data_type/hdf tag
+
     limits : dict
         a dictionary of limits values
 
@@ -177,7 +207,7 @@ def verify_file(logger, file, limits, report_file):
         a dictionary of bad indexes per data type
 
     """
-    fp, tags = utils.get_data_hd5(file)
+    fp, tags = utils.get_data_hdf(file)
 
     if report_file is not None:
         try:
@@ -186,20 +216,15 @@ def verify_file(logger, file, limits, report_file):
             logger.warning('Cannot open report file')
             report_file = None
 
-    types = ['data_dark', 'data_white', 'data']
     queues = {}
     bad_indexes = {}
 
-    for type in types:
-        data_tag = '/exchange/'+ type
+    for type in data_tags.keys():
+        data_tag = data_tags[type]
         if data_tag in tags:
-            queues[type] = Queue()
-
-    for type in queues.keys():
-        queue = queues[type]
-        data_tag = '/exchange/'+ type
-        process_data(type, queue, fp, data_tag, limits)
-
+            queue = Queue()
+            queues[type] = queue
+            process_data(type, queue, fp, data_tag, limits, quality_checks)
 
     # receive the results
     for type in queues.keys():
@@ -210,6 +235,43 @@ def verify_file(logger, file, limits, report_file):
         report.add_bad_indexes(aggregate, type, bad_indexes)
 
     return bad_indexes
+
+
+def verify_file_ge(logger, file, limits, quality_checks, report_file):
+    type = 'data'
+
+    fp, nframes, fsize = utils.get_data_ge(logger, file)
+    # file is corrupted, error message is logged
+    if fp is None:
+        return None
+
+    if report_file is not None:
+        try:
+            report_file = open(report_file, 'w')
+        except:
+            logger.warning('Cannot open report file')
+            report_file = None
+
+
+    dataq = Queue()
+    aggregateq = Queue()
+
+    p = Process(target=handler.handle_data, args=(dataq, limits['data'], aggregateq, quality_checks))
+    p.start()
+
+    for i in range(0,nframes):
+        img = np.fromfile(fp,'uint16', fsize)
+        dataq.put(Data(img))
+    dataq.put('all_data')
+
+    bad_indexes = {}
+    aggregate = aggregateq.get()
+    if report_file is not None:
+        report.report_results(aggregate, type, file, report_file)
+    report.add_bad_indexes(aggregate, type, bad_indexes)
+
+    return bad_indexes
+
 
 
 def verify(conf, file):
@@ -239,7 +301,7 @@ def verify(conf, file):
         (i.e. data_dark, data_white,data)
     """
 
-    logger, limits = init(conf)
+    logger, data_tags, limits, quality_checks, file_type = init(conf)
     if not os.path.isfile(file):
         logger.error(
             'parameter error: file ' +
@@ -248,4 +310,7 @@ def verify(conf, file):
 
     report_file = file.rsplit(".",)[0] + '.report'
 
-    return verify_file(logger, file, limits, report_file)
+    if file_type == const.FILE_TYPE_HDF:
+        return verify_file_hdf(logger, file, data_tags, limits, quality_checks, report_file)
+    elif file_type == const.FILE_TYPE_GE:
+        return verify_file_ge(logger, file, limits, quality_checks, report_file)

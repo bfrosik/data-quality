@@ -56,24 +56,21 @@ def main(arg):
     parser = argparse.ArgumentParser()
     parser.add_argument("instrument", help="instrument name, name should have a matching directory in the .dquality folder")
     parser.add_argument("fname", help="folder name to monitor for files")
-    parser.add_argument("type", help="data type to be verified (i.e. data_dark, data_white, or data)")
     parser.add_argument("numfiles", help="number of files to monitor for")
-    parser.add_argument("repbyfile", help="boolean value defining how the bad indexes should be reported.")
 
     args = parser.parse_args()
     instrument = args.instrument
     fname = args.fname
-    dtype = args.type
     num_files = args.numfiles
-    report_by_file = args.repbyfile
 
     home = expanduser("~")
     conf = os.path.join(home, ".dquality", instrument)
 
-    bad_indexes = monitor_check(conf, fname, dtype, num_files, report_by_file)
+    bad_indexes = monitor_check(conf, fname, num_files)
     return bad_indexes
 
 
 if __name__ == "__main__":
     main(sys.argv[1:])
+
 

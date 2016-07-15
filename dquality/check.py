@@ -51,14 +51,12 @@ To use Please make sure the installation :ref:`pre-requisite-reference-label` ar
 
 """
 
-import sys
 import json
-import argparse
-import dquality.file as dqfile
+import dquality.hdf as hdf
 import dquality.data as dqdata
-import dquality.dependency as dqdependency
-import dquality.monitor as dqmonitor
-import dquality.data_monitor as dqdmonitor
+import dquality.hdf_dependency as dqdependency
+import dquality.accumulator as acc
+import dquality.monitor as dqdmonitor
 import dquality.pv as dqpv
 
 __author__ = "Barbara Frosik"
@@ -66,10 +64,10 @@ __copyright__ = "Copyright (c) 2016, UChicago Argonne, LLC."
 __docformat__ = 'restructuredtext en'
 __all__ = ['hdf',
            'pv',
-           'monitor_quality',
            'monitor',
-           'dquality',
-           'dependency']
+           'accumulator',
+           'data',
+           'hdf_dependency']
 
 def hdf(conf, fname):
     """
@@ -90,7 +88,7 @@ def hdf(conf, fname):
 
     """
     
-    if dqfile.verify(conf, fname):
+    if hdf.verify(conf, fname):
         print ('All tags exist and meet conditions')
     else:
         print ('Some of the tags do not exist or do not meet conditions, check log file')
@@ -116,7 +114,7 @@ def pv(conf):
         print ('Some of the PVs listed in pvs.json do not exist or do not meet conditions')
 
 
-def monitor_quality(conf, fname, num_files):
+def monitor(conf, fname, num_files):
     """
     Data quality monitor verifier.
     
@@ -141,7 +139,7 @@ def monitor_quality(conf, fname, num_files):
     bad_indexes = dqdmonitor.verify(conf, fname, int(num_files))
     return bad_indexes
 
-def monitor(conf, fname, dtype, num_files, report_by_file):
+def accumulator(conf, fname, dtype, num_files, report_by_file):
     """
     Data Quality monitor.
     
@@ -170,12 +168,12 @@ def monitor(conf, fname, dtype, num_files, report_by_file):
         a dictionary or list containing bad indexes
     """
     
-    bad_indexes = dqmonitor.verify(conf, fname, dtype, int(num_files), report_by_file)
-    print json.dumps(bad_indexes)
+    bad_indexes = acc.verify(conf, fname, dtype, int(num_files), report_by_file)
+    print (json.dumps(bad_indexes))
     return bad_indexes
 
 
-def dquality(conf, fname):
+def data(conf, fname):
     """
     Data Quality verifier.
     
@@ -194,11 +192,11 @@ def dquality(conf, fname):
     """
 
     bad_indexes = dqdata.verify(conf, fname)
-    print json.dumps(bad_indexes)
+    print (json.dumps(bad_indexes))
     return bad_indexes
 
 
-def dependency(conf, fname):
+def hdf_dependency(conf, fname):
     """
     Dependency verifier.
 

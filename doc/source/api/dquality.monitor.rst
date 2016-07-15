@@ -1,5 +1,5 @@
 :mod:`dquality.monitor`
-=======================
+============================
 
 .. automodule:: dquality.monitor
    :members:

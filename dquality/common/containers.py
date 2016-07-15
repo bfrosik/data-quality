@@ -1,5 +1,6 @@
 from multiprocessing import Lock
 import dquality.common.constants as const
+import dquality.common.utilities as utils
 
 class Result:
     """
@@ -31,13 +32,23 @@ class Aggregate:
     to the results, and another thread (statistical checks) are reading the stored data to do statistical calculations.
 
     """
-    locks = {const.QUALITYCHECK_MEAN : Lock(), const.QUALITYCHECK_STD : Lock(), const.STAT_MEAN : Lock()}
-    lens = {const.QUALITYCHECK_MEAN : 0, const.QUALITYCHECK_STD : 0, const.STAT_MEAN : 0}
 
-    def __init__(self):
+    def __init__(self, quality_checks):
         self.bad_indexes = {}
         self.good_indexes = {}
-        self.results = {const.QUALITYCHECK_MEAN : [], const.QUALITYCHECK_STD : [], const.STAT_MEAN : []}
+        methods = []
+        for qc in quality_checks:
+            methods.append(qc)
+            for sqc in quality_checks[qc]:
+                methods.append(sqc)
+
+        self.results = {}
+        self.locks = {}
+        self.lens = {}
+        for qc in methods:
+            self.results[qc] = []
+            self.locks[qc] = Lock()
+            self.lens[qc] = 0
 
     def get_results_len(self, check):
         """
@@ -130,4 +141,6 @@ class Aggregate:
                 bad_index = good_index
                 bad_index[result.quality_id] = result.res
                 self.bad_indexes[index] = bad_index
+        if result.quality_id >= const.STAT_START:
+            res = False
         return res

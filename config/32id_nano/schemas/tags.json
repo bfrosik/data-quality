@@ -1,23 +1,21 @@
 {
-"required_tags" : {
-    "/exchange/data" : {
-        "dim" : [5,512,512],
-        "axes" : "theta:y:x",
-        "units" : "counts"
-        },
-    "/exchange/data_dark" : {
-        "dim" : [5,512,512],
-        "axes" : "theta_dark:y:x",
-        "units" : "counts"
-        },
-    "/exchange/data_white" : {
-        "dim" : [5,512,512],
-        "axes" : "theta_white:y:x",
-        "units" : "counts"
-        },
-    "/exchange/theta" : {
-        "dim" : [5]
-        ,"units":"degrees"
-        }
+"/exchange/data" : {
+    "dim" : [5,512,512],
+    "axes" : "theta:y:x",
+    "units" : "counts"
+    },
+"/exchange/data_dark" : {
+    "dim" : [5,512,512],
+    "axes" : "theta_dark:y:x",
+    "units" : "counts"
+    },
+"/exchange/data_white" : {
+    "dim" : [5,512,512],
+    "axes" : "theta_white:y:x",
+    "units" : "counts"
+    },
+"/exchange/theta" : {
+    "dim" : [5]
+    ,"units":"degrees"
     }
 }
