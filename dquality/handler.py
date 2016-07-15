@@ -56,9 +56,7 @@ and handles results of the checks.
 
 from multiprocessing import Queue, Process
 import dquality.common.qualitychecks as calc
-import dquality.common.constants as const
 from dquality.common.containers import Aggregate
-from dquality.common.qualitychecks import validate_stat_mean
 import sys
 if sys.version[0] == '2':
     import Queue as queue
@@ -71,16 +69,13 @@ __docformat__ = 'restructuredtext en'
 __all__ = ['handle_result',
            'handle_data']
 
-# This map maps a list of statistical quality checks that are dependent on previous calculation to a calculation type.
-calc_functions = [calc.validate_mean_signal_intensity, calc.validate_signal_intensity_standard_deviation]
-function_mapper = {const.QUALITYCHECK_MEAN : [validate_stat_mean], const.QUALITYCHECK_STD : [], const.STAT_MEAN : []}
 
-def handle_result(result, aggregate, statq, limits):
+def handle_result(result, aggregate, statq, limits, quality_checks):
     """
     This function calls handle_result function on aggregate that returns true if all calculation results for this
     slice passed validation, and False if any of them did not.
     If the passed, a sequence of statistical validations determined by a function mapper is started, each check
-    as a new process. This function returns a nimber of processes it has started.
+    as a new process. This function returns a number of processes it has started.
 
     Parameters
     ----------
@@ -97,6 +92,10 @@ def handle_result(result, aggregate, statq, limits):
     limits : dict
         a collection of limits as read from configuration
 
+    quality_checks : dict
+        keys are ids of the basic quality check methods, and values are lislts of statistical methods ids;
+        the statistical methods use result from the "key" basic quality method.
+
     Returns
     -------
     int
@@ -104,18 +103,22 @@ def handle_result(result, aggregate, statq, limits):
     """
     ret = 0
     if aggregate.handle_result(result):
-        for function in function_mapper[result.quality_id]:
+        for function_id in quality_checks[result.quality_id]:
+            function = calc.function_mapper[function_id]
             p = Process(target=function, args=(result, aggregate, statq, limits,))
             p.start()
             ret += 1
     return ret
 
-def handle_data(dataq, limits, reportq,):
+def handle_data(dataq, limits, reportq, quality_checks):
     """
     This function is typically called as a new process. It takes a dataq parameter
     that is the queue on which data is received. It takes the dictionary containing limit values
     for the data type being processed, such as data_dark, data_white, or data.
-    Lastly, it takes a reportq parameter, a queue, which is used to report results.
+    It takes a reportq parameter, a queue, which is used to report results.
+    The quality_checks is a dictionary, where the keys are quality checks methods ids (constants defined in
+    dquality.common.constants) and values are lislts of statistical quality check methods ids that use results from the
+    method defined as a key.
 
     The initialization constrains of creating aggregate instance to track results for a data type,
     queue for quality checks results passing, queue for statistical quality checks results passing,
@@ -140,13 +143,17 @@ def handle_data(dataq, limits, reportq,):
         a dictionary of limits for the processed data type
 
     reportq : Queue
-       results queue; used to pass results to the calling process
+        results queue; used to pass results to the calling process
+
+    quality_checks : dict
+        keys are ids of the basic quality check methods, and values are lists of statistical methods ids;
+        the statistical methods use result from the "key" basic quality method.
 
     Returns
     -------
     None
     """
-    aggregate = Aggregate()
+    aggregate = Aggregate(quality_checks)
     resultsq = Queue()
     interrupted = False
     index = 0
@@ -158,11 +165,12 @@ def handle_data(dataq, limits, reportq,):
                 interrupted = True
                 while num_processes > 0:
                     result = resultsq.get()
-                    num_processes += (handle_result(result, aggregate, resultsq, limits) - 1)
+                    num_processes += (handle_result(result, aggregate, resultsq, limits, quality_checks) - 1)
 
             else:
                 slice = data.slice
-                for function in calc_functions:
+                for function_id in quality_checks.keys():
+                    function = calc.function_mapper[function_id]
                     p = Process(target=function, args=(slice, index, resultsq, limits,))
                     p.start()
                     num_processes += 1
@@ -173,7 +181,7 @@ def handle_data(dataq, limits, reportq,):
 
         while not resultsq.empty():
             result = resultsq.get_nowait()
-            num_processes += (handle_result(result, aggregate, resultsq, limits) - 1)
+            num_processes += (handle_result(result, aggregate, resultsq, limits, quality_checks) - 1)
 
     results = {'bad_indexes': aggregate.bad_indexes, 'good_indexes': aggregate.good_indexes,
                'results': aggregate.results}

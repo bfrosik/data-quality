@@ -101,7 +101,7 @@ def init(config):
         sys.exit(-1)
 
     with open(schema) as file:
-        tags = json.loads(file.read())['required_tags']
+        tags = json.loads(file.read())
 
     try:
         type = conf['verification_type']

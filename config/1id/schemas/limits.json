@@ -1,0 +1,12 @@
+{
+  "data" : {
+      "sat" : {
+           "low_limit" : 0,
+           "high_limit" : 2300
+           },
+      "sat_points" : {
+           "low_limit" : 0,
+           "high_limit" : 375
+           }
+      }
+}
