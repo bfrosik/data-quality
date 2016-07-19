@@ -1,21 +1,21 @@
 {
 "/exchange/data" : {
-    "dim" : [5,512,512],
+    "dim" : [661,2048,2448],
     "axes" : "theta:y:x",
     "units" : "counts"
     },
 "/exchange/data_dark" : {
-    "dim" : [5,512,512],
+    "dim" : [10,2048,2448],
     "axes" : "theta_dark:y:x",
     "units" : "counts"
     },
 "/exchange/data_white" : {
-    "dim" : [5,512,512],
+    "dim" : [20,2048,2448],
     "axes" : "theta_white:y:x",
     "units" : "counts"
     },
 "/exchange/theta" : {
-    "dim" : [5]
+    "dim" : [661]
     ,"units":"degrees"
     }
 }

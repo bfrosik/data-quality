@@ -52,7 +52,7 @@ To use Please make sure the installation :ref:`pre-requisite-reference-label` ar
 """
 
 import json
-import dquality.hdf as hdf
+import dquality.hdf as dqhdf
 import dquality.data as dqdata
 import dquality.hdf_dependency as dqdependency
 import dquality.accumulator as acc
@@ -88,7 +88,7 @@ def hdf(conf, fname):
 
     """
     
-    if hdf.verify(conf, fname):
+    if dqhdf.verify(conf, fname):
         print ('All tags exist and meet conditions')
     else:
         print ('Some of the tags do not exist or do not meet conditions, check log file')
