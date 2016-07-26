@@ -101,6 +101,7 @@ def test_ge():
     data_file = os.path.join(os.getcwd(),"test/data/test_data.ge4")
     bad_indexes = data.verify(config, data_file)
     bad_data = bad_indexes['data']
+    assert 1 in bad_data
     assert 2 in bad_data
     assert 3 in bad_data
     assert 4 in bad_data

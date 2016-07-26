@@ -194,10 +194,15 @@ def validate_saturation(data, index, results, all_limits):
     -------
     None
     """
+    # sat_high = (all_limits['sat'])['high_limit']
+    # res = (data > sat_high).sum()
+    # limits = all_limits['sat_points']
+    # result = find_result(res, index, const.QUALITYCHECK_SAT, limits)
+    # results.put(result)
+
     sat_high = (all_limits['sat'])['high_limit']
     res = (data > sat_high).sum()
-    limits = all_limits['sat_points']
-    result = find_result(res, index, const.QUALITYCHECK_SAT, limits)
+    result = Result(res, index, const.QUALITYCHECK_SAT, const.NO_ERROR)
     results.put(result)
 
 def validate_stat_mean(result, aggregate, results, all_limits):
@@ -244,8 +249,49 @@ def validate_stat_mean(result, aggregate, results, all_limits):
     results.put(result)
 
 
+def validate_accumulated_saturation(result, aggregate, results, all_limits):
+    """
+    This is one of the statistical validation methods. It has a "quality_id"
+    property that identifies this validation step. This function evaluates
+    current mean signal intensity with relation to statistical data captured
+    in the aggregate object. The delta is compared with threshhold values.
+    The result, comparison result, index, and
+    quality_id values are saved in a new Result object. This object
+    is then enqueued into the "results" queue.
+
+    Parameters
+    ----------
+    result : Result
+        result instance that includes calculated mean value
+
+    aggregate : Aggregate
+        aggregate instance containing calculated results for previous slices
+
+    results : Queue
+        A multiprocessing.Queue instance that is used to pass the
+        results from validating processes to the main
+
+    all_limits : dictionary
+        a dictionary containing threshold values
+
+    Returns
+    -------
+    None
+    """
+    limits = all_limits['sat_points']
+    length = aggregate.get_results_len(const.QUALITYCHECK_SAT)
+    stat_data = aggregate.results[const.QUALITYCHECK_SAT]
+    # calculate total saturated points
+    total = np.sum(stat_data)
+    index = result.index
+
+    result = find_result(total, index, const.ACC_SAT, limits)
+    results.put(result)
+
+
 function_mapper = {const.QUALITYCHECK_MEAN : validate_mean_signal_intensity,
                    const.QUALITYCHECK_STD : validate_signal_intensity_standard_deviation,
                    const.QUALITYCHECK_SAT : validate_saturation,
-                   const.STAT_MEAN : validate_stat_mean}
+                   const.STAT_MEAN : validate_stat_mean,
+                   const.ACC_SAT : validate_accumulated_saturation}
 
