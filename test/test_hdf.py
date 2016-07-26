@@ -77,7 +77,6 @@ def test_conf_error_no_type():
     except:
         pass
     time.sleep(1)
-    print_log()
     assert res.is_text_in_file(logfile, 'config error: verification type not configured')
     clean()
 
@@ -93,7 +92,6 @@ def test_bad_type():
     except:
         pass
     time.sleep(1)
-    print_log()
     assert res.is_text_in_file(logfile, 'configured verification type hdf_structurex is not supported')
     clean()
 
@@ -107,7 +105,6 @@ def test_bad_file():
     except:
         pass
     time.sleep(1)
-    print_log()
     assert res.is_text_in_file(logfile, 'parameter error: file data/test_datax.h5 does not exist')
     clean()
 
@@ -118,7 +115,6 @@ def test_tags_missing_tags():
     mod.replace_text_in_file(config, find, replace)
     hdf.verify(config, data_file)
     time.sleep(1)
-    print_log()
     assert res.is_text_in_file(logfile, '/exchange/missing')
     assert res.is_text_in_file(logfile, '/exchange/missing1')
     clean()
@@ -132,9 +128,8 @@ def test_tags_no_missing_tags():
     match = 'missing'
     mod.delete_line_in_file(tags, match)
     time.sleep(1)
-    hdf.verify(config, data_file)
-    print_log()
-    assert not res.is_text_in_file(logfile, 'not found')
+    assert (hdf.verify(config, data_file))
+    assert res.is_text_in_file(logfile, 'All required tags exist')
     clean()
 
 
@@ -142,7 +137,6 @@ def test_struct_missing_tags_attrib():
     config, tags = init('h')
     hdf.verify(config, data_file)
     time.sleep(1)
-    print_log()
     assert res.is_text_in_file(logfile, '/exchange/missing')
     assert res.is_text_in_file(logfile, '/exchange/missing1')
     assert res.is_text_in_file(logfile, 'should be axes:theta_dark:y:x')
@@ -159,9 +153,8 @@ def test_struct_no_missing():
     mod.delete_line_in_file(tags, match)
     match = 'degrees'
     mod.delete_line_in_file(tags, match)
-    hdf.verify(config, data_file)
+    assert (hdf.verify(config, data_file))
     time.sleep(1)
-    print_log()
-    assert os.stat(logfile).st_size == 0
+    assert res.is_text_in_file(logfile, 'All required tags exist and meet conditions')
     clean
 

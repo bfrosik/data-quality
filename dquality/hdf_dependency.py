@@ -289,4 +289,7 @@ def verify(conf, file):
             if not verify_list(file, tag_list, relation, logger):
                 res = False
 
+    if res:
+        logger.info('All dependecies are satisfied')
+
     return res

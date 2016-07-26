@@ -171,6 +171,9 @@ def structure(file, required_tags, logger):
     None
 
     """
+    class Result():
+        res = True
+
     def check_dim(dset, attr):
         required_dim = attr.get('dim')
         required_dim_copy = utils.copy_list(required_dim)
@@ -185,9 +188,11 @@ def structure(file, required_tags, logger):
                           ' is wrong: it is [' +
                           str(dset.shape[i]) + '] but should be [' +
                           str(required_dim[i]) + ']')
+                    res.res = False
         else:
             logger.warning('The dataset ' + dset.name + ' dimensions: ' +
                   str(dset.shape) + ' but should be ' + str(required_dim))
+            res.res = False
 
     def func(name, dset):
         if isinstance(dset, h5py.Dataset):
@@ -212,6 +217,7 @@ def structure(file, required_tags, logger):
                                           attr_str + ' but should be ' +
                                           key + ':' +
                                           tag_attribs.get(key))
+                                    res.res = False
                                 attrib_list.remove(key)
                 report_items(
                     attrib_list,
@@ -219,10 +225,15 @@ def structure(file, required_tags, logger):
                     tag,
                     logger)
 
+    res = Result()
     tag_list = utils.key_list(required_tags)
     file_h5 = h5py.File(file, 'r')
     file_h5.visititems(func)
-    report_items(tag_list, 'the following tags are missing: ', '', logger)
+    if res.res:
+        return True
+    else:
+        report_items(tag_list, 'the following tags are missing: ', '', logger)
+        return False
 
 
 def tags(file, required_tags, logger):
@@ -310,7 +321,14 @@ def verify(conf, file):
         sys.exit(-1)
 
     if type == 'hdf_structure':
-        return structure(file, required_tags, logger)
+        ret = structure(file, required_tags, logger)
+        if ret:
+            logger.info('All required tags exist and meet conditions')
+            return ret
     elif type == 'hdf_tags':
-        return tags(file, required_tags, logger)
+        ret = tags(file, required_tags, logger)
+        if ret:
+            logger.info('All required tags exist')
+            return ret
+
 

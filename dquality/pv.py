@@ -215,4 +215,6 @@ def verify(conf):
                                        str(pv_value) + ' but should be ' +
                                        attr + ' ' +
                                        str(pv_attr[attr]))
+    if res:
+        logger.info('All PVs listed in pvs.json exist and meet conditions')
     return res
