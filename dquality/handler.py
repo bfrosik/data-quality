@@ -110,7 +110,7 @@ def handle_result(result, aggregate, statq, limits, quality_checks):
             ret += 1
     return ret
 
-def handle_data(dataq, limits, reportq, quality_checks):
+def handle_data(dataq, limits, reportq, quality_checks, feedback_pv_prefix=None):
     """
     This function is typically called as a new process. It takes a dataq parameter
     that is the queue on which data is received. It takes the dictionary containing limit values
@@ -153,7 +153,7 @@ def handle_data(dataq, limits, reportq, quality_checks):
     -------
     None
     """
-    aggregate = Aggregate(quality_checks)
+    aggregate = Aggregate(quality_checks, feedback_pv_prefix)
     resultsq = Queue()
     interrupted = False
     index = 0
@@ -183,6 +183,7 @@ def handle_data(dataq, limits, reportq, quality_checks):
             result = resultsq.get_nowait()
             num_processes += (handle_result(result, aggregate, resultsq, limits, quality_checks) - 1)
 
-    results = {'bad_indexes': aggregate.bad_indexes, 'good_indexes': aggregate.good_indexes,
-               'results': aggregate.results}
-    reportq.put(results)
+    if reportq is not None:
+        results = {'bad_indexes': aggregate.bad_indexes, 'good_indexes': aggregate.good_indexes,
+                   'results': aggregate.results}
+        reportq.put(results)

@@ -1,5 +1,6 @@
 from multiprocessing import Lock
 import dquality.common.constants as const
+from multiprocessing import Queue, Process
 import dquality.common.utilities as utils
 
 class Result:
@@ -33,7 +34,14 @@ class Aggregate:
 
     """
 
-    def __init__(self, quality_checks):
+    def __init__(self, quality_checks, feedback_pv_prefix):
+        self.feedback_pv_prefix = feedback_pv_prefix
+        if feedback_pv_prefix is not None:
+            self.feedbackq = Queue()
+            # start process that will update epics Quality PVs
+            p = Process(target=self.quality_feedback, args=(self.feedbackq,))
+            p.start()
+
         self.bad_indexes = {}
         self.good_indexes = {}
         methods = []
@@ -49,6 +57,10 @@ class Aggregate:
             self.results[qc] = []
             self.locks[qc] = Lock()
             self.lens[qc] = 0
+
+    def quality_feedback(self, feedbackq):
+        pass
+
 
     def get_results_len(self, check):
         """
