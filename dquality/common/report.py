@@ -51,7 +51,7 @@ This file contains functions used to report results of quality checks and functi
 facilitating logger.
 
 """
-
+import dquality.common.constants as const
 import pprint
 
 __author__ = "Barbara Frosik"
@@ -63,10 +63,11 @@ __all__ = ['report_results',
            'report_bad_indexes']
 
 
-def report_results(aggregate, type, filename, report_file):
+def report_results(aggregate, type, filename, report_file, report_type):
     """
     This function reports results of quality checks to a file or console
-    if the file is not defined.
+    if the file is not defined. If the report type is REPORT_FULL, it will report all results.
+    If the type is REPORT_ERRORS, only the results that did not pass quality checks will be reported.
 
     Parameters
     ----------
@@ -82,21 +83,31 @@ def report_results(aggregate, type, filename, report_file):
     report_file : file
         a file where the report will be written, or None, if written to a console
 
+    report_type : int
+        report type, currently supporting REPORT_NONE, REPORT_ERRORS', and REPORT_FULL
+
     Returns
     -------
     None
     """
+    if report_type == const.REPORT_FULL:
+        reported = aggregate
+    elif report_type == const.REPORT_ERRORS:
+        reported = aggregate.bad_indexes
+    else:
+        return
 
     if report_file is None:
         if filename is not None:
             print (filename + '\n')
         print (type + '\n')
-        pprint.pprint(aggregate, depth=3)
+        pprint.pprint(reported, depth=3)
     else:
         if filename is not None:
             report_file.write(filename+ '\n')
         report_file.write(type+ '\n')
-        pprint.pprint(aggregate, report_file)
+        pprint.pprint(reported, report_file)
+
 
 def add_bad_indexes(aggregate, type, bad_indexes):
     """

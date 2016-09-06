@@ -68,6 +68,7 @@ import numpy as np
 import dquality.common.utilities as utils
 import dquality.handler as datahandler
 import dquality.common.report as report
+import dquality.common.constants as const
 from dquality.common.containers import Data
 
 __author__ = "Barbara Frosik"
@@ -104,6 +105,9 @@ def init(config):
 
     extensions : list
         a list containing extensions of files to be monitored read from the configuration file
+
+    report_type : int
+        report type; currently supporting REPORT_NONE, REPORT_ERRORS, and REPORT_FULL
     """
     conf = utils.get_config(config)
 
@@ -132,7 +136,13 @@ def init(config):
         dict = json.loads(qc_file.read())
     quality_checks = utils.get_quality_checks(dict)
 
-    return logger, limits, quality_checks, extensions
+    try:
+        report_type = conf['report_type']
+        report_type = const.globals(report_type)
+    except KeyError:
+        report_type = const.REPORT_FULL
+
+    return logger, limits, quality_checks, extensions, report_type
 
 
 def directory(directory, patterns):
@@ -220,7 +230,7 @@ def verify(conf, folder, data_type, num_files, report_by_files=True):
         a dictionary or list containing bad indexes
 
     """
-    logger, limits, quality_checks, extensions = init(conf)
+    logger, limits, quality_checks, extensions, report_type = init(conf)
     if not os.path.isdir(folder):
         logger.error(
             'parameter error: directory ' +
@@ -283,9 +293,9 @@ def verify(conf, folder, data_type, num_files, report_by_files=True):
         logger.warning('Cannot open report file, writing report on console')
         report_file = None
 
-    report.report_results(aggregate, data_type, None, report_file)
-    bad_indexes = {}
+    report.report_results(aggregate, data_type, None, report_file, report_type)
 
+    bad_indexes = {}
     if report_by_files == 'True':
         report.add_bad_indexes_per_file(aggregate, data_type, bad_indexes, file_list, offset_list)
     else:
