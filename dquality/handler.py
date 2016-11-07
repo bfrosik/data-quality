@@ -161,11 +161,15 @@ def handle_data(dataq, limits, reportq, quality_checks, feedback_pv_prefix=None)
     while not interrupted:
         try:
             data = dataq.get(timeout=0.005)
+            # print ('got frame # ',index)
             if data == 'all_data':
                 interrupted = True
                 while num_processes > 0:
                     result = resultsq.get()
                     num_processes += (handle_result(result, aggregate, resultsq, limits, quality_checks) - 1)
+
+            elif data == 'missing':
+                index += 1
 
             else:
                 slice = data.slice

@@ -70,6 +70,7 @@ import dquality.common.report as report
 from dquality.realtime.feed import feed_data
 
 
+
 def init(config):
     """
     This function initializes global variables. It gets values from the configuration file, evaluates and processes
@@ -150,7 +151,7 @@ def verify(conf, type, report_file=None):
             logger.warning('Cannot open report file')
             reportf = None
         report.report_results(aggregate, type, None, reportf)
-        report.add_bad_indexes(aggregate, type, bad_indexes)
+    report.add_bad_indexes(aggregate, type, bad_indexes)
 
     return bad_indexes
 

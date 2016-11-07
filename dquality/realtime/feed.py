@@ -65,9 +65,14 @@ match the area detector configuration
 from epics import caget, PV
 from epics.ca import CAThread
 from multiprocessing import Queue
-import Queue as tqueue
 import numpy as np
 from adapter import start_process, parse_config, pack_data
+import sys
+if sys.version[0] == '2':
+    import Queue as tqueue
+else:
+    import queue as tqueue
+
 
 
 __author__ = "Barbara Frosik"
