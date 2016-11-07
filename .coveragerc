@@ -5,6 +5,7 @@ source=dquality
 omit =
     */python?.?/*
     */site-packages/nose/*
+    *realtime/*
     *test*
     *__init__.py*
     *common.__init__.py*
