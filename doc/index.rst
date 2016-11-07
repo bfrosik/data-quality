@@ -18,6 +18,7 @@ This guide is maintained on
    
    source/about
    source/install
+   source/config
    source/api
    source/demo
    source/faq
