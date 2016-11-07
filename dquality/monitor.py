@@ -105,6 +105,16 @@ def init(config):
 
     extensions : list
         a list containing extensions of files to be monitored read from the configuration file
+
+    file_type : int
+        data file type; currently supporting FILE_TYPE_HDF and FILE_TYPE_GE
+
+    report_type : int
+        report type; currently supporting REPORT_NONE, REPORT_ERRORS, and REPORT_FULL
+
+    report_dir : str
+        a directory where report files will be located
+
     """
     conf = utils.get_config(config)
 
@@ -146,7 +156,20 @@ def init(config):
         dict = json.loads(qc_file.read())
     quality_checks = utils.get_quality_checks(dict)
 
-    return logger, data_tags, limits, quality_checks, extensions, file_type
+    try:
+        report_type = conf['report_type']
+        report_type = const.globals(report_type)
+    except KeyError:
+        report_type = const.REPORT_FULL
+
+    try:
+        report_dir = conf['report_dir']
+        if not os.path.isdir(report_dir):
+            report_dir = None
+    except KeyError:
+        report_dir = None
+
+    return logger, data_tags, limits, quality_checks, extensions, file_type, report_type, report_dir
 
 
 def directory(directory, patterns):
@@ -217,7 +240,7 @@ def verify(conf, folder, num_files):
     -------
     None
     """
-    logger, data_tags, limits, quality_checks, extensions, file_type = init(conf)
+    logger, data_tags, limits, quality_checks, extensions, file_type, report_type, report_dir = init(conf)
     if not os.path.isdir(folder):
         logger.error(
             'parameter error: directory ' +
@@ -249,12 +272,13 @@ def verify(conf, folder, num_files):
                 break
             else:
                 file_count += 1
-                report_file = file.rsplit(".",)[0] + '.report'
                 if file_type == const.FILE_TYPE_GE:
-                    bad_indexes[file] = dataver.verify_file_ge(logger, file, limits, quality_checks, report_file)
+                    bad_indexes[file] = dataver.verify_file_ge(logger, file, limits, quality_checks, report_type, report_dir)
                 else:
-                    bad_indexes[file] = dataver.verify_file_hdf(logger, file, data_tags, limits, quality_checks, report_file)
-                print (bad_indexes[file])
+                    bad_indexes[file] = dataver.verify_file_hdf(logger, file, data_tags, limits, quality_checks, report_type, report_dir)
+                print (file)
+                print ('bad indexes: ', bad_indexes[file])
+                logger.info('monitor evaluated ' + file + ' file')
 
         if file_count == num_files:
             interrupted = True

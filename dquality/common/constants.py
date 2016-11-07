@@ -12,6 +12,10 @@ NO_ERROR = 0
 FILE_TYPE_HDF = 1
 FILE_TYPE_GE = 2
 
+REPORT_NONE = 0
+REPORT_ERRORS = 1
+REPORT_FULL = 2
+
 mapper = {
     'QUALITYCHECK_MEAN' : 1,
     'QUALITYCHECK_STD' : 2,
@@ -25,7 +29,11 @@ mapper = {
     'NO_ERROR' : 0,
 
     'FILE_TYPE_HDF' : 1,
-    'FILE_TYPE_GE' : 2
+    'FILE_TYPE_GE' : 2,
+
+    'REPORT_NONE' : 0,
+    'REPORT_ERRORS' : 1,
+    'REPORT_FULL' : 2
 }
 
 def globals(name):

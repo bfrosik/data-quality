@@ -99,6 +99,16 @@ def init(config):
 
     quality_checks : dict
         a dictionary containing quality check functions ids
+
+    file_type : int
+        data file type; currently supporting FILE_TYPE_HDF and FILE_TYPE_GE
+
+    report_type : int
+        report type; currently supporting REPORT_NONE, REPORT_ERRORS, and REPORT_FULL
+
+    report_dir : str
+        a directory where report files will be located
+
     """
 
     conf = utils.get_config(config)
@@ -135,7 +145,20 @@ def init(config):
         dict = json.loads(qc_file.read())
     quality_checks = utils.get_quality_checks(dict)
 
-    return logger, data_tags, limits, quality_checks, file_type
+    try:
+        report_type = conf['report_type']
+        report_type = const.globals(report_type)
+    except KeyError:
+        report_type = const.REPORT_FULL
+
+    try:
+        report_dir = conf['report_dir']
+        if not os.path.isdir(report_dir):
+            report_dir = None
+    except KeyError:
+        report_dir = None
+
+    return logger, data_tags, limits, quality_checks, file_type, report_type, report_dir
 
 def process_data(data_type, aggregateq, fp, data_tag, limits, quality_checks):
     """
@@ -177,8 +200,9 @@ def process_data(data_type, aggregateq, fp, data_tag, limits, quality_checks):
     dataq.put('all_data')
 
 
-def verify_file_hdf(logger, file, data_tags, limits, quality_checks, report_file):
+def verify_file_hdf(logger, file, data_tags, limits, quality_checks, report_type, report_dir):
     """
+    This method handles verification of hdf type file.
     This method creates and starts a new handler process. The handler is initialized with data queue,
     the data type, and a result queue. The data type can be 'data_dark', 'data_white' or 'data'.
     After starting the process the function enqueues queue slice by slice into data, until all data is
@@ -198,8 +222,14 @@ def verify_file_hdf(logger, file, data_tags, limits, quality_checks, report_file
     limits : dict
         a dictionary of limits values
 
-    report_file : str
-        a name of a report file
+    quality_checks : dict
+        a dictinary specifying quality checks structure that will be applied to verify the data file
+
+    report_type : int
+        report type, currently supporting REPORT_NONE, REPORT_ERRORS', and REPORT_FULL
+
+    report_dir : str
+        a directory where report files will be located
 
     Returns
     -------
@@ -208,13 +238,6 @@ def verify_file_hdf(logger, file, data_tags, limits, quality_checks, report_file
 
     """
     fp, tags = utils.get_data_hdf(file)
-
-    if report_file is not None:
-        try:
-            report_file = open(report_file, 'w')
-        except:
-            logger.warning('Cannot open report file')
-            report_file = None
 
     queues = {}
     bad_indexes = {}
@@ -226,32 +249,76 @@ def verify_file_hdf(logger, file, data_tags, limits, quality_checks, report_file
             queues[type] = queue
             process_data(type, queue, fp, data_tag, limits, quality_checks)
 
-    # receive the results
-    for type in queues.keys():
-        queue = queues[type]
-        aggregate = queue.get()
-        if report_file is not None:
-            report.report_results(aggregate, type, file, report_file)
-        report.add_bad_indexes(aggregate, type, bad_indexes)
+    if report_type != const.REPORT_NONE:
+        if report_dir is None:
+            report_file = file.rsplit(".",)[0] + '.report'
+        else:
+            file = file.rsplit(".",)[0]
+            file_path = file.rsplit("/",)
+            report_file = report_dir + "/" + file_path[len(file_path-1)]+ '.report'
 
-    return bad_indexes
-
-
-def verify_file_ge(logger, file, limits, quality_checks, report_file):
-    type = 'data'
-
-    fp, nframes, fsize = utils.get_data_ge(logger, file)
-    # file is corrupted, error message is logged
-    if fp is None:
-        return None
-
-    if report_file is not None:
         try:
             report_file = open(report_file, 'w')
         except:
             logger.warning('Cannot open report file')
             report_file = None
 
+    # receive the results
+    for type in queues.keys():
+        queue = queues[type]
+        aggregate = queue.get()
+        if report_file is not None:
+            report.report_results(aggregate, type, file, report_file, report_type)
+        report.add_bad_indexes(aggregate, type, bad_indexes)
+
+    logger.info('data verifier evaluated ' + file + ' file')
+
+    return bad_indexes
+
+
+def verify_file_ge(logger, file, limits, quality_checks, report_type, report_dir):
+    """
+    This method handles verification of ge file type.
+    This method creates and starts a new handler process. The handler is initialized with data queue,
+    the data type, which is 'data', and a result queue.
+    After starting the process the function enqueues queue slice by slice into data, until all data is
+    queued. The last enqueued element is end of the data marker.
+
+    Parameters
+    ----------
+    logger: Logger
+        Logger instance.
+
+    file : str
+        a filename including path that will be verified
+
+    data_tags : dict
+        a dictionary od data_type/hdf tag
+
+    limits : dict
+        a dictionary of limits values
+
+    quality_checks : dict
+        a dictinary specifying quality checks structure that will be applied to verify the data file
+
+    report_type : int
+        report type, currently supporting REPORT_NONE, REPORT_ERRORS', and REPORT_FULL
+
+    report_dir : str
+        a directory where report files will be located
+
+    Returns
+    -------
+    bad_indexes : dict
+        a dictionary of bad indexes per data type
+
+    """
+    type = 'data'
+
+    fp, nframes, fsize = utils.get_data_ge(logger, file)
+    # data file is corrupted, error message is logged
+    if fp is None:
+        return None
 
     dataq = Queue()
     aggregateq = Queue()
@@ -266,12 +333,28 @@ def verify_file_ge(logger, file, limits, quality_checks, report_file):
 
     bad_indexes = {}
     aggregate = aggregateq.get()
-    if report_file is not None:
-        report.report_results(aggregate, type, file, report_file)
     report.add_bad_indexes(aggregate, type, bad_indexes)
 
-    return bad_indexes
+    if report_type != const.REPORT_NONE:
+        if report_dir is None:
+            report_file = file + '.report'
+        else:
+            file_path = file.rsplit("/",)
+            report_file = report_dir + "/" + file_path[len(file_path-1)]+ '.report'
 
+        try:
+            report_file = open(report_file, 'w')
+        except:
+            logger.warning('Cannot open report file')
+            report_file = None
+
+    if report_file is not None:
+        if report_type == const.REPORT_FULL:
+            report.report_results(aggregate, type, file, report_file, report_type)
+
+    logger.info('data verifier evaluated ' + file + ' file')
+
+    return bad_indexes
 
 
 def verify(conf, file):
@@ -301,16 +384,14 @@ def verify(conf, file):
         (i.e. data_dark, data_white,data)
     """
 
-    logger, data_tags, limits, quality_checks, file_type = init(conf)
+    logger, data_tags, limits, quality_checks, file_type, report_type, report_dir = init(conf)
     if not os.path.isfile(file):
         logger.error(
             'parameter error: file ' +
             file + ' does not exist')
         sys.exit(-1)
 
-    report_file = file.rsplit(".",)[0] + '.report'
-
     if file_type == const.FILE_TYPE_HDF:
-        return verify_file_hdf(logger, file, data_tags, limits, quality_checks, report_file)
+        return verify_file_hdf(logger, file, data_tags, limits, quality_checks, report_type, report_dir)
     elif file_type == const.FILE_TYPE_GE:
-        return verify_file_ge(logger, file, limits, quality_checks, report_file)
+        return verify_file_ge(logger, file, limits, quality_checks, report_type, report_dir)
