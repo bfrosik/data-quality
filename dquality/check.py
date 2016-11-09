@@ -58,7 +58,6 @@ import dquality.hdf_dependency as dqdependency
 import dquality.accumulator as acc
 import dquality.monitor as dqdmonitor
 import dquality.pv as dqpv
-import dquality.realtime.real_time as real
 
 __author__ = "Barbara Frosik"
 __copyright__ = "Copyright (c) 2016, UChicago Argonne, LLC."
