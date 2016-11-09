@@ -286,14 +286,19 @@ def verify(conf, folder, data_type, num_files, report_by_files=True):
 
     aggregate = aggregateq.get()
 
-    report.report_results(logger, aggregate, data_type, None, report_file, report_type)
+    #report.report_results(logger, aggregate, data_type, None, report_file, report_type)
 
     bad_indexes = {}
     if report_by_files == 'True':
         report.add_bad_indexes_per_file(aggregate, data_type, bad_indexes, file_list, offset_list)
     else:
         report.add_bad_indexes(aggregate, data_type, bad_indexes)
-    report.report_bad_indexes(bad_indexes, report_file)
+    try:
+        report_file = open(report_file, 'w')
+        report.report_bad_indexes(bad_indexes, report_file)
+    except:
+        logger.warning('Cannot open report file')
+
 
     return bad_indexes
 
