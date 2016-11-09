@@ -1,3 +1,7 @@
+=====
+Cofig
+=====
+
 This describes configuration mandatory/optional parameters common to all verifiers, and then additional parameters
 for each verifier.
 

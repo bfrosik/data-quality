@@ -32,10 +32,19 @@ API reference
    api/dquality.hdf_dependency
    api/dquality.monitor
    api/dquality.pv
-   api/dquality.realtime.real_time
-   api/dquality.realtime.check
 
 .. automodule:: dquality
    :members:
    :undoc-members:
    :show-inheritance: 
+
+
+.. toctree::
+
+   api/dquality.realtime.real_time
+   api/dquality.realtime.check
+
+.. automodule:: dquality.realtime
+   :members:
+   :undoc-members:
+   :show-inheritance:
