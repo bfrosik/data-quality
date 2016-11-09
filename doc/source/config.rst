@@ -5,26 +5,26 @@ Cofig
 This describes configuration mandatory/optional parameters common to all verifiers, and then additional parameters
 for each verifier.
 
-common:
+    - common:
 'log_file' - optional, a log file name including path. If not specified, the log file default.log will be
              created in the running directory
 'time_zone'  - optional, time zone that will be displayed as part of timestamp in log file. If not specified,
                it defaults to 'America/Chicago'
 
-pv verifier:
+    - pv verifier:
 'pv_file' - mandatory, json file name including path that specifies pv requirements
 
-hdf verifier:
+    - hdf verifier:
 'schema' - mandatory, json file name including path that specifies hdf tags requirements
 'verification_type' - optional. Currently the software supports 'hdf_structure' and 'hdf_tags' types. If not
               specified it defaults to 'hdf_structure' type. When configured to 'hdf_structure' the tags and
               attributes specified in 'schema' file will be evaluated. If configured to 'hdf_tags', only presence
               of the tags specified in 'schema' file will be evaluated.
 
-dependency verifier:
+    - dependency verifier:
 'dependencies' - mandatory, json file name including path that specifies hdf tags dependency requirements
 
-data verifier:
+    - data verifier:
 'limits' - mandatory, json file name including path that specifies limits used in quality checks
 'quality_checks' - mandatory, json file name including path that lists all quality methods that will be used
                    to validate the data.
@@ -39,7 +39,7 @@ data verifier:
 'feedback_type' - optional, defines a real time feedback when validating data. For data verifier it should not be set,
                   or set to "FEEDBACK_NONE'
 
-monitor:
+    - monitor:
 'limits' - mandatory, json file name including path that specifies limits used in quality checks
 'quality_checks' - mandatory, json file name including path that lists all quality methods that will be used
                    to validate the data.
@@ -55,7 +55,7 @@ monitor:
                   set to "FEEDBACK_NONE'
 'extensions' - optional, file extentions to minitor for. If not specified, it monitors for all types of files.
 
-accumulator:
+    - accumulator:
 'limits' - mandatory, json file name including path that specifies limits used in quality checks
 'quality_checks' - mandatory, json file name including path that lists all quality methods that will be used
                    to validate the data.
@@ -66,7 +66,7 @@ accumulator:
 'feedback_type' - optional, defines a real time feedback when validating data. For accumulator it should not be set, or
                   set to "FEEDBACK_NONE'
 
-real_time verifier:
+    - real_time verifier:
 'limits' - mandatory, json file name including path that specifies limits used in quality checks
 'quality_checks' - mandatory, json file name including path that lists all quality methods that will be used
                    to validate the data.

@@ -25,6 +25,16 @@ API reference
 
 .. toctree::
 
+   api/dquality.realtime.real_time
+   api/dquality.realtime.check
+
+.. automodule:: dquality.realtime
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. toctree::
+
    api/dquality.accumulator
    api/dquality.check
    api/dquality.data
@@ -38,13 +48,3 @@ API reference
    :undoc-members:
    :show-inheritance: 
 
-
-.. toctree::
-
-   api/dquality.realtime.real_time
-   api/dquality.realtime.check
-
-.. automodule:: dquality.realtime
-   :members:
-   :undoc-members:
-   :show-inheritance:
