@@ -122,7 +122,6 @@ def init(config):
 
     try:
         file_type = conf['file_type']
-        file_type = const.globals(file_type)
     except KeyError:
         file_type = const.FILE_TYPE_HDF
 
@@ -158,7 +157,6 @@ def init(config):
 
     try:
         report_type = conf['report_type']
-        report_type = const.globals(report_type)
     except KeyError:
         report_type = const.REPORT_FULL
 

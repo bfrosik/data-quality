@@ -63,7 +63,7 @@ __all__ = ['report_results',
            'report_bad_indexes']
 
 
-def report_results(aggregate, type, filename, report_file, report_type):
+def report_results(logger, aggregate, type, filename, report_file, report_type):
     """
     This function reports results of quality checks to a file or console
     if the file is not defined. If the report type is REPORT_FULL, it will report all results.
@@ -84,29 +84,33 @@ def report_results(aggregate, type, filename, report_file, report_type):
         a file where the report will be written, or None, if written to a console
 
     report_type : int
-        report type, currently supporting REPORT_NONE, REPORT_ERRORS', and REPORT_FULL
+        report type, currently supporting REPORT_NONE, REPORT_ERRORS, and REPORT_FULL
 
     Returns
     -------
     None
     """
-    if report_type == const.REPORT_FULL:
-        reported = aggregate
-    elif report_type == const.REPORT_ERRORS:
-        reported = aggregate.bad_indexes
-    else:
+    if report_file is None:
         return
 
-    if report_file is None:
+    print 'report type', report_type
+    try:
+        report = open(report_file, 'w')
+        if report_type == const.REPORT_FULL:
+            reported = aggregate
+        elif report_type == const.REPORT_ERRORS:
+            reported = aggregate['bad_indexes']
+        else:
+            print 'no reported'
+            return
+
         if filename is not None:
-            print (filename + '\n')
-        print (type + '\n')
-        pprint.pprint(reported, depth=3)
-    else:
-        if filename is not None:
-            report_file.write(filename+ '\n')
-        report_file.write(type+ '\n')
-        pprint.pprint(reported, report_file)
+            report.write(filename+ '\n')
+        report.write('evaluated ' + type + ', bad indexes:\n')
+        pprint.pprint(reported, report)
+    except:
+        logger.warning('Cannot open report file')
+        pass
 
 
 def add_bad_indexes(aggregate, type, bad_indexes):

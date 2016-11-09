@@ -58,6 +58,7 @@ import dquality.hdf_dependency as dqdependency
 import dquality.accumulator as acc
 import dquality.monitor as dqdmonitor
 import dquality.pv as dqpv
+import dquality.realtime.real_time as real
 
 __author__ = "Barbara Frosik"
 __copyright__ = "Copyright (c) 2016, UChicago Argonne, LLC."
@@ -67,7 +68,8 @@ __all__ = ['hdf',
            'monitor',
            'accumulator',
            'data',
-           'hdf_dependency']
+           'hdf_dependency',
+           'realtime']
 
 def hdf(conf, fname):
     """
@@ -218,4 +220,33 @@ def hdf_dependency(conf, fname):
         print ('All dependecies are satisfied')
     else:
         print ('Some dependecies are not satisfied, see log file')
+
+
+def realtime(conf, type = 'data', report_file = None, report_type = 'REPORT_FULL'):
+    """
+    Real time verifier.
+
+    Parameters
+    ----------
+    conf : str
+        configuration file name, including path
+
+    type : str
+        a string characterizung the data type (i.e. data_dark, data_white or data)
+
+    report_file : file
+        a file where the report will be written, or None, if written to a console
+
+    report_type : int
+        report type, currently supporting REPORT_NONE, REPORT_ERRORS, and REPORT_FULL
+
+    Returns
+    -------
+    boolean
+
+    """
+
+    bad_indexes = real.verify(conf)
+    print (json.dumps(bad_indexes))
+    return bad_indexes
 

@@ -27,9 +27,9 @@ The schemas should be saved under "*default/schemas*" folder and contain the fol
 
 - :download:`~/.dquality/default/schemas/limits.json <../../config/default/schemas/limits.json>` containing the threshold values for the quality check calculations.
 
-- :download:`~/.dquality/default/schemas/limits.json <../../config/default/schemas/data_tags.json>` containing the dictionary of hdf tags of data sets by data type.
+- :download:`~/.dquality/default/schemas/data_tags.json <../../config/default/schemas/data_tags.json>` containing the dictionary of hdf tags of data sets by data type.
 
-- :download:`~/.dquality/default/schemas/limits.json <../../config/default/schemas/quality_checks.json>` containing the dictionary of quality check calculations. The keys are the slice verification methods, values are lists of stat methods.
+- :download:`~/.dquality/default/schemas/quality_checks.json <../../config/default/schemas/quality_checks.json>` containing the dictionary of quality check calculations. The keys are the slice verification methods, values are lists of stat methods.
 
 Different instruments generating data that require different sets of configuration files can be configured as ~/.dquality/instrument1,
 ~/.dquality/instrument2 etc. with the same schemas subfolder structure.

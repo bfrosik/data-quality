@@ -116,7 +116,7 @@ def init(config):
 
 
 
-def verify(conf, type, report_file=None):
+def verify(conf, type = 'data', report_file=None, report_type = 'REPORT_FULL'):
     """
     HDF file structure verifier.
 
@@ -125,13 +125,18 @@ def verify(conf, type, report_file=None):
     conf : str
         configuration file name, including path
 
-    file : str
-        File Name to verify including path
+    type : str
+        a string characterizung the data type (i.e. data_dark, data_white or data)
+
+    report_file : file
+        a file where the report will be written, or None, if written to a console
+
+    report_type : int
+        report type, currently supporting REPORT_NONE, REPORT_ERRORS, and REPORT_FULL
 
     Returns
     -------
     boolean
-
 
     """
 
@@ -145,12 +150,7 @@ def verify(conf, type, report_file=None):
     aggregate = aggregateq.get()
 
     if report_file is not None:
-        try:
-            reportf = open(report_file, 'w')
-        except:
-            logger.warning('Cannot open report file')
-            reportf = None
-        report.report_results(aggregate, type, None, reportf)
+        report.report_results(logger, aggregate, type, None, report_file, report_type)
     report.add_bad_indexes(aggregate, type, bad_indexes)
 
     return bad_indexes

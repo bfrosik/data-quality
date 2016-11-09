@@ -15,3 +15,4 @@
       monitor
       dquality
       dependency
+      realtime

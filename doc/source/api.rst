@@ -15,7 +15,9 @@ API reference
     
     - "*Accumulator*": monitor the active data collection directory where each new file is part of the same data set.
 
-    - "*Check*": provides a wrapper to "*PV*", "*Hdf*", "*Hdf Dependencies*", "*Data*", "*Monitor*" and "*Accumulator*".
+    - "*Realtime*": verifies the quality of the active EPICS Channel Access data in a real time.
+
+    - "*Check*": provides a wrapper to "*PV*", "*Hdf*", "*Hdf Dependencies*", "*Data*", "*Monitor*", "*Accumulator*", and "*Realtime*".
 
 .. rubric:: **DQuality Modules:**
 
@@ -28,6 +30,7 @@ API reference
    api/dquality.hdf_dependency
    api/dquality.monitor
    api/dquality.pv
+   api/dquality.realtime.real_time
 
 .. automodule:: dquality
    :members:

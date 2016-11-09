@@ -84,7 +84,7 @@ __all__ = ['deliver_data',
            'get_pvs',
            'feed_data']
 
-class Globals:
+class Shared:
      """
      This class contains the global variables shared between threads.
      """
@@ -97,7 +97,7 @@ class Globals:
          self.no_frames = 0
          self.ctr = 0
 
-globals = Globals()
+globals = Shared()
 
 # class Data:
 #      def __init__(self, slice,):

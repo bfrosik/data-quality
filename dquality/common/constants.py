@@ -9,12 +9,12 @@ QUALITYERROR_LOW = -1
 QUALITYERROR_HIGH = -2
 NO_ERROR = 0
 
-FILE_TYPE_HDF = 1
-FILE_TYPE_GE = 2
+FILE_TYPE_HDF = 'FILE_TYPE_HDF'
+FILE_TYPE_GE = 'FILE_TYPE_GE'
 
-REPORT_NONE = 0
-REPORT_ERRORS = 1
-REPORT_FULL = 2
+REPORT_NONE = 'REPORT_NONE'
+REPORT_ERRORS = 'REPORT_ERRORS'
+REPORT_FULL = 'REPORT_FULL'
 
 mapper = {
     'QUALITYCHECK_MEAN' : 1,
@@ -27,14 +27,7 @@ mapper = {
     'QUALITYERROR_LOW' : -1,
     'QUALITYERROR_HIGH' : -2,
     'NO_ERROR' : 0,
-
-    'FILE_TYPE_HDF' : 1,
-    'FILE_TYPE_GE' : 2,
-
-    'REPORT_NONE' : 0,
-    'REPORT_ERRORS' : 1,
-    'REPORT_FULL' : 2
 }
 
-def globals(name):
+def shared(name):
     return mapper[name]

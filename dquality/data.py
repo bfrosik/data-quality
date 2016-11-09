@@ -117,7 +117,6 @@ def init(config):
 
     try:
         file_type = conf['file_type']
-        file_type = const.globals(file_type)
     except KeyError:
         file_type = const.FILE_TYPE_HDF
 
@@ -147,7 +146,6 @@ def init(config):
 
     try:
         report_type = conf['report_type']
-        report_type = const.globals(report_type)
     except KeyError:
         report_type = const.REPORT_FULL
 
@@ -257,19 +255,13 @@ def verify_file_hdf(logger, file, data_tags, limits, quality_checks, report_type
             file_path = file.rsplit("/",)
             report_file = report_dir + "/" + file_path[len(file_path-1)]+ '.report'
 
-        try:
-            report_file = open(report_file, 'w')
-        except:
-            logger.warning('Cannot open report file')
-            report_file = None
-
     # receive the results
     for type in queues.keys():
         queue = queues[type]
         aggregate = queue.get()
-        if report_file is not None:
-            report.report_results(aggregate, type, file, report_file, report_type)
         report.add_bad_indexes(aggregate, type, bad_indexes)
+        if report_file is not None:
+            report.report_results(logger, aggregate, type, file, report_file, report_type)
 
     logger.info('data verifier evaluated ' + file + ' file')
 
@@ -342,15 +334,7 @@ def verify_file_ge(logger, file, limits, quality_checks, report_type, report_dir
             file_path = file.rsplit("/",)
             report_file = report_dir + "/" + file_path[len(file_path-1)]+ '.report'
 
-        try:
-            report_file = open(report_file, 'w')
-        except:
-            logger.warning('Cannot open report file')
-            report_file = None
-
-    if report_file is not None:
-        if report_type == const.REPORT_FULL:
-            report.report_results(aggregate, type, file, report_file, report_type)
+        report.report_results(logger, aggregate, type, file, report_file, report_type)
 
     logger.info('data verifier evaluated ' + file + ' file')
 

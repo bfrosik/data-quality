@@ -426,7 +426,7 @@ def get_quality_checks(dict):
         value = dict[key]
         list = []
         for item in value:
-            list.append(const.globals(item))
-        quality_checks[const.globals(key)] = list
+            list.append(const.shared(item))
+        quality_checks[const.shared(key)] = list
 
     return quality_checks

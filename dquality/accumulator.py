@@ -138,7 +138,6 @@ def init(config):
 
     try:
         report_type = conf['report_type']
-        report_type = const.globals(report_type)
     except KeyError:
         report_type = const.REPORT_FULL
 
@@ -287,13 +286,7 @@ def verify(conf, folder, data_type, num_files, report_by_files=True):
 
     aggregate = aggregateq.get()
 
-    try:
-        report_file = open(report_file, 'w')
-    except:
-        logger.warning('Cannot open report file, writing report on console')
-        report_file = None
-
-    report.report_results(aggregate, data_type, None, report_file, report_type)
+    report.report_results(logger, aggregate, data_type, None, report_file, report_type)
 
     bad_indexes = {}
     if report_by_files == 'True':
