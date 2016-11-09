@@ -17,7 +17,9 @@ API reference
 
     - "*Realtime*": verifies the quality of the active EPICS Channel Access data in a real time.
 
-    - "*Check*": provides a wrapper to "*PV*", "*Hdf*", "*Hdf Dependencies*", "*Data*", "*Monitor*", "*Accumulator*", and "*Realtime*".
+    - "*Check*": provides a wrapper to "*PV*", "*Hdf*", "*Hdf Dependencies*", "*Data*", "*Monitor*", and "*Accumulator*".
+
+    - "*realtime.Check*": provides a wrapper to "*Realtime*".
 
 .. rubric:: **DQuality Modules:**
 
