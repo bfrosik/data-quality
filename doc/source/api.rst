@@ -31,6 +31,7 @@ API reference
    api/dquality.monitor
    api/dquality.pv
    api/dquality.realtime.real_time
+   api/dquality.realtime.check
 
 .. automodule:: dquality
    :members:

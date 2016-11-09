@@ -63,7 +63,7 @@ This script calls real_time verifier.
 import sys
 import os
 import argparse
-from dquality.check import realtime
+from dquality.realtime.check import realtime as rt
 from os.path import expanduser
 
 def main(arg):
@@ -82,7 +82,7 @@ def main(arg):
     home = expanduser("~")
     conf = os.path.join(home, ".dquality", instrument)
 
-    bad_indexes = realtime(conf, type, report_file, report_type)
+    bad_indexes = rt(conf, type, report_file, report_type)
     return bad_indexes
 
 

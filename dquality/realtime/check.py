@@ -52,173 +52,39 @@ To use Please make sure the installation :ref:`pre-requisite-reference-label` ar
 """
 
 import json
-import dquality.hdf as dqhdf
-import dquality.data as dqdata
-import dquality.hdf_dependency as dqdependency
-import dquality.accumulator as acc
-import dquality.monitor as dqdmonitor
-import dquality.pv as dqpv
 import dquality.realtime.real_time as real
 
 __author__ = "Barbara Frosik"
 __copyright__ = "Copyright (c) 2016, UChicago Argonne, LLC."
 __docformat__ = 'restructuredtext en'
-__all__ = ['hdf',
-           'pv',
-           'monitor',
-           'accumulator',
-           'data',
-           'hdf_dependency']
+__all__ = ['realtime']
 
-def hdf(conf, fname):
+
+def realtime(conf, type = 'data', report_file = None, report_type = 'REPORT_FULL'):
     """
-    HDF file structure verifier.
+    Real time verifier.
 
     Parameters
     ----------
     conf : str
         configuration file name, including path
 
-    file : str
-        File Name to verify including path
+    type : str
+        a string characterizung the data type (i.e. data_dark, data_white or data)
 
-    Returns
-    -------
-    boolean
+    report_file : file
+        a file where the report will be written, or None, if written to a console
 
-
-    """
-    
-    if dqhdf.verify(conf, fname):
-        print ('All tags exist and meet conditions')
-    else:
-        print ('Some of the tags do not exist or do not meet conditions, check log file')
-
-def pv(conf):
-    """
-
-    PV verifier.
-
-    Parameters
-    ----------
-    conf : str
-        configuration file name, including path
+    report_type : int
+        report type, currently supporting REPORT_NONE, REPORT_ERRORS, and REPORT_FULL
 
     Returns
     -------
     boolean
 
     """
-    if dqpv.verify(conf):
-        print ('All PVs listed in pvs.json exist and meet conditions')
-    else:
-        print ('Some of the PVs listed in pvs.json do not exist or do not meet conditions')
 
-
-def monitor(conf, fname, num_files):
-    """
-    Data quality monitor verifier.
-    
-    Parameters
-    ----------
-    conf : str
-        configuration file name including path
-
-    folder : str
-        folder name to monitor
-
-    num_files : int
-        expected number of files. This script will exit after detecting and
-        processing given number of files.
-
-    Returns
-    -------
-    None
-
-    """
-
-    bad_indexes = dqdmonitor.verify(conf, fname, int(num_files))
-    return bad_indexes
-
-def accumulator(conf, fname, dtype, num_files, report_by_file):
-    """
-    Data Quality monitor.
-    
-    Parameters
-    ----------
-    conf : str
-        configuration file name, including path
-
-    folder : str
-        monitored directory
-
-    data_type : str
-        defines which data type is being evaluated
-
-    num_files : int
-        number of files that will be processed
-
-    report_by_files : boolean
-        this variable directs how to present the bad indexes in a report. If True, the indexes
-        are related to the files, and a filename is included in the report. Otherwise, the
-        report contains a list of bad indexes.
-
-    Returns
-    -------
-    bad_indexes : dict
-        a dictionary or list containing bad indexes
-    """
-    
-    bad_indexes = acc.verify(conf, fname, dtype, int(num_files), report_by_file)
+    bad_indexes = real.verify(conf)
     print (json.dumps(bad_indexes))
     return bad_indexes
-
-
-def data(conf, fname):
-    """
-    Data Quality verifier.
-    
-    Parameters
-    ----------
-    conf : str
-        name of the configuration file including path. If contains only directory, 'dqconfig_test.ini' will a default
-        file name.
-
-    file : str
-        file name to do the quality checks on
-
-    Returns
-    -------
-    bad_indexes : Dict
-    """
-
-    bad_indexes = dqdata.verify(conf, fname)
-    print (json.dumps(bad_indexes))
-    return bad_indexes
-
-
-def hdf_dependency(conf, fname):
-    """
-    Dependency verifier.
-
-    Parameters
-    ----------
-    conf : str
-        configuration file name, including path
-
-    file : str
-        File Name to verify including path
-
-    Returns
-    -------
-    boolean
-    
-    """
-
-    if dqdependency.verify(conf, fname):
-        print ('All dependecies are satisfied')
-    else:
-        print ('Some dependecies are not satisfied, see log file')
-
-
 
