@@ -93,7 +93,6 @@ def report_results(logger, aggregate, type, filename, report_file, report_type):
     if report_file is None:
         return
 
-    print 'report type', report_type
     try:
         report = open(report_file, 'w')
         if report_type == const.REPORT_FULL:
@@ -101,7 +100,6 @@ def report_results(logger, aggregate, type, filename, report_file, report_type):
         elif report_type == const.REPORT_ERRORS:
             reported = aggregate['bad_indexes']
         else:
-            print 'no reported'
             return
 
         if filename is not None:
