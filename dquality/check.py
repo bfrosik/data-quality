@@ -114,7 +114,7 @@ def pv(conf):
         print ('Some of the PVs listed in pvs.json do not exist or do not meet conditions')
 
 
-def monitor(conf, fname, num_files):
+def monitor(conf, folder, num_files):
     """
     Data quality monitor verifier.
     
@@ -136,7 +136,7 @@ def monitor(conf, fname, num_files):
 
     """
 
-    bad_indexes = dqdmonitor.verify(conf, fname, int(num_files))
+    bad_indexes = dqdmonitor.verify(conf, folder, int(num_files))
     return bad_indexes
 
 def accumulator(conf, fname, dtype, num_files, report_by_file):

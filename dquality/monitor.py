@@ -67,6 +67,8 @@ import json
 import dquality.common.utilities as utils
 import dquality.common.constants as const
 import dquality.data as dataver
+import glob
+
 
 __author__ = "Barbara Frosik"
 __copyright__ = "Copyright (c) 2016, UChicago Argonne, LLC."
@@ -228,7 +230,8 @@ def verify(conf, folder, num_files):
         configuration file name including path
 
     folder : str
-        folder name to monitor
+        folder name to monitor, if the level 1 subdirectories are to be monitored, add '/**'
+        to the folder
 
     num_files : int
         expected number of files. This script will exit after detecting and
@@ -239,13 +242,20 @@ def verify(conf, folder, num_files):
     None
     """
     logger, data_tags, limits, quality_checks, extensions, file_type, report_type, report_dir = init(conf)
-    if not os.path.isdir(folder):
+    if folder.endswith('**'):
+        check_folder = folder[0:-2]
+    else:
+        check_folder = folder
+    if not os.path.isdir(check_folder):
         logger.error(
             'parameter error: directory ' +
             folder + ' does not exist')
         sys.exit(-1)
 
-    notifier = directory(folder, extensions)
+    paths = glob.glob(folder)
+    notifiers = []
+    for dir in paths:
+        notifiers.append(directory(dir, extensions))
 
     bad_indexes = {}
     file_count = 0
@@ -254,9 +264,10 @@ def verify(conf, folder, num_files):
     while not interrupted:
         # The notifier will put a new file into a newFiles queue if one was
         # detected
-        notifier.process_events()
-        if notifier.check_events():
-            notifier.read_events()
+        for notifier in notifiers:
+            notifier.process_events()
+            if notifier.check_events(timeout=0.01):
+                notifier.read_events()
 
         # checking the newFiles queue for new entries and starting verification
         # processes for each new file
@@ -265,7 +276,8 @@ def verify(conf, folder, num_files):
             if file.find('INTERRUPT') >= 0:
                 # the calling function may use a 'interrupt' command to stop the monitoring
                 # and processing.
-                notifier.stop()
+                for notifier in notifiers:
+                    notifier.stop()
                 interrupted = True
                 break
             else:
