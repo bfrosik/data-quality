@@ -54,6 +54,8 @@ class Aggregate:
             # start process that will update epics Quality PVs
             p = Process(target=self.quality_feedback, args=(self.feedbackq, feedback_obj,))
             p.start()
+        else:
+            self.feedback_type = None
 
         self.bad_indexes = {}
         self.good_indexes = {}
