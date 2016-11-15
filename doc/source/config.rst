@@ -118,9 +118,6 @@ mandatory, json file name including path that lists all quality methods that wil
 - 'report_type':
 optional, defines report specifics. Currently the software supports 'none', 'full', and 'errors' types. If not specified it defaults to 'full' type. If the type is 'none', no report file will be created; if the type is 'errors', only the bad frames will be reported; and for the 'full' report type all frames and check results are reported.
 
-- 'report_dir':
-optional, a directory where report files will be located. If not configured, the report files are created along the data files.
-
 - 'feedback_type':
 optional, a list that defines a real time feedback when validating data. Currently the software supports 'log',
 'console', and 'pv'. If the list contains 'console', the software will print the failed verification results in the real time; if the list contain 'log', the failed results will be logged. 
