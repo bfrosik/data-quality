@@ -54,14 +54,11 @@ defaults to FILE_TYPE_HDF format.
 required for hdf type file. json file name including path that maps hdf tags to data types ('data', 'data_dark','data_white') that will be verified.
 
 - 'report_type':
-optional, defines report specifics. Currently the software supports 'REPORT_NONE', 'REPORT_FULL', and 'REPORT_ERRORS'
-types. If not specified it defaults to 'REPORT_FULL' type. If the type is 'REPORT_NONE', no report file will be created;
-if the type is 'REPORT_ERRORS', only the bad frames will be reported; and for the 'REPORT_FULL' report type all frames
-and check results are reported.
+optional, defines report specifics. Currently the software supports 'none', 'full', and 'errors' types. If not specified it defaults to 'full' type. If the type is 'none', no report file will be created; if the type is 'errors', only the bad frames will be reported; and for the 'full' report type all frames and check results are reported.
 
 - 'feedback_type':
 optional, defines a real time feedback when validating data. For data verifier it should not be set, or set to
-"FEEDBACK_NONE'
+"none'
 
 -------
 monitor
@@ -79,14 +76,11 @@ required for hdf type file. json file name including path that maps hdf tags to 
 'data_white') that will be verified.
 
 - 'report_type':
-optional, defines report specifics. Currently the software supports 'REPORT_NONE', 'REPORT_FULL', and 'REPORT_ERRORS'
-types. If not specified it defaults to 'REPORT_FULL' type. If the type is 'REPORT_NONE', no report file will be created;
-if the type is 'REPORT_ERRORS', only the bad frames will be reported; and for the 'REPORT_FULL' report type all frames
-and check results are reported.
+optional, defines report specifics. Currently the software supports 'none', 'full', and 'errors' types. If not specified it defaults to 'full' type. If the type is 'none', no report file will be created; if the type is 'errors', only the bad frames will be reported; and for the 'full' report type all frames and check results are reported.
 
 - 'feedback_type':
 optional, defines a real time feedback when validating data. For data verifier it should not be set, or set to
-"FEEDBACK_NONE'
+"none'
 
 -----------
 accumulator
@@ -99,14 +93,11 @@ json file name including path that lists all quality methods that will be used t
 mandatory, json file name including path that lists all quality methods that will be used to validate the data.
 
 - 'report_type':
-optional, defines report specifics. Currently the software supports 'REPORT_NONE', 'REPORT_FULL', and 'REPORT_ERRORS'
-types. If not specified it defaults to 'REPORT_FULL' type. If the type is 'REPORT_NONE', no report file will be created;
-if the type is 'REPORT_ERRORS', only the bad frames will be reported; and for the 'REPORT_FULL' report type all frames
-and check results are reported.
+optional, defines report specifics. Currently the software supports 'none', 'full', and 'errors' types. If not specified it defaults to 'full' type. If the type is 'none', no report file will be created; if the type is 'errors', only the bad frames will be reported; and for the 'full' report type all frames and check results are reported.
 
 - 'feedback_type':
 optional, defines a real time feedback when validating data. For data verifier it should not be set, or set to
-"FEEDBACK_NONE'
+"none'
 
 ------------------
 real_time verifier
@@ -119,16 +110,11 @@ json file name including path that lists all quality methods that will be used t
 mandatory, json file name including path that lists all quality methods that will be used to validate the data.
 
 - 'report_type':
-optional, defines report specifics. Currently the software supports 'REPORT_NONE', 'REPORT_FULL', and 'REPORT_ERRORS'
-types. If not specified it defaults to 'REPORT_FULL' type. If the type is 'REPORT_NONE', no report file will be created;
-if the type is 'REPORT_ERRORS', only the bad frames will be reported; and for the 'REPORT_FULL' report type all frames
-and check results are reported.
+optional, defines report specifics. Currently the software supports 'none', 'full', and 'errors' types. If not specified it defaults to 'full' type. If the type is 'none', no report file will be created; if the type is 'errors', only the bad frames will be reported; and for the 'full' report type all frames and check results are reported.
 
 - 'feedback_type':
-optional, defines a real time feedback when validating data. Currently the software supports 'FEEDBACK_NONE',
-'FEEDACK_PRINT', 'FEEDBACK_PV', and 'FEEDBACK_PRINT_PV'. If not specified it defaults to 'FEEDBACK_NONE'. If the type
-is 'FEEDBACK_PRINT', the software will print the verification results in the real time; if the type is 'FEEDBACK_PV',
-the software gives feedback via PVs; and for the 'FEEDBACK_PRINT_PV' the feedback is given via PVs and print.
+optional, a list that defines a real time feedback when validating data. Currently the software supports 'log',
+'console', and 'pv'. If the list contains 'console', the software will print the failed verification results in the real time; if the list contain 'log', the failed results will be logged. 
 
 - 'detector':
 mandatory, specifies EPICS Area Detector prefix, as defined in the area detector configuration
