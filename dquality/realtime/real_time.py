@@ -67,8 +67,7 @@ import json
 import sys
 import dquality.common.utilities as utils
 import dquality.common.report as report
-from dquality.realtime.feed import feed_data
-
+import dquality.realtime.feed as feed
 
 
 def init(config):
@@ -91,6 +90,14 @@ def init(config):
 
     quality_checks : dict
         a dictionary containing quality check functions ids
+
+    feedback : list
+        a list of strings defining real time feedback of quality checks errors. Currently supporting 'PV', 'log', and
+        'console'
+
+    feedback_pv : str
+        a name of process variable that is used for quality feedback
+
     """
 
     conf = utils.get_config(config)
@@ -112,11 +119,22 @@ def init(config):
         dict = json.loads(qc_file.read())
     quality_checks = utils.get_quality_checks(dict)
 
-    return logger, limits, quality_checks
+    feedback_pv = None
+    try:
+        feedback = conf['feedback_type']
+        if 'pv' in feedback:
+            try:
+                feedback_pv = conf['feedback_pv']
+            except KeyError:
+                feedback.remove('pv')
+
+    except KeyError:
+        feedback = None
+
+    return logger, limits, quality_checks, feedback, feedback_pv
 
 
-
-def verify(conf, type = 'data', report_file=None, report_type = 'REPORT_FULL'):
+def verify(conf, type = 'data', report_file=None, report_type = 'full'):
     """
     HDF file structure verifier.
 
@@ -126,25 +144,24 @@ def verify(conf, type = 'data', report_file=None, report_type = 'REPORT_FULL'):
         configuration file name, including path
 
     type : str
-        a string characterizung the data type (i.e. data_dark, data_white or data)
+        a string characterizung the data type (i.e. data_dark, data_white or data), defaulted to 'data'
 
     report_file : file
-        a file where the report will be written, or None, if written to a console
+        a file where the report will be written, defaulted to None, if no report wanted
 
     report_type : int
-        report type, currently supporting REPORT_NONE, REPORT_ERRORS, and REPORT_FULL
+        report type, currently supporting 'none', 'errors', and 'full'
 
     Returns
     -------
     boolean
 
     """
-
-    logger, limits, quality_checks = init(conf)
+    logger, limits, quality_checks, feedback, feedback_pv = init(conf)
 
     aggregateq = Queue()
-    args = limits[type], aggregateq, quality_checks
-    feed_data(conf, logger, *args)
+    args = limits[type], aggregateq, quality_checks, feedback, feedback_pv
+    feed.feed_data(conf, logger, *args)
 
     bad_indexes = {}
     aggregate = aggregateq.get()
@@ -154,6 +171,5 @@ def verify(conf, type = 'data', report_file=None, report_type = 'REPORT_FULL'):
     report.add_bad_indexes(aggregate, type, bad_indexes)
 
     return bad_indexes
-
 
 

@@ -184,7 +184,7 @@ def on_change(pvname=None, **kws):
     globals.thread_dataq.put(current_ctr)
 
 
-def start_processes(counter_pv, data_pv, feedback_pv_prefix, logger, *args):
+def start_processes(counter_pv, data_pv, logger, *args):
     """
     This is a main thread that starts thread reacting to the callback, starts the consuming process, and sets a
     callback on the frame counter PV change. The function then awaits for the data in the exit queue that indicates
@@ -197,9 +197,6 @@ def start_processes(counter_pv, data_pv, feedback_pv_prefix, logger, *args):
 
     data_pv : str
         a PV string for the area detector frame data
-
-    feedback_pv_prefix : str
-        a prefix to the epics pvs related to the data quality
 
     logger : Logger
         a Logger instance, typically synchronized with the consuming process logger
@@ -214,7 +211,7 @@ def start_processes(counter_pv, data_pv, feedback_pv_prefix, logger, *args):
     data_thread = CAThread(target = deliver_data, args=(data_pv, logger,))
     data_thread.start()
 
-    start_process(globals.process_dataq, feedback_pv_prefix, *args)
+    start_process(globals.process_dataq, logger, *args)
     cntr = PV(counter_pv)
     cntr.add_callback(on_change, index = 1)
 
@@ -263,8 +260,7 @@ def get_pvs(detector, detector_basic, detector_image):
     data_pv = detector + ':' + detector_image + ':' + 'ArrayData'
     sizex_pv = detector + ':' + detector_image + ':' + 'ArraySize0_RBV'
     sizey_pv = detector + ':' + detector_image + ':' + 'ArraySize1_RBV'
-    feedback_pv_prefix = detector + ':' + detector_image + ':' + 'Quality'
-    return acquire_pv, counter_pv, data_pv, sizex_pv, sizey_pv, feedback_pv_prefix
+    return acquire_pv, counter_pv, data_pv, sizex_pv, sizey_pv
 
 
 def feed_data(config, logger, *args):
@@ -291,7 +287,7 @@ def feed_data(config, logger, *args):
     """
 
     no_frames, detector, detector_basic, detector_image = parse_config(config)
-    acquire_pv, counter_pv, data_pv, sizex_pv, sizey_pv, feedback_pv_prefix = get_pvs(detector, detector_basic, detector_image)
+    acquire_pv, counter_pv, data_pv, sizex_pv, sizey_pv = get_pvs(detector, detector_basic, detector_image)
     globals.no_frames = no_frames
     test = True
     while test:
@@ -300,6 +296,6 @@ def feed_data(config, logger, *args):
         ack =  caget(acquire_pv)
         if ack == 1:
             test = False
-            start_processes(counter_pv, data_pv, feedback_pv_prefix, logger, *args)
+            start_processes(counter_pv, data_pv, logger, *args)
 
 

@@ -70,7 +70,7 @@ __all__ = ['handle_result',
            'handle_data']
 
 
-def handle_result(result, aggregate, statq, limits, quality_checks):
+def handle_result(result, aggregate, resultsq, limits, quality_checks):
     """
     This function calls handle_result function on aggregate that returns true if all calculation results for this
     slice passed validation, and False if any of them did not.
@@ -86,8 +86,8 @@ def handle_result(result, aggregate, statq, limits, quality_checks):
         aggregate for the type of data that is assessing data integrity. If one of the data checks failed for the data,
         the data is considered as failed. This object aggregates the results.
 
-    statq : Queue
-        a queue that will be used by statistical process to pass result to receiving process.
+    resultsq : Queue
+        a queue that will be used to pass result to receiving process.
 
     limits : dict
         a collection of limits as read from configuration
@@ -105,12 +105,12 @@ def handle_result(result, aggregate, statq, limits, quality_checks):
     if aggregate.handle_result(result):
         for function_id in quality_checks[result.quality_id]:
             function = calc.function_mapper[function_id]
-            p = Process(target=function, args=(result, aggregate, statq, limits,))
+            p = Process(target=function, args=(result, aggregate, resultsq, limits,))
             p.start()
             ret += 1
     return ret
 
-def handle_data(dataq, limits, reportq, quality_checks, feedback_pv_prefix=None):
+def handle_data(dataq, limits, reportq, quality_checks, feedback_obj=None):
     """
     This function is typically called as a new process. It takes a dataq parameter
     that is the queue on which data is received. It takes the dictionary containing limit values
@@ -149,11 +149,18 @@ def handle_data(dataq, limits, reportq, quality_checks, feedback_pv_prefix=None)
         keys are ids of the basic quality check methods, and values are lists of statistical methods ids;
         the statistical methods use result from the "key" basic quality method.
 
+    feedback_obj : Feedback
+        a Feedback container that contains information for the real-time feedback. Defaulted to None.
+
     Returns
     -------
     None
     """
-    aggregate = Aggregate(quality_checks, feedback_pv_prefix)
+    feedbackq = None
+    if feedback_obj is not None:
+        feedbackq = Queue()
+    aggregate = Aggregate(quality_checks, feedbackq, feedback_obj)
+
     resultsq = Queue()
     interrupted = False
     index = 0
@@ -161,12 +168,13 @@ def handle_data(dataq, limits, reportq, quality_checks, feedback_pv_prefix=None)
     while not interrupted:
         try:
             data = dataq.get(timeout=0.005)
-            # print ('got frame # ',index)
             if data == 'all_data':
                 interrupted = True
                 while num_processes > 0:
                     result = resultsq.get()
                     num_processes += (handle_result(result, aggregate, resultsq, limits, quality_checks) - 1)
+                if feedbackq is not None:
+                    feedbackq.put('all_data')
 
             elif data == 'missing':
                 index += 1

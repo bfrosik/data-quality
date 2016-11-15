@@ -1,7 +1,6 @@
 from multiprocessing import Lock
 import dquality.common.constants as const
 from multiprocessing import Queue, Process
-import dquality.common.utilities as utils
 
 class Result:
     """
@@ -21,6 +20,19 @@ class Data:
     def __init__(self, slice, ):
         self.slice = slice
 
+class Feedback:
+    """
+    This class is a container of real-time feedback related information.
+    """
+    def __init__(self, feedback_type, ):
+        self.feedback_type = feedback_type
+
+    def set_feedback_pv(self, feedback_pv):
+        self.feedback_pv = feedback_pv
+
+    def set_logger(self, logger):
+        self.logger = logger
+
 class Aggregate:
     """
     This class is a container of results. The results are organized in three dictionaries.
@@ -34,12 +46,13 @@ class Aggregate:
 
     """
 
-    def __init__(self, quality_checks, feedback_pv_prefix):
-        self.feedback_pv_prefix = feedback_pv_prefix
-        if feedback_pv_prefix is not None:
-            self.feedbackq = Queue()
+    def __init__(self, quality_checks, feedbackq, feedback_obj = None):
+        if feedback_obj is not None:
+            self.feedback_type = feedback_obj.feedback_type
+            self.feedbackq = feedbackq
+            #TODO check if feedback_pv and save
             # start process that will update epics Quality PVs
-            p = Process(target=self.quality_feedback, args=(self.feedbackq,))
+            p = Process(target=self.quality_feedback, args=(self.feedbackq, feedback_obj,))
             p.start()
 
         self.bad_indexes = {}
@@ -57,9 +70,6 @@ class Aggregate:
             self.results[qc] = []
             self.locks[qc] = Lock()
             self.lens[qc] = 0
-
-    def quality_feedback(self, feedbackq):
-        pass
 
 
     def get_results_len(self, check):
@@ -83,6 +93,7 @@ class Aggregate:
         lock.release()
         return length
 
+
     def add_result(self, result, check):
         """
         This add a new result for a given quality check to results. This operation uses lock, as other
@@ -105,6 +116,7 @@ class Aggregate:
         self.results[check].append(result)
         self.lens[check] += 1
         lock.release()
+
 
     def handle_result(self,result):
         """
@@ -155,4 +167,45 @@ class Aggregate:
                 self.bad_indexes[index] = bad_index
         if result.quality_id >= const.STAT_START:
             res = False
+
+        if not res and self.feedback_type is not None:
+            self.feedbackq.put(result)
+
         return res
+
+
+    def quality_feedback(self, feedbackq, feedback_obj):
+        """
+        This function take a result instance that contains information about the result and the subject. If the
+        slice did not pass verification for any of the quality check, it will return False. If all quality checks
+        passed it will return True. The function maintains the containers; the slice index will be added to a
+        "good_index" dictionary if all quality checks passed, and to "bad_index" otherwise.
+
+        Parameters
+        ----------
+        feedbackq : Queue
+            a queue that will deliver Result objects of failed quality check
+
+        feedback_obj : Feedback
+            a Feedback instance that contains all information for real-time feedback
+
+        Returns
+        -------
+        boolean
+            True if all quelity checks passed
+            False otherwise
+        """
+
+        evaluating = True
+        while evaluating:
+            result = feedbackq.get()
+            if result == 'all_data':
+                evaluating = False
+            else:
+                if const.FEEDBACK_CONSOLE in feedback_obj.feedback_type:
+                    print ('failed frame '+str(result.index)+ ' result of '+const.check_tostring(result.quality_id)+ ' is '+ str(result.res))
+                if const.FEEDBACK_LOG in feedback_obj.feedback_type:
+                    feedback_obj.logger.info('failed frame '+str(result.index)+ ' result of '+const.check_tostring(result.quality_id)+ ' is '+ str(result.res))
+                if const.FEEDBACK_PV in feedback_obj.feedback_type:
+                    print ('pv feedback not supported yet')
+

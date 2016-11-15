@@ -104,7 +104,7 @@ def init(config):
         data file type; currently supporting FILE_TYPE_HDF and FILE_TYPE_GE
 
     report_type : int
-        report type; currently supporting REPORT_NONE, REPORT_ERRORS, and REPORT_FULL
+        report type; currently supporting 'none', 'error', and 'full'
 
     report_dir : str
         a directory where report files will be located
@@ -224,7 +224,7 @@ def verify_file_hdf(logger, file, data_tags, limits, quality_checks, report_type
         a dictinary specifying quality checks structure that will be applied to verify the data file
 
     report_type : int
-        report type, currently supporting REPORT_NONE, REPORT_ERRORS', and REPORT_FULL
+        report type, currently supporting 'none', 'errors', and 'full'
 
     report_dir : str
         a directory where report files will be located
@@ -294,7 +294,7 @@ def verify_file_ge(logger, file, limits, quality_checks, report_type, report_dir
         a dictinary specifying quality checks structure that will be applied to verify the data file
 
     report_type : int
-        report type, currently supporting REPORT_NONE, REPORT_ERRORS', and REPORT_FULL
+        report type, currently supporting 'none', 'errors', and 'full'
 
     report_dir : str
         a directory where report files will be located

@@ -107,7 +107,7 @@ def init(config):
         a list containing extensions of files to be monitored read from the configuration file
 
     report_type : int
-        report type; currently supporting REPORT_NONE, REPORT_ERRORS, and REPORT_FULL
+        report type; currently supporting 'none', 'error', and 'full'
     """
     conf = utils.get_config(config)
 

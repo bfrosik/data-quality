@@ -110,7 +110,7 @@ def init(config):
         data file type; currently supporting FILE_TYPE_HDF and FILE_TYPE_GE
 
     report_type : int
-        report type; currently supporting REPORT_NONE, REPORT_ERRORS, and REPORT_FULL
+        report type; currently supporting 'none', 'error', and 'full'
 
     report_dir : str
         a directory where report files will be located

@@ -58,6 +58,7 @@ are called by the feed module.
 from multiprocessing import Process
 from dquality.handler import handle_data
 import dquality.common.containers as containers
+import dquality.common.constants as const
 import os
 from configobj import ConfigObj
 
@@ -70,7 +71,7 @@ __all__ = ['start_process',
 
 
 
-def start_process(dataq, feedback_pv_prefix, *args):
+def start_process(dataq, logger, *args):
     """
     This function parses the positional parameters. Then it starts a client process, passing in a queue as first
     parameter, followed by the parsed parameters. The function of the client process must be included in imports.
@@ -80,8 +81,8 @@ def start_process(dataq, feedback_pv_prefix, *args):
     dataq : multiprocessing.Queue
         a queue used to transfer data from feed to client process
 
-    feedback_pv_prefix : str
-        a user specified prefix of a data quality feedback pvs
+    logger : Logger
+        an instance of Logger, used by the application
 
     *args : list
         a list of posisional parameters required by the client process
@@ -94,8 +95,21 @@ def start_process(dataq, feedback_pv_prefix, *args):
     limits = args[0]
     reportq = args[1]
     quality_checks = args[2]
+    feedback = args[3]
 
-    p = Process(target=handle_data, args=(dataq, limits, reportq, quality_checks, feedback_pv_prefix))
+    feedback_obj = containers.Feedback(feedback)
+    if const.FEEDBACK_LOG in feedback:
+        feedback_obj.set_logger(logger)
+
+    if const.FEEDBACK_PV in feedback:
+        try:
+            feedback_pv = args[4]
+            feedback_obj.set_feedback_pv(feedback_pv)
+        except:
+            feedback.remove(const.FEEDBACK_PV)
+            print ("must provide quality feedback pv name if the feedback is 'pv'")
+
+    p = Process(target=handle_data, args=(dataq, limits, reportq, quality_checks, feedback_obj))
     p.start()
 
 

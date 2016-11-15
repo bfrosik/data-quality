@@ -84,7 +84,7 @@ def report_results(logger, aggregate, type, filename, report_file, report_type):
         a file where the report will be written, or None, if written to a console
 
     report_type : int
-        report type, currently supporting REPORT_NONE, REPORT_ERRORS, and REPORT_FULL
+        report type, currently supporting 'none, 'errors', and 'full'
 
     Returns
     -------

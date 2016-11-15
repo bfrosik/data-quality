@@ -12,9 +12,13 @@ NO_ERROR = 0
 FILE_TYPE_HDF = 'FILE_TYPE_HDF'
 FILE_TYPE_GE = 'FILE_TYPE_GE'
 
-REPORT_NONE = 'REPORT_NONE'
-REPORT_ERRORS = 'REPORT_ERRORS'
-REPORT_FULL = 'REPORT_FULL'
+REPORT_NONE = 'none'
+REPORT_ERRORS = 'errors'
+REPORT_FULL = 'full'
+
+FEEDBACK_CONSOLE = 'console'
+FEEDBACK_LOG = 'log'
+FEEDBACK_PV = 'pv'
 
 mapper = {
     'QUALITYCHECK_MEAN' : 1,
@@ -31,3 +35,11 @@ mapper = {
 
 def shared(name):
     return mapper[name]
+
+def check_tostring(qualitycheck):
+    qc_map = {1:'mean',
+              2:'standard_deviation',
+              3:'saturation',
+              100:'stat_mean',
+              101:'acc_saturation'}
+    return qc_map[qualitycheck]
