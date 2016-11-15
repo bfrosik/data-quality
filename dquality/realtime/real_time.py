@@ -68,6 +68,7 @@ import sys
 import dquality.common.utilities as utils
 import dquality.common.report as report
 import dquality.realtime.feed as feed
+import dquality.commont.constants as const
 
 
 def init(config):
@@ -97,6 +98,9 @@ def init(config):
 
     feedback_pv : str
         a name of process variable that is used for quality feedback
+
+    report_type : int
+        report type; currently supporting 'none', 'error', and 'full'
 
     """
 
@@ -131,10 +135,15 @@ def init(config):
     except KeyError:
         feedback = None
 
-    return logger, limits, quality_checks, feedback, feedback_pv
+    try:
+        report_type = conf['report_type']
+    except KeyError:
+        report_type = const.REPORT_FULL
+
+    return logger, limits, quality_checks, feedback, feedback_pv, report_type
 
 
-def verify(conf, type = 'data', report_file=None, report_type = 'full'):
+def verify(conf, type = 'data', report_file=None):
     """
     HDF file structure verifier.
 
@@ -149,15 +158,12 @@ def verify(conf, type = 'data', report_file=None, report_type = 'full'):
     report_file : file
         a file where the report will be written, defaulted to None, if no report wanted
 
-    report_type : int
-        report type, currently supporting 'none', 'errors', and 'full'
-
     Returns
     -------
     boolean
 
     """
-    logger, limits, quality_checks, feedback, feedback_pv = init(conf)
+    logger, limits, quality_checks, feedback, feedback_pv, report_type = init(conf)
 
     aggregateq = Queue()
     args = limits[type], aggregateq, quality_checks, feedback, feedback_pv
