@@ -56,6 +56,9 @@ required for hdf type file. json file name including path that maps hdf tags to 
 - 'report_type':
 optional, defines report specifics. Currently the software supports 'none', 'full', and 'errors' types. If not specified it defaults to 'full' type. If the type is 'none', no report file will be created; if the type is 'errors', only the bad frames will be reported; and for the 'full' report type all frames and check results are reported.
 
+- 'report_dir':
+optional, a directory where report files will be located. If not configured, the report files are created along the data files.
+
 - 'feedback_type':
 optional, defines a real time feedback when validating data. For data verifier it should not be set, or set to
 "none'
@@ -97,9 +100,6 @@ mandatory, json file name including path that lists all quality methods that wil
 
 - 'report_type':
 optional, defines report specifics. Currently the software supports 'none', 'full', and 'errors' types. If not specified it defaults to 'full' type. If the type is 'none', no report file will be created; if the type is 'errors', only the bad frames will be reported; and for the 'full' report type all frames and check results are reported.
-
-- 'report_dir':
-optional, a directory where report files will be located. If not configured, the report files are created along the data files.
 
 - 'feedback_type':
 optional, defines a real time feedback when validating data. For data verifier it should not be set, or set to
