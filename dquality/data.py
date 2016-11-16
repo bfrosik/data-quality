@@ -332,7 +332,7 @@ def verify_file_ge(logger, file, limits, quality_checks, report_type, report_dir
             report_file = file + '.report'
         else:
             file_path = file.rsplit("/",)
-            report_file = report_dir + "/" + file_path[len(file_path-1)]+ '.report'
+            report_file = report_dir + "/" + file_path[len(file_path)-1]+ '.report'
 
         report.report_results(logger, aggregate, type, file, report_file, report_type)
 
