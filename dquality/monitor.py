@@ -203,7 +203,7 @@ def directory(directory, patterns):
                         break
 
     wm = WatchManager()
-    mask = pyinotify.IN_CLOSE_WRITE | pyinotify.IN_CREATE
+    mask = pyinotify.IN_CLOSE_WRITE | pyinotify.IN_CLOSE_NOWRITE
     handler = EventHandler()
     notifier = pyinotify.Notifier(wm, handler, timeout=1)
     wdd = wm.add_watch(directory, mask, rec=False)
