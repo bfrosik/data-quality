@@ -52,10 +52,11 @@ This script is specific for beamline 32id.
 
 This example takes one mandatory parameter, and three optional:
 instrument: a string defining the detector that will be used. User can enter one of these choices: 
-'nanotomo', 'microtomo'. The instrument determines a configuration file that will be used.
-type: data type to be verified (i.e. data_dark, data_white or data), defaulted to 'data'
-report_file: name of report file, defaulted to None
-report_type: report type, currently supporting REPORT_NONE, REPORT_ERRORS, and REPORT_FULL, defaulted to REPORT_FULL.
+'32id_nano', '32id_micro'. The instrument determines the directory to look for a configuration file that will be used.
+type: optional parameter, data type to be verified (i.e. data_dark, data_white or data), defaulted to 'data'
+report_file: optional parameter, name of report file, defaulted to None
+report_type: optional parameter, report type, currently supporting REPORT_NONE, REPORT_ERRORS, and REPORT_FULL, 
+defaulted to REPORT_FULL.
 
 This script calls real_time verifier.
 
