@@ -68,7 +68,7 @@ import sys
 import dquality.common.utilities as utils
 import dquality.common.report as report
 import dquality.realtime.feed as feed
-import dquality.commont.constants as const
+import dquality.common.constants as const
 
 
 def init(config):
