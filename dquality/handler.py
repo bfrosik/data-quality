@@ -55,6 +55,7 @@ and handles results of the checks.
 """
 
 from multiprocessing import Queue, Process
+import dquality.common.constants as const
 import dquality.common.qualitychecks as calc
 from dquality.common.containers import Aggregate
 import sys
@@ -66,11 +67,11 @@ else:
 __author__ = "Barbara Frosik"
 __copyright__ = "Copyright (c) 2016, UChicago Argonne, LLC."
 __docformat__ = 'restructuredtext en'
-__all__ = ['handle_result',
+__all__ = ['num_stat_processes_on_result',
            'handle_data']
 
 
-def handle_result(result, aggregate, resultsq, limits, quality_checks):
+def num_stat_processes_on_result(result, aggregate, resultsq, limits, quality_checks):
     """
     This function calls handle_result function on aggregate that returns true if all calculation results for this
     slice passed validation, and False if any of them did not.
@@ -102,7 +103,9 @@ def handle_result(result, aggregate, resultsq, limits, quality_checks):
         number of statistical processes started
     """
     ret = 0
-    if aggregate.handle_result(result):
+    # start statistical processes only when all results for this frame passed quality checks, and if the
+    # result is not of statistical process
+    if aggregate.all_good_on_result(result) and result.quality_id < const.STAT_START:
         for function_id in quality_checks[result.quality_id]:
             function = calc.function_mapper[function_id]
             p = Process(target=function, args=(result, aggregate, resultsq, limits,))
@@ -172,7 +175,7 @@ def handle_data(dataq, limits, reportq, quality_checks, feedback_obj=None):
                 interrupted = True
                 while num_processes > 0:
                     result = resultsq.get()
-                    num_processes += (handle_result(result, aggregate, resultsq, limits, quality_checks) - 1)
+                    num_processes += (num_stat_processes_on_result(result, aggregate, resultsq, limits, quality_checks) - 1)
                 if feedbackq is not None:
                     feedbackq.put('all_data')
 
@@ -193,9 +196,10 @@ def handle_data(dataq, limits, reportq, quality_checks, feedback_obj=None):
 
         while not resultsq.empty():
             result = resultsq.get_nowait()
-            num_processes += (handle_result(result, aggregate, resultsq, limits, quality_checks) - 1)
+            num_processes += (num_stat_processes_on_result(result, aggregate, resultsq, limits, quality_checks) - 1)
 
     if reportq is not None:
         results = {'bad_indexes': aggregate.bad_indexes, 'good_indexes': aggregate.good_indexes,
                    'results': aggregate.results}
         reportq.put(results)
+

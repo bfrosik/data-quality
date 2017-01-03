@@ -120,7 +120,7 @@ class Aggregate:
         lock.release()
 
 
-    def handle_result(self,result):
+    def all_good_on_result(self, result):
         """
         This function take a result instance that contains information about the result and the subject. If the
         slice did not pass verification for any of the quality check, it will return False. If all quality checks
@@ -167,8 +167,6 @@ class Aggregate:
                 bad_index = good_index
                 bad_index[result.quality_id] = result.res
                 self.bad_indexes[index] = bad_index
-        if result.quality_id >= const.STAT_START:
-            res = False
 
         if not res and self.feedback_type is not None:
             self.feedbackq.put(result)
@@ -210,4 +208,5 @@ class Aggregate:
                     feedback_obj.logger.info('failed frame '+str(result.index)+ ' result of '+const.check_tostring(result.quality_id)+ ' is '+ str(result.res))
                 if const.FEEDBACK_PV in feedback_obj.feedback_type:
                     print ('pv feedback not supported yet')
+
 

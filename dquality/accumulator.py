@@ -110,6 +110,9 @@ def init(config):
         report type; currently supporting 'none', 'error', and 'full'
     """
     conf = utils.get_config(config)
+    if conf is None:
+        print ('configuration file is missing')
+        exit(-1)
 
     logger = utils.get_logger(__name__, conf)
 

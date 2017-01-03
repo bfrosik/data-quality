@@ -87,7 +87,6 @@ def find_result(res, index, quality_id, limits):
     -------
     None
     """
-
     if res < limits['low_limit']:
         result = Result(res, index, quality_id, const.QUALITYERROR_LOW)
     elif res > limits['high_limit']:

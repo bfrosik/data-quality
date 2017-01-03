@@ -178,7 +178,7 @@ def gt(value, limit):
     """
     return value > limit
 
-def get_config(conf_path):
+def get_config(config):
     """
     This function returns configuration dictionary. It checks the conf_path parameter wheter it is directory
     or a file. If a directory, it appends 'dqconfig_test.ini' as a file name. If the directory or file does not
@@ -187,7 +187,7 @@ def get_config(conf_path):
 
     Parameters
     ----------
-    conf_path : str
+    config : str
         name of the configuration file including path, or path
 
     Returns
@@ -195,12 +195,9 @@ def get_config(conf_path):
     conf : config Object
         a configuration object
     """
-    if os.path.isdir(conf_path):
-        config = os.path.join(conf_path, 'dqconfig.ini')
-    elif os.path.isfile(conf_path):
-        config = conf_path
-    else:
-        print ('configuration file ' + conf_path + ' not found')
+    if os.path.isdir(config):
+        config = os.path.join(config, 'dqconfig.ini')
+    if not os.path.isfile(config):
         return None
 
     return ConfigObj(config)
@@ -231,7 +228,7 @@ def get_logger(name, conf):
         # try absolute path
         lfile = conf['log_file']
     except KeyError:
-        print('config error: log file is not configured, logging to default.log')
+        print('config warning: log file is not configured, logging to default.log')
         lfile = 'default.log'
     except:
         print('config error: log file directory does not exist')

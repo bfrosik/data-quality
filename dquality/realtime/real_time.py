@@ -105,6 +105,9 @@ def init(config):
     """
 
     conf = utils.get_config(config)
+    if conf is None:
+        print ('configuration file is missing')
+        exit(-1)
 
     logger = utils.get_logger(__name__, conf)
 
@@ -143,7 +146,7 @@ def init(config):
     return logger, limits, quality_checks, feedback, feedback_pv, report_type
 
 
-def verify(conf, type = 'data', report_file=None):
+def verify(config, type = 'data', report_file=None):
     """
     HDF file structure verifier.
 
@@ -163,11 +166,11 @@ def verify(conf, type = 'data', report_file=None):
     boolean
 
     """
-    logger, limits, quality_checks, feedback, feedback_pv, report_type = init(conf)
+    logger, limits, quality_checks, feedback, feedback_pv, report_type = init(config)
 
     aggregateq = Queue()
     args = limits[type], aggregateq, quality_checks, feedback, feedback_pv
-    feed.feed_data(conf, logger, *args)
+    feed.feed_data(config, logger, *args)
 
     bad_indexes = {}
     aggregate = aggregateq.get()

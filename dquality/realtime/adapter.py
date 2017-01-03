@@ -59,8 +59,7 @@ from multiprocessing import Process
 from dquality.handler import handle_data
 import dquality.common.containers as containers
 import dquality.common.constants as const
-import os
-from configobj import ConfigObj
+import dquality.common.utilities as utils
 
 __author__ = "Barbara Frosik"
 __copyright__ = "Copyright (c) 2016, UChicago Argonne, LLC."
@@ -140,11 +139,10 @@ def parse_config(config):
 
     """
 
-    if os.path.isfile(config):
-        conf = ConfigObj(config)
-    else:
-        print ('configuration file ' + config + ' not found')
-        return None
+    conf = utils.get_config(config)
+    if conf is None:
+        print ('configuration file is missing')
+        exit(-1)
 
     try:
         no_frames = conf['no_frames']
