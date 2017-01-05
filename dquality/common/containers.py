@@ -372,7 +372,7 @@ class FileSeek():
             current_files = self.get_files(folder, ext)
             self.process_files(self.processed_files, current_files)
             self.processed_files = current_files
-        except Exception, ex:
+        except:
             self.logger.error('Could not poll directory %s' % (folder))
         self.start_observing(folder, ext)
 
