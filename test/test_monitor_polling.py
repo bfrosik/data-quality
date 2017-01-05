@@ -38,7 +38,7 @@ def copy_file(source, dest):
 
 
 def test_qualitychecks():
-    config = init('aa')
+    config = init('ab')
     data_path = os.path.join(os.getcwd(),"test/data1")
     new_data = os.path.join(data_path,"test_data.h5")
 
@@ -88,7 +88,7 @@ def test_qualitychecks():
 
 
 def test_bad_directory():
-    config = init('cc')
+    config = init('ac')
     directory = "bad_dir"
     # the file.verify will exit with -1
     try:
@@ -100,7 +100,7 @@ def test_bad_directory():
     clean()
 
 def test_conf_error_no_limits():
-    config = init('dd')
+    config = init('ad')
     find = 'limits'
     replace = 'limitsx'
     mod.replace_text_in_file(config, find, replace)
@@ -115,7 +115,7 @@ def test_conf_error_no_limits():
 
 
 def test_no_limit():
-    config = init('ee')
+    config = init('ae')
     find = 'limits.json'
     replace = 'limitsx.json'
     mod.replace_text_in_file(config, find, replace)
@@ -130,7 +130,7 @@ def test_no_limit():
 
 
 def test_ge():
-    config = init('ef')
+    config = init('af')
     data_path = os.path.join(os.getcwd(),"test/data1")
     data_file = os.path.join(os.getcwd(),"test/data/test_data.ge4")
     new_data = os.path.join(data_path,"test_data.ge4")
@@ -158,7 +158,7 @@ def test_ge():
 
 
 def test_ge_corrupted_file():
-    config = init('ef')
+    config = init('ag')
     data_path = os.path.join(os.getcwd(),"test/data1")
     data_file = os.path.join(os.getcwd(),"test/data/test_data.h5")
     new_data = os.path.join(data_path,"test_data.ge4")

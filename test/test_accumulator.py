@@ -45,7 +45,7 @@ def copy_file(source, dest1, dest2):
 
 
 def test_qualitychecks_report_for_file():
-    config = init('ab')
+    config = init('ba')
     data_path = os.path.join(os.getcwd(),"test/data1")
     new_data1 = os.path.join(data_path,"test_data1.h5")
     new_data2 = os.path.join(data_path,"test_data2.h5")
@@ -97,7 +97,7 @@ def test_qualitychecks_one_report():
 
 
 def test_no_extentions_interrupt():
-    config = init('cd')
+    config = init('bd')
     data_path = os.path.join(os.getcwd(),"test/data1")
     new_data1 = os.path.join(data_path,"INTERRUPT")
     new_data2 = os.path.join(data_path,"INTERRUPT.h5")
@@ -119,7 +119,7 @@ def test_no_extentions_interrupt():
 
 
 def test_bad_directory():
-    config = init('de')
+    config = init('be')
     directory = "bad_dir"
     # the file.verify will exit with -1
     try:
@@ -131,7 +131,7 @@ def test_bad_directory():
     clean()
 
 def test_conf_error_no_limits():
-    config = init('cc')
+    config = init('bf')
     find = 'limits'
     replace = 'limitsx'
     mod.replace_text_in_file(config, find, replace)
@@ -146,7 +146,7 @@ def test_conf_error_no_limits():
 
 
 def test_no_limit():
-    config = init('ef')
+    config = init('bg')
     find = 'limits.json'
     replace = 'limitsx.json'
     mod.replace_text_in_file(config, find, replace)

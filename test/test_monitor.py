@@ -130,7 +130,7 @@ def test_no_limit():
 
 
 def test_ge():
-    config = init('ef')
+    config = init('ff')
     data_path = os.path.join(os.getcwd(),"test/data1")
     data_file = os.path.join(os.getcwd(),"test/data/test_data.ge4")
     new_data = os.path.join(data_path,"test_data.ge4")
@@ -158,7 +158,7 @@ def test_ge():
 
 
 def test_ge_corrupted_file():
-    config = init('ef')
+    config = init('gg')
     data_path = os.path.join(os.getcwd(),"test/data1")
     new_data = os.path.join(data_path,"test_data.ge4")
 
