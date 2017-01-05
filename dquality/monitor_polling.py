@@ -60,24 +60,20 @@ The results will be sent to an EPICS PV (printed on screen for now).
 
 import os
 import sys
-import pyinotify
-from pyinotify import WatchManager
 from multiprocessing import Queue
 import json
 import dquality.common.utilities as utils
 import dquality.common.constants as const
 import dquality.data as dataver
-import glob
+from dquality.common.containers import FileSeek
 
 
 __author__ = "Barbara Frosik"
 __copyright__ = "Copyright (c) 2016, UChicago Argonne, LLC."
 __docformat__ = 'restructuredtext en'
 __all__ = ['init',
-           'verify',
-           'directory']
+           'verify']
 
-files = Queue()
 INTERRUPT = 'interrupt'
 
 
@@ -175,43 +171,6 @@ def init(config):
     return logger, data_tags, limits, quality_checks, extensions, file_type, report_type, report_dir
 
 
-def directory(directory, patterns):
-    """
-    This method monitors a directory given by the "*directory*" parameter.
-    It creates a notifier object. The notifier is registered to await
-    the "*CLOSE_WRITE*" event on a new file that matches the "*pattern*"
-    parameter. If there is no such event, it yields control on timeout,
-    defaulted to 1 second. It returns the created notifier.
-
-    Parameters
-    ----------
-    directory : str
-        Directory to monitor
-
-    patterns : list
-        A list of strings representing file extension. Closing matching files will generate
-        event.
-
-    Returns
-    -------
-    None
-    """
-    class EventHandler(pyinotify.ProcessEvent):
-
-        def process_IN_CLOSE_WRITE(self, event):
-            for pattern in patterns:
-                file = event.pathname
-                if file.endswith(pattern):
-                        files.put(event.pathname)
-                        break
-
-    wm = WatchManager()
-    mask = pyinotify.IN_CLOSE_WRITE
-    handler = EventHandler()
-    notifier = pyinotify.Notifier(wm, handler, timeout=1)
-    wdd = wm.add_watch(directory, mask, rec=False)
-    return notifier
-
 def verify(conf, folder, num_files):
     """
     This is the main function called when the verifier application starts.
@@ -220,10 +179,9 @@ def verify(conf, folder, num_files):
     monitor for should have certain extension, a list of acceptable
     file extensions can be defined in a configuration file.
 
-    The function calls directory function that sets up the monitoring
-    and returns notifier. After the monitoring is initialized, it starts
-    a loop that reads the global "*files*" queue. If there is any new file,
-    the file is removed and validate with data.verify function.
+    The function sets up the monitoring and starts
+    a loop that reads the "*files*" queue. If there is any new file,
+    the file is dequeued and validated with data.verify function.
 
     The loop is interrupted when all expected files produced results.
 
@@ -245,43 +203,28 @@ def verify(conf, folder, num_files):
     None
     """
     logger, data_tags, limits, quality_checks, extensions, file_type, report_type, report_dir = init(conf)
-    if folder.endswith('**'):
-        check_folder = folder[0:-2]
-    else:
-        check_folder = folder
-    if not os.path.isdir(check_folder):
-        logger.error(
-            'parameter error: directory ' +
-            folder + ' does not exist')
+    if not os.path.isdir(folder):
+        logger.error('parameter error: directory ' + folder + ' does not exist')
         sys.exit(-1)
+    filesq = Queue()
 
-    paths = glob.glob(folder)
-    notifiers = []
-    for dir in paths:
-        notifiers.append(directory(dir, extensions))
-
+    # create notifier that will poll file system every 1 second for new files
+    notifier = FileSeek(filesq, 1, logger, file_type)
+    notifier.start_observing(folder, extensions)
     bad_indexes = {}
     file_count = 0
     interrupted = False
 
     while not interrupted:
-        # The notifier will put a new file into a newFiles queue if one was
-        # detected
-        for notifier in notifiers:
-            notifier.process_events()
-            if notifier.check_events(timeout=0.5):
-                notifier.read_events()
-
         # checking the newFiles queue for new entries and starting verification
         # processes for each new file
-        while not files.empty():
-            file = files.get()
+        while not filesq.empty():
+            file = filesq.get()
             if file.find('INTERRUPT') >= 0:
                 # the calling function may use a 'interrupt' command to stop the monitoring
                 # and processing.
-                for notifier in notifiers:
-                    notifier.stop()
                 interrupted = True
+                notifier.stop_observing()
                 break
             else:
                 file_count += 1
@@ -294,8 +237,8 @@ def verify(conf, folder, num_files):
                 logger.info('monitor evaluated ' + file + ' file')
 
         if file_count == num_files:
-            notifier.stop()
             interrupted = True
+            notifier.stop_observing()
 
     return bad_indexes
 

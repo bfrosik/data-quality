@@ -58,7 +58,6 @@ from configobj import ConfigObj
 import pytz
 import datetime
 import dquality.common.constants as const
-import numpy as np
 
 
 __author__ = "Barbara Frosik"
@@ -342,7 +341,6 @@ def get_data_ge(logger, file):
     """
     fp = open(file, 'rb')
     offset = 8192
-    size = 2048
 
     fp.seek(18)
     size, nframes = st.unpack('<ih',fp.read(6))

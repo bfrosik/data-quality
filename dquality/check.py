@@ -57,6 +57,7 @@ import dquality.data as dqdata
 import dquality.hdf_dependency as dqdependency
 import dquality.accumulator as acc
 import dquality.monitor as dqdmonitor
+import dquality.monitor_polling as dqpolmonitor
 import dquality.pv as dqpv
 
 __author__ = "Barbara Frosik"
@@ -138,6 +139,32 @@ def monitor(conf, folder, num_files):
 
     bad_indexes = dqdmonitor.verify(conf, folder, int(num_files))
     return bad_indexes
+
+
+def monitor_polling(conf, folder, num_files):
+    """
+    Data quality monitor verifier.
+
+    Parameters
+    ----------
+    conf : str
+        configuration file name including path
+
+    folder : str
+        folder name to monitor
+
+    num_files : int
+        expected number of files. This script will exit after detecting and
+        processing given number of files.
+
+    Returns
+    -------
+    None
+
+    """
+    bad_indexes = dqpolmonitor.verify(conf, folder, int(num_files))
+    return bad_indexes
+
 
 def accumulator(conf, fname, dtype, num_files, report_by_file):
     """
