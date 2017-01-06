@@ -334,7 +334,7 @@ class FileSeek():
         """
 
         for file_name in current_files.keys():
-            if not previous_files.has_key(file_name):
+            if not file_name in previous_files:
                 # new file, must be updated
                 self.notify(file_name)
             else:
