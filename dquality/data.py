@@ -71,8 +71,8 @@ __author__ = "Barbara Frosik"
 __copyright__ = "Copyright (c) 2016, UChicago Argonne, LLC."
 __docformat__ = 'restructuredtext en'
 __all__ = ['init',
-           'process_data',
            'verify_file_hdf',
+           'verify_file_ge',
            'verify']
 
 
@@ -161,45 +161,6 @@ def init(config):
 
     return logger, data_tags, limits, quality_checks, file_type, report_type, report_dir
 
-def process_data(data_type, aggregateq, fp, data_tag, limits, quality_checks):
-    """
-    This method creates and starts a new handler process. The handler is initialized with data queue,
-    the data type, and a result queue. The data type can be 'data_dark', 'data_white' or 'data'.
-    After starting the process the function enqueues queue slice by slice into data, until all data is
-    queued. The last enqueued element is end of the data marker.
-
-    Parameters
-    ----------
-    data_type : str
-        string indicating what type of data is processed.
-
-    aggregateq : Queue
-        result queue; used by handler to enqueue results
-
-    fp : file pointer
-        a pointer to the file that is verifier
-
-    data_tag : str
-        a data tag to look for
-
-    limits : dict
-        a dictionary of limits values
-
-    Returns
-    -------
-    None
-    """
-    dt = fp[data_tag]
-
-    dataq = Queue()
-
-    p = Process(target=handler.handle_data, args=(dataq, limits[data_type], aggregateq, quality_checks))
-    p.start()
-
-    for i in range(0,dt.shape[0]):
-        dataq.put(Data(dt[i]))
-    dataq.put('all_data')
-
 
 def verify_file_hdf(logger, file, data_tags, limits, quality_checks, report_type, report_dir):
     """
@@ -238,17 +199,29 @@ def verify_file_hdf(logger, file, data_tags, limits, quality_checks, report_type
         a dictionary of bad indexes per data type
 
     """
+    def process_data(data_type):
+        data_tag = data_tags[data_type]
+        dt = fp[data_tag]
+        for i in range(0,dt.shape[0]):
+            dataq.put(Data(dt[i],data_type))
+
     fp, tags = utils.get_data_hdf(file)
+    dataq = Queue()
+    aggregateq = Queue()
 
-    queues = {}
-    bad_indexes = {}
+    p = Process(target=handler.handle_data, args=(dataq, limits, aggregateq, quality_checks))
+    p.start()
 
-    for type in data_tags.keys():
-        data_tag = data_tags[type]
-        if data_tag in tags:
-            queue = Queue()
-            queues[type] = queue
-            process_data(type, queue, fp, data_tag, limits, quality_checks)
+    # assume a fixed order of data types; this will determine indexes on the data
+    if 'data_dark' in data_tags:
+        process_data('data_dark')
+    if 'data_white' in data_tags:
+        process_data('data_white')
+    if 'data' in data_tags:
+        process_data('data')
+
+    dataq.put('all_data')
+
 
     if report_type != const.REPORT_NONE:
         if report_dir is None:
@@ -259,15 +232,14 @@ def verify_file_hdf(logger, file, data_tags, limits, quality_checks, report_type
             report_file = report_dir + "/" + file_path[len(file_path-1)]+ '.report'
 
     # receive the results
-    for type in queues.keys():
-        queue = queues[type]
-        aggregate = queue.get()
-        report.add_bad_indexes(aggregate, type, bad_indexes)
-        if report_file is not None:
-            report.report_results(logger, aggregate, type, file, report_file, report_type)
+    bad_indexes = {}
+    aggregate = aggregateq.get()
+
+    if report_file is not None:
+        report.report_results(logger, aggregate, None, report_file, report_type)
+    report.add_bad_indexes(aggregate, bad_indexes)
 
     logger.info('data verifier evaluated ' + file + ' file')
-
     return bad_indexes
 
 
@@ -318,17 +290,18 @@ def verify_file_ge(logger, file, limits, quality_checks, report_type, report_dir
     dataq = Queue()
     aggregateq = Queue()
 
-    p = Process(target=handler.handle_data, args=(dataq, limits['data'], aggregateq, quality_checks))
+    p = Process(target=handler.handle_data, args=(dataq, limits, aggregateq, quality_checks))
     p.start()
 
     for i in range(0,nframes):
         img = np.fromfile(fp,'uint16', fsize)
-        dataq.put(Data(img))
+        dataq.put(Data(img, type))
     dataq.put('all_data')
 
+    # receive the results
     bad_indexes = {}
     aggregate = aggregateq.get()
-    report.add_bad_indexes(aggregate, type, bad_indexes)
+    report.add_bad_indexes(aggregate, bad_indexes)
 
     if report_type != const.REPORT_NONE:
         if report_dir is None:
@@ -337,7 +310,7 @@ def verify_file_ge(logger, file, limits, quality_checks, report_type, report_dir
             file_path = file.rsplit("/",)
             report_file = report_dir + "/" + file_path[len(file_path)-1]+ '.report'
 
-        report.report_results(logger, aggregate, type, file, report_file, report_type)
+        report.report_results(logger, aggregate, file, report_file, report_type)
 
     logger.info('data verifier evaluated ' + file + ' file')
 

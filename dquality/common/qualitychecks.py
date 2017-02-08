@@ -64,7 +64,7 @@ __all__ = ['find_result',
            'validate_stat_mean']
 
 
-def find_result(res, index, quality_id, limits):
+def find_result(res, index, quality_id, limits, data_type):
     """
     This is a helper method. It evaluates given result against limits, and creates
     Result instance.
@@ -88,11 +88,11 @@ def find_result(res, index, quality_id, limits):
     None
     """
     if res < limits['low_limit']:
-        result = Result(res, index, quality_id, const.QUALITYERROR_LOW)
+        result = Result(res, index, quality_id, const.QUALITYERROR_LOW, data_type)
     elif res > limits['high_limit']:
-        result = Result(res, index, quality_id, const.QUALITYERROR_HIGH)
+        result = Result(res, index, quality_id, const.QUALITYERROR_HIGH, data_type)
     else:
-        result = Result(res, index, quality_id, const.NO_ERROR)
+        result = Result(res, index, quality_id, const.NO_ERROR, data_type)
     return result
 
 def validate_mean_signal_intensity(data, index, results, all_limits):
@@ -125,9 +125,9 @@ def validate_mean_signal_intensity(data, index, results, all_limits):
     None
     """
 
-    limits = all_limits['mean']
-    res = np.mean(data)
-    result = find_result(res, index, const.QUALITYCHECK_MEAN, limits)
+    limits = all_limits[data.type]['mean']
+    res = np.mean(data.slice)
+    result = find_result(res, index, const.QUALITYCHECK_MEAN, limits, data.type)
     results.put(result)
 
 def validate_signal_intensity_standard_deviation(data, index, results, all_limits):
@@ -159,9 +159,9 @@ def validate_signal_intensity_standard_deviation(data, index, results, all_limit
     -------
     None
     """
-    limits = all_limits['std']
-    res = np.std(data)
-    result = find_result(res, index, const.QUALITYCHECK_STD, limits)
+    limits = all_limits[data.type]['std']
+    res = np.std(data.slice)
+    result = find_result(res, index, const.QUALITYCHECK_STD, limits, data.type)
     results.put(result)
 
 def validate_saturation(data, index, results, all_limits):
@@ -198,9 +198,9 @@ def validate_saturation(data, index, results, all_limits):
     # result = find_result(res, index, const.QUALITYCHECK_SAT, limits)
     # results.put(result)
 
-    sat_high = (all_limits['sat'])['high_limit']
-    res = (data > sat_high).sum()
-    result = Result(res, index, const.QUALITYCHECK_SAT, const.NO_ERROR)
+    sat_high = (all_limits[data.type]['sat'])['high_limit']
+    res = (data.slice > sat_high).sum()
+    result = Result(res, index, const.QUALITYCHECK_SAT, const.NO_ERROR, data.type)
     results.put(result)
 
 def validate_stat_mean(result, aggregate, results, all_limits):
@@ -232,7 +232,7 @@ def validate_stat_mean(result, aggregate, results, all_limits):
     -------
     None
     """
-    limits = all_limits['stat_mean']
+    limits = all_limits[result.data_type]['stat_mean']
     length = aggregate.get_results_len(const.QUALITYCHECK_MEAN)
     stat_data = aggregate.results[const.QUALITYCHECK_MEAN]
     # calculate std od mean values in aggregate
@@ -243,7 +243,7 @@ def validate_stat_mean(result, aggregate, results, all_limits):
     delta = result.res - mean_mean
     index = result.index
 
-    result = find_result(delta, index, const.STAT_MEAN, limits)
+    result = find_result(delta, index, const.STAT_MEAN, limits, result.data_type)
     results.put(result)
 
 
@@ -276,13 +276,13 @@ def validate_accumulated_saturation(result, aggregate, results, all_limits):
     -------
     None
     """
-    limits = all_limits['sat_points']
+    limits = all_limits[result.data_type]['sat_points']
     stat_data = aggregate.results[const.QUALITYCHECK_SAT]
     # calculate total saturated points
     total = np.sum(stat_data)
     index = result.index
 
-    result = find_result(total, index, const.ACC_SAT, limits)
+    result = find_result(total, index, const.ACC_SAT, limits, result.data_type)
     results.put(result)
 
 

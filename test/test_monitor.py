@@ -52,17 +52,17 @@ def test_qualitychecks():
     bad_data_white = bad_indexes['data_white']
     bad_data = bad_indexes['data']
     bad_data_dark = bad_indexes['data_dark']
-    assert 0 in bad_data_white
-    assert 1 in bad_data_white
-    #assert 3 in bad_data_white
-    assert 4 in bad_data_white
-    assert 0 in bad_data
-    assert 3 in bad_data
-    assert 4 in bad_data
+    assert 5 in bad_data_white
+    assert 6 in bad_data_white
+    assert 8 in bad_data_white
+    assert 9 in bad_data_white
+    assert 10 in bad_data
+    assert 13 in bad_data
+    assert 14 in bad_data
     assert 0 in bad_data_dark
     assert 1 in bad_data_dark
     assert 2 in bad_data_dark
-    #assert 3 in bad_data_dark
+    assert 3 in bad_data_dark
     assert 4 in bad_data_dark
     clean()
 

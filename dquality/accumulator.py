@@ -246,7 +246,7 @@ def verify(conf, folder, data_type, num_files, report_by_files=True):
     offset_list = []
     dataq = Queue()
     aggregateq = Queue()
-    p = Process(target=datahandler.handle_data, args=(dataq, limits[data_type], aggregateq, quality_checks,))
+    p = Process(target=datahandler.handle_data, args=(dataq, limits, aggregateq, quality_checks,))
     p.start()
 
     file_index = 0
@@ -279,7 +279,7 @@ def verify(conf, folder, data_type, num_files, report_by_files=True):
                 file_list.append(file)
                 offset_list.append(slice_index)
                 for i in range(0, data.shape[0]):
-                    dataq.put(Data(data[i]))
+                    dataq.put(Data(data[i], data_type))
                 file_index += 1
                 if file_index == num_files:
                     dataq.put('all_data')
@@ -293,9 +293,9 @@ def verify(conf, folder, data_type, num_files, report_by_files=True):
 
     bad_indexes = {}
     if report_by_files == 'True':
-        report.add_bad_indexes_per_file(aggregate, data_type, bad_indexes, file_list, offset_list)
+        report.add_bad_indexes_per_file(aggregate, bad_indexes, file_list, offset_list)
     else:
-        report.add_bad_indexes(aggregate, data_type, bad_indexes)
+        report.add_bad_indexes(aggregate, bad_indexes)
     try:
         report_file = open(report_file, 'w')
         report.report_bad_indexes(bad_indexes, report_file)

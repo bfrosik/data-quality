@@ -168,7 +168,7 @@ def parse_config(config):
     return int(no_frames), detector, detector_basic, detector_image
 
 
-def pack_data(slice):
+def pack_data(slice, type):
     """
     This function packs a single image data into a specific container.
 
@@ -178,5 +178,5 @@ def pack_data(slice):
         image data
 
     """
-    return containers.Data(slice)
+    return containers.Data(slice, type)
 

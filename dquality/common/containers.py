@@ -11,18 +11,20 @@ class Result:
     This class is a container of result and parameters linked to the subject of the verification, and the
     verification type.
     """
-    def __init__(self, res, index, quality_id, error):
+    def __init__(self, res, index, quality_id, error, data_type):
         self.res = res
         self.index = index
         self.quality_id = quality_id
         self.error = error
+        self.data_type = data_type
 
 class Data:
     """
     This class is a container of data. One of the members is a 2D arrray. Other members will be added later
     """
-    def __init__(self, slice, ):
+    def __init__(self, slice, type):
         self.slice = slice
+        self.type = type
 
 class Feedback:
     """
@@ -50,7 +52,8 @@ class Aggregate:
 
     """
 
-    def __init__(self, quality_checks, feedbackq, feedback_obj = None):
+    def __init__(self, data_type, quality_checks, feedbackq, feedback_obj = None):
+        self.data_type = data_type
         if feedback_obj is not None:
             self.feedback_type = feedback_obj.feedback_type
             self.feedbackq = feedbackq
@@ -212,6 +215,10 @@ class Aggregate:
                     feedback_obj.logger.info('failed frame '+str(result.index)+ ' result of '+const.check_tostring(result.quality_id)+ ' is '+ str(result.res))
                 if const.FEEDBACK_PV in feedback_obj.feedback_type:
                     print ('pv feedback not supported yet')
+
+    def is_empty(self):
+        return len(self.bad_indexes) == 0 and len(self.good_indexes) == 0
+
 
 class FileSeek():
     """

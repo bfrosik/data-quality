@@ -105,6 +105,7 @@ def num_stat_processes_on_result(result, aggregate, resultsq, limits, quality_ch
     ret = 0
     # start statistical processes only when all results for this frame passed quality checks, and if the
     # result is not of statistical process
+    quality_checks = quality_checks[result.data_type]
     if aggregate.all_good_on_result(result) and result.quality_id < const.STAT_START:
         for function_id in quality_checks[result.quality_id]:
             function = calc.function_mapper[function_id]
@@ -162,7 +163,11 @@ def handle_data(dataq, limits, reportq, quality_checks, feedback_obj=None):
     feedbackq = None
     if feedback_obj is not None:
         feedbackq = Queue()
-    aggregate = Aggregate(quality_checks, feedbackq, feedback_obj)
+
+    aggregates = {}
+    types = quality_checks.keys()
+    for type in types:
+        aggregates[type] = Aggregate(type, quality_checks[type], feedbackq, feedback_obj)
 
     resultsq = Queue()
     interrupted = False
@@ -175,18 +180,18 @@ def handle_data(dataq, limits, reportq, quality_checks, feedback_obj=None):
                 interrupted = True
                 while num_processes > 0:
                     result = resultsq.get()
-                    num_processes += (num_stat_processes_on_result(result, aggregate, resultsq, limits, quality_checks) - 1)
+                    num_processes += (num_stat_processes_on_result(result, aggregates[result.data_type], resultsq, limits, quality_checks) - 1)
                 if feedbackq is not None:
-                    feedbackq.put('all_data')
+                    for _ in range(len(aggregates)):
+                        feedbackq.put('all_data')
 
             elif data == 'missing':
                 index += 1
 
             else:
-                slice = data.slice
-                for function_id in quality_checks.keys():
+                for function_id in quality_checks[data.type].keys():
                     function = calc.function_mapper[function_id]
-                    p = Process(target=function, args=(slice, index, resultsq, limits,))
+                    p = Process(target=function, args=(data, index, resultsq, limits,))
                     p.start()
                     num_processes += 1
                 index += 1
@@ -196,10 +201,13 @@ def handle_data(dataq, limits, reportq, quality_checks, feedback_obj=None):
 
         while not resultsq.empty():
             result = resultsq.get_nowait()
-            num_processes += (num_stat_processes_on_result(result, aggregate, resultsq, limits, quality_checks) - 1)
+            num_processes += (num_stat_processes_on_result(result, aggregates[result.data_type], resultsq, limits, quality_checks) - 1)
 
     if reportq is not None:
-        results = {'bad_indexes': aggregate.bad_indexes, 'good_indexes': aggregate.good_indexes,
-                   'results': aggregate.results}
+        results = {}
+        for type in aggregates:
+            if not aggregates[type].is_empty():
+                results[type] = {'bad_indexes': aggregates[type].bad_indexes, 'good_indexes': aggregates[type].good_indexes,
+                           'results': aggregates[type].results}
         reportq.put(results)
 

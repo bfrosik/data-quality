@@ -63,7 +63,7 @@ __all__ = ['report_results',
            'report_bad_indexes']
 
 
-def report_results(logger, aggregate, type, filename, report_file, report_type):
+def report_results(logger, aggregate, filename, report_file, report_type):
     """
     This function reports results of quality checks to a file or console
     if the file is not defined. If the report type is REPORT_FULL, it will report all results.
@@ -90,28 +90,30 @@ def report_results(logger, aggregate, type, filename, report_file, report_type):
     -------
     None
     """
+    print 'report_file', report_file
     if report_file is None:
         return
 
     try:
         report = open(report_file, 'w')
-        if report_type == const.REPORT_FULL:
-            reported = aggregate
-        elif report_type == const.REPORT_ERRORS:
-            reported = aggregate['bad_indexes']
-        else:
-            return
+        for type in aggregate:
+            if report_type == const.REPORT_FULL:
+                reported = aggregate[type]
+            elif report_type == const.REPORT_ERRORS:
+                reported = aggregate[type]['bad_indexes']
+            else:
+                return
 
-        if filename is not None:
-            report.write(filename+ '\n')
-        report.write('evaluated ' + type + ', bad indexes:\n')
-        pprint.pprint(reported, report)
+            if filename is not None:
+                report.write(filename+ '\n')
+            report.write('evaluated ' + type + ', bad indexes:\n')
+            pprint.pprint(reported, report)
     except:
         logger.warning('Cannot open report file')
         pass
 
 
-def add_bad_indexes(aggregate, type, bad_indexes):
+def add_bad_indexes(aggregate, bad_indexes):
     """
     This function gets bad indexes from aggregate instance and creates an entry in
     bad_indexes dictionary. The bad_indexes dictionary will have added an entry for the given type.
@@ -129,14 +131,14 @@ def add_bad_indexes(aggregate, type, bad_indexes):
     -------
     None
     """
+    for type in aggregate:
+        list = []
+        for key in aggregate[type]['bad_indexes'].keys():
+            list.append(key)
+        bad_indexes[type] = list
 
-    list = []
-    for key in aggregate['bad_indexes'].keys():
-        list.append(key)
-    bad_indexes[type] = list
 
-
-def add_bad_indexes_per_file(aggregate, type, bad_indexes, file_list, offset_list):
+def add_bad_indexes_per_file(aggregate, bad_indexes, file_list, offset_list):
     """
     This function gets bad indexes from aggregate instance and creates an entry in
     bad_indexes dictionary. The bad_indexes dictionary will have added an entry for the given type.
@@ -171,16 +173,17 @@ def add_bad_indexes_per_file(aggregate, type, bad_indexes, file_list, offset_lis
     current_file = file_list[index]
     current_offset = offset_list[index]
 
-    for key in aggregate['bad_indexes'].keys():
-        if key == current_offset:
-            dict[current_file] = list
-            list = []
-            offset = current_offset
-            index += 1
-            current_file = file_list[index]
-            current_offset = offset_list[index]
-        list.append(key - offset)
-    dict[current_file] = list
+    for type in aggregate:
+        for key in aggregate[type]['bad_indexes'].keys():
+            if key == current_offset:
+                dict[current_file] = list
+                list = []
+                offset = current_offset
+                index += 1
+                current_file = file_list[index]
+                current_offset = offset_list[index]
+            list.append(key - offset)
+        dict[current_file] = list
     bad_indexes[type] = dict
 
 

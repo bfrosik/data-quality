@@ -112,8 +112,7 @@ def test_no_extentions_interrupt():
     p.start()
 
     bad_indexes = acc.verify(config, data_path, data_type, 2, True)
-    bad_indexes_type = bad_indexes[data_type]
-    assert len(bad_indexes_type) is 0
+    assert len(bad_indexes) is 0
     assert res.is_text_in_file(logfile, 'no file extension specified. Monitoring for all files')
     clean()
 

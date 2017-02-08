@@ -84,11 +84,11 @@ __all__ = ['deliver_data',
            'get_pvs',
            'feed_data']
 
-class Shared:
-     """
-     This class contains the global variables shared between threads.
-     """
-     def __init__(self, ):
+class Feed:
+    """
+    This class contains the global variables shared between threads.
+    """
+    def __init__(self):
          self.process_dataq = Queue()
          self.exitq = tqueue.Queue()
          self.thread_dataq = tqueue.Queue()
@@ -97,205 +97,210 @@ class Shared:
          self.no_frames = 0
          self.ctr = 0
 
-globals = Shared()
 
-# class Data:
-#      def __init__(self, slice,):
-#          self.slice = slice
-#
+    def deliver_data(self, data_pv, frame_type_pv, logger):
+        """
+        This function is invoked at the beginning of the feed as a distinct thread. It reads data from a queue inside a loop.
+        It loops until all frames are processed, which is marked by 'missing' string, or if an error occurs. The data
+        retrieved from the queue is the frame counter number that was discovered in the callback method.
+        The counter is compared with a previous counter value. If the gap between the two is greater than 1, then frame(s)
+        have been missing. For each missing frame a 'missing' string is enqueued into the inter-process queue. The frame
+        is polled from the channel access and enqueued into the inter-process queue.
+        At the loop exit an 'all_data' string is enqueud into the inter-process queue, and 'exit' string is enqueued
+        into the inter-thread queue, to notify the main thread of an exit event.
+    
+        Parameters
+        ----------
+        data_pv : str
+            a PV string for the area detector data
+    
+        logger : Logger
+            a Logger instance, typically synchronized with the consuming process logger
+    
+        Returns
+        -------
+        None
+        """
+        def build_type_map():
+            types = {}
+            types[0] = 'data'
+            types[1] = 'data_dark'
+            types[2] = 'data_white'
+            types[3] = 'data' # it'd double correlation, but leave data for now
+            return types
 
-def deliver_data(data_pv, logger):
-    """
-    This function is invoked at the beginning of the feed as a distinct thread. It reads data from a queue inside a loop.
-    It loops until all frames are processed, which is marked by 'missing' string, or if an error occurs. The data
-    retrieved from the queue is the frame counter number that was discovered in the callback method.
-    The counter is compared with a previous counter value. If the gap between the two is greater than 1, then frame(s)
-    have been missing. For each missing frame a 'missing' string is enqueued into the inter-process queue. The frame
-    is polled from the channel access and enqueued into the inter-process queue.
-    At the loop exit an 'all_data' string is enqueud into the inter-process queue, and 'exit' string is enqueued
-    into the inter-thread queue, to notify the main thread of an exit event.
+        def finish():
+            self.process_dataq.put('all_data')
+            self.exitq.put('exit')
 
-    Parameters
-    ----------
-    data_pv : str
-        a PV string for the area detector data
-
-    logger : Logger
-        a Logger instance, typically synchronized with the consuming process logger
-
-    Returns
-    -------
-    None
-    """
-
-    def finish():
-        globals.process_dataq.put('all_data')
-        globals.exitq.put('exit')
-
-    done = False
-    while not done:
-        current_counter = globals.thread_dataq.get()
-        if current_counter < globals.no_frames:
-            try:
-                data = np.array(caget(data_pv))
-            except:
-                finish()
-                done = True
-                logger.error('reading image raises exception, possibly the detector exposure time is too small')
-            if data is None:
-                finish()
-                done = True
-                logger.error('reading image times out, possibly the detector exposure time is too small')
+        types =  build_type_map()
+        done = False
+        while not done:
+            current_counter = self.thread_dataq.get()
+            if current_counter < self.no_frames:
+                try:
+                    data = np.array(caget(data_pv))
+                    data_type = types[caget(frame_type_pv)]
+                    if data is None:
+                        finish()
+                        done = True
+                        logger.error('reading image times out, possibly the detector exposure time is too small')
+                    else:
+                        delta = current_counter - self.ctr
+                        self.ctr = current_counter
+                        data.resize(self.sizex, self.sizey)
+                        if delta > 1:
+                            for i in range (1, delta):
+                                self.process_dataq.put('missing')
+                        self.process_dataq.put(pack_data(data, data_type))
+                except:
+                    finish()
+                    done = True
+                    logger.error('reading image raises exception, possibly the detector exposure time is too small')
             else:
-                delta = current_counter - globals.ctr
-                globals.ctr = current_counter
-                data.resize(globals.sizex, globals.sizey)
-                if delta > 1:
-                    for i in range (1, delta):
-                        globals.process_dataq.put('missing')
-                globals.process_dataq.put(pack_data(data))
-        else:
-            finish()
-            done = True
+                done = True
 
+        finish()
 
-def on_change(pvname=None, **kws):
-    """
-    A callback method that activates when a frame counter of area detector changes. This method reads the counter
-    value and enqueues it into inter-thread queue that will be dequeued by the 'deliver_data' function.
-    If it is a first read, the function adjusts counter data in the globals object.
+    
+    def on_change(self, pvname=None, **kws):
+        """
+        A callback method that activates when a frame counter of area detector changes. This method reads the counter
+        value and enqueues it into inter-thread queue that will be dequeued by the 'deliver_data' function.
+        If it is a first read, the function adjusts counter data in the self object.
+    
+        Parameters
+        ----------
+        pvname : str
+            a PV string for the area detector frame counter
+    
+        Returns
+        -------
+        None
+        """
+    
+        current_ctr = kws['value']
+        #on first callback adjust the values
+        if self.ctr == 0:
+            self.no_frames += current_ctr
+            self.ctr = current_ctr
+    
+        self.thread_dataq.put(current_ctr)
+    
+    
+    def start_processes(self, counter_pv, data_pv, frame_type_pv, logger, *args):
+        """
+        This is a main thread that starts thread reacting to the callback, starts the consuming process, and sets a
+        callback on the frame counter PV change. The function then awaits for the data in the exit queue that indicates
+        that all frames have been processed. The functin cancells the callback on exit.
+    
+        Parameters
+        ----------
+        counter_pv : str
+            a PV string for the area detector frame counter
+    
+        data_pv : str
+            a PV string for the area detector frame data
+    
+        logger : Logger
+            a Logger instance, typically synchronized with the consuming process logger
+    
+        *args : list
+            a list of arguments specific to the client process
+    
+        Returns
+        -------
+        None
+        """
+        data_thread = CAThread(target = self.deliver_data, args=(data_pv, frame_type_pv, logger,))
+        data_thread.start()
+    
+        start_process(self.process_dataq, logger, *args)
+        cntr = PV(counter_pv)
+        cntr.add_callback(self.on_change, index = 1)
+    
+        self.exitq.get()
+        cntr.clear_callbacks()
+    
+    
+    def get_pvs(self, detector, detector_basic, detector_image):
+        """
+        This function takes defined strings from configuration file and constructs PV variables that are accessed during
+        processing.
+    
+        Parameters
+        ----------
+        detector : str
+            a string defining the first prefix in area detector, it has to match the area detector configuration
+    
+        detector_basic : str
+            a string defining the second prefix in area detector, defining the basic parameters, it has to
+            match the area detector configuration
+    
+        detector_image : str
+            a string defining the second prefix in area detector, defining the image parameters, it has to
+            match the area detector configuration
+    
+        Returns
+        -------
+        acquire_pv : str
+            a PV string representing acquireing state
+    
+        counter_ pv : str
+            a PV string representing frame counter
+    
+        data_pv : str
+            a PV string representing acquired data
+    
+        sizex_pv : str
+            a PV string representing x size of acquired data
+    
+        sizey_pv : str
+            a PV string representing y size of acquired data
+        """
+    
+        acquire_pv = detector + ':' + detector_basic + ':' + 'Acquire'
+        counter_pv = detector + ':' + detector_basic + ':' + 'NumImagesCounter_RBV'
+        data_pv = detector + ':' + detector_image + ':' + 'ArrayData'
+        sizex_pv = detector + ':' + detector_image + ':' + 'ArraySize0_RBV'
+        sizey_pv = detector + ':' + detector_image + ':' + 'ArraySize1_RBV'
+        frame_type_pv = detector + ':' + detector_basic + ':' + 'FrameType'
+        return acquire_pv, counter_pv, data_pv, sizex_pv, sizey_pv, frame_type_pv
+    
+    
+    def feed_data(self, config, logger, *args):
+        """
+        This function is called by an client to start the process. It parses configuration and gets needed process
+        variables. It stores necessary values in the self object.
+        After all initial settings are completed, the method awaits for the area detector to start acquireing by polling
+        the PV. When the area detective is active it starts processing.
+    
+        Parameters
+        ----------
+        config : str
+            a configuration file
+    
+        logger : Logger
+            a Logger instance, recommended to use the same logger for feed and consuming process
+    
+        *args : list
+            a list of process specific arguments
+    
+        Returns
+        -------
+        None
+        """
+    
+        no_frames, detector, detector_basic, detector_image = parse_config(config)
+        acquire_pv, counter_pv, data_pv, sizex_pv, sizey_pv, frame_type_pv = self.get_pvs(detector, detector_basic, detector_image)
+        self.no_frames = no_frames
+        test = True
+        while test:
+            self.sizex = caget (sizex_pv)
+            self.sizey = caget (sizey_pv)
+            ack =  caget(acquire_pv)
+            if ack == 1:
+                test = False
+                self.start_processes(counter_pv, data_pv, frame_type_pv, logger, *args)
 
-    Parameters
-    ----------
-    pvname : str
-        a PV string for the area detector frame counter
-
-    Returns
-    -------
-    None
-    """
-
-    current_ctr = kws['value']
-    #on first callback adjust the values
-    if globals.ctr == 0:
-        globals.no_frames += current_ctr
-        globals.ctr = current_ctr
-
-    globals.thread_dataq.put(current_ctr)
-
-
-def start_processes(counter_pv, data_pv, logger, *args):
-    """
-    This is a main thread that starts thread reacting to the callback, starts the consuming process, and sets a
-    callback on the frame counter PV change. The function then awaits for the data in the exit queue that indicates
-    that all frames have been processed. The functin cancells the callback on exit.
-
-    Parameters
-    ----------
-    counter_pv : str
-        a PV string for the area detector frame counter
-
-    data_pv : str
-        a PV string for the area detector frame data
-
-    logger : Logger
-        a Logger instance, typically synchronized with the consuming process logger
-
-    *args : list
-        a list of arguments specific to the client process
-
-    Returns
-    -------
-    None
-    """
-    data_thread = CAThread(target = deliver_data, args=(data_pv, logger,))
-    data_thread.start()
-
-    start_process(globals.process_dataq, logger, *args)
-    cntr = PV(counter_pv)
-    cntr.add_callback(on_change, index = 1)
-
-    globals.exitq.get()
-    cntr.clear_callbacks()
-
-
-def get_pvs(detector, detector_basic, detector_image):
-    """
-    This function takes defined strings from configuration file and constructs PV variables that are accessed during
-    processing.
-
-    Parameters
-    ----------
-    detector : str
-        a string defining the first prefix in area detector, it has to match the area detector configuration
-
-    detector_basic : str
-        a string defining the second prefix in area detector, defining the basic parameters, it has to
-        match the area detector configuration
-
-    detector_image : str
-        a string defining the second prefix in area detector, defining the image parameters, it has to
-        match the area detector configuration
-
-    Returns
-    -------
-    acquire_pv : str
-        a PV string representing acquireing state
-
-    counter_ pv : str
-        a PV string representing frame counter
-
-    data_pv : str
-        a PV string representing acquired data
-
-    sizex_pv : str
-        a PV string representing x size of acquired data
-
-    sizey_pv : str
-        a PV string representing y size of acquired data
-    """
-
-    acquire_pv = detector + ':' + detector_basic + ':' + 'Acquire'
-    counter_pv = detector + ':' + detector_basic + ':' + 'NumImagesCounter_RBV'
-    data_pv = detector + ':' + detector_image + ':' + 'ArrayData'
-    sizex_pv = detector + ':' + detector_image + ':' + 'ArraySize0_RBV'
-    sizey_pv = detector + ':' + detector_image + ':' + 'ArraySize1_RBV'
-    return acquire_pv, counter_pv, data_pv, sizex_pv, sizey_pv
-
-
-def feed_data(config, logger, *args):
-    """
-    This function is called by an client to start the process. It parses configuration and gets needed process
-    variables. It stores necessary values in the globals object.
-    After all initial settings are completed, the method awaits for the area detector to start acquireing by polling
-    the PV. When the area detective is active it starts processing.
-
-    Parameters
-    ----------
-    config : str
-        a configuration file
-
-    logger : Logger
-        a Logger instance, recommended to use the same logger for feed and consuming process
-
-    *args : list
-        a list of process specific arguments
-
-    Returns
-    -------
-    None
-    """
-
-    no_frames, detector, detector_basic, detector_image = parse_config(config)
-    acquire_pv, counter_pv, data_pv, sizex_pv, sizey_pv = get_pvs(detector, detector_basic, detector_image)
-    globals.no_frames = no_frames
-    test = True
-    while test:
-        globals.sizex = caget (sizex_pv)
-        globals.sizey = caget (sizey_pv)
-        ack =  caget(acquire_pv)
-        if ack == 1:
-            test = False
-            start_processes(counter_pv, data_pv, logger, *args)
-
-
+        return caget(acquire_pv)

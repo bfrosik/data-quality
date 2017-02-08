@@ -417,11 +417,15 @@ def get_quality_checks(dict):
         A new dictionary with all elements replaced by the actual value the strings represented
     """
     quality_checks = {}
-    for key in dict.keys():
-        value = dict[key]
-        list = []
-        for item in value:
-            list.append(const.shared(item))
-        quality_checks[const.shared(key)] = list
+    for type in dict.keys():
+        type_quality_checks = {}
+        type_dict = dict[type]
+        for key in type_dict:
+            value = type_dict[key]
+            list = []
+            for item in value:
+                list.append(const.shared(item))
+            type_quality_checks[const.shared(key)] = list
+        quality_checks[type] = type_quality_checks
 
     return quality_checks

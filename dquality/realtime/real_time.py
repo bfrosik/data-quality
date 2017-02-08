@@ -67,7 +67,7 @@ import json
 import sys
 import dquality.common.utilities as utils
 import dquality.common.report as report
-import dquality.realtime.feed as feed
+from dquality.realtime.feed import Feed
 import dquality.common.constants as const
 
 
@@ -146,7 +146,7 @@ def init(config):
     return logger, limits, quality_checks, feedback, feedback_pv, report_type
 
 
-def verify(config, type = 'data', report_file=None):
+def verify(config, report_file=None):
     """
     HDF file structure verifier.
 
@@ -169,16 +169,18 @@ def verify(config, type = 'data', report_file=None):
     logger, limits, quality_checks, feedback, feedback_pv, report_type = init(config)
 
     aggregateq = Queue()
-    args = limits[type], aggregateq, quality_checks, feedback, feedback_pv
-    feed.feed_data(config, logger, *args)
+    args = limits, aggregateq, quality_checks, feedback, feedback_pv
+    feed = Feed()
+    ack = feed.feed_data(config, logger, *args)
+    if ack == 1:
+        bad_indexes = {}
 
-    bad_indexes = {}
-    aggregate = aggregateq.get()
+        aggregate = aggregateq.get()
 
-    if report_file is not None:
-        report.report_results(logger, aggregate, type, None, report_file, report_type)
-    report.add_bad_indexes(aggregate, type, bad_indexes)
+        if report_file is not None:
+            report.report_results(logger, aggregate, None, report_file, report_type)
+        report.add_bad_indexes(aggregate, bad_indexes)
 
-    return bad_indexes
+        return bad_indexes
 
 
