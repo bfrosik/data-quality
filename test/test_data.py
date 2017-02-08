@@ -100,7 +100,6 @@ def test_ge():
     mod.replace_text_in_file(config, find, replace)
     data_file = os.path.join(os.getcwd(),"test/data/test_data.ge4")
     bad_indexes = data.verify(config, data_file)
-    print 'bad indexesx', bad_indexes
     bad_data = bad_indexes['data']
     assert 1 in bad_data
     assert 2 in bad_data
