@@ -90,7 +90,6 @@ def report_results(logger, aggregate, filename, report_file, report_type):
     -------
     None
     """
-    print 'report_file', report_file
     if report_file is None:
         return
 
