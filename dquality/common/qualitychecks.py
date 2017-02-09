@@ -83,9 +83,14 @@ def find_result(res, index, quality_id, limits, data_type):
     limits : dictionary
         a dictionary containing threshold values
 
+    data_type : str
+        a type of data, i.e 'data_white', or 'data_dark' or 'data'
+
     Returns
     -------
-    None
+    result : Result
+        a Result object
+
     """
     if res < limits['low_limit']:
         result = Result(res, index, quality_id, const.QUALITYERROR_LOW, data_type)
@@ -94,6 +99,7 @@ def find_result(res, index, quality_id, limits, data_type):
     else:
         result = Result(res, index, quality_id, const.NO_ERROR, data_type)
     return result
+
 
 def validate_mean_signal_intensity(data, index, results, all_limits):
     """
@@ -130,6 +136,7 @@ def validate_mean_signal_intensity(data, index, results, all_limits):
     result = find_result(res, index, const.QUALITYCHECK_MEAN, limits, data.type)
     results.put(result)
 
+
 def validate_signal_intensity_standard_deviation(data, index, results, all_limits):
     """
     This is one of the validation methods. It has a "quality_id"
@@ -159,10 +166,12 @@ def validate_signal_intensity_standard_deviation(data, index, results, all_limit
     -------
     None
     """
+
     limits = all_limits[data.type]['std']
     res = np.std(data.slice)
     result = find_result(res, index, const.QUALITYCHECK_STD, limits, data.type)
     results.put(result)
+
 
 def validate_saturation(data, index, results, all_limits):
     """
@@ -202,6 +211,7 @@ def validate_saturation(data, index, results, all_limits):
     res = (data.slice > sat_high).sum()
     result = Result(res, index, const.QUALITYCHECK_SAT, const.NO_ERROR, data.type)
     results.put(result)
+
 
 def validate_stat_mean(result, aggregate, results, all_limits):
     """

@@ -259,9 +259,6 @@ def verify_file_ge(logger, file, limits, quality_checks, report_type, report_dir
     file : str
         a filename including path that will be verified
 
-    data_tags : dict
-        a dictionary od data_type/hdf tag
-
     limits : dict
         a dictionary of limits values
 

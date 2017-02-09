@@ -63,7 +63,7 @@ __all__ = ['report_results',
            'report_bad_indexes']
 
 
-def report_results(logger, aggregate, filename, report_file, report_type):
+def report_results(logger, aggregates, filename, report_file, report_type):
     """
     This function reports results of quality checks to a file or console
     if the file is not defined. If the report type is REPORT_FULL, it will report all results.
@@ -71,8 +71,8 @@ def report_results(logger, aggregate, filename, report_file, report_type):
 
     Parameters
     ----------
-    aggregate : Aggregate
-        an instance holding result values for the data of one type
+    aggregates : dict <data_type : Aggregate>
+        dictionary with instances holding result values keyed by data type
 
     type : str
         a string characterizung the data type (i.e. data_dark, data_white or data)
@@ -95,11 +95,11 @@ def report_results(logger, aggregate, filename, report_file, report_type):
 
     try:
         report = open(report_file, 'w')
-        for type in aggregate:
+        for type in aggregates:
             if report_type == const.REPORT_FULL:
-                reported = aggregate[type]
+                reported = aggregates[type]
             elif report_type == const.REPORT_ERRORS:
-                reported = aggregate[type]['bad_indexes']
+                reported = aggregates[type]['bad_indexes']
             else:
                 return
 
@@ -112,7 +112,7 @@ def report_results(logger, aggregate, filename, report_file, report_type):
         pass
 
 
-def add_bad_indexes(aggregate, bad_indexes):
+def add_bad_indexes(aggregates, bad_indexes):
     """
     This function gets bad indexes from aggregate instance and creates an entry in
     bad_indexes dictionary. The bad_indexes dictionary will have added an entry for the given type.
@@ -120,24 +120,25 @@ def add_bad_indexes(aggregate, bad_indexes):
 
     Parameters
     ----------
-    aggregate : Aggregate
-        an instance holding result values for the data of one type
-    type : str
-        a string characterizung the data type (i.e. data_dark, data_white or data)
+    aggregates : dict <data_type : Aggregate>
+        dictionary with instances holding result values keyed by data type
+
     bad_indexes : dictionary
         a dictionary structure that the bad indexes will be written to
+
     Returns
     -------
     None
     """
-    for type in aggregate:
+
+    for type in aggregates:
         list = []
-        for key in aggregate[type]['bad_indexes'].keys():
+        for key in aggregates[type]['bad_indexes'].keys():
             list.append(key)
         bad_indexes[type] = list
 
 
-def add_bad_indexes_per_file(aggregate, bad_indexes, file_list, offset_list):
+def add_bad_indexes_per_file(aggregates, bad_indexes, file_list, offset_list):
     """
     This function gets bad indexes from aggregate instance and creates an entry in
     bad_indexes dictionary. The bad_indexes dictionary will have added an entry for the given type.
@@ -146,11 +147,8 @@ def add_bad_indexes_per_file(aggregate, bad_indexes, file_list, offset_list):
 
     Parameters
     ----------
-    aggregate : Aggregate
-        an instance holding result values for the data of one type
-
-    type : str
-        a string characterizung the data type (i.e. data_dark, data_white or data)
+    aggregates : dict <data_type : Aggregate>
+        dictionary with instances holding result values keyed by data type
 
     bad_indexes : dictionary
         a dictionary structure that the bad indexes will be written to
@@ -165,6 +163,7 @@ def add_bad_indexes_per_file(aggregate, bad_indexes, file_list, offset_list):
     -------
     None
     """
+
     list = []
     dict = {}
     offset = 0
@@ -172,8 +171,8 @@ def add_bad_indexes_per_file(aggregate, bad_indexes, file_list, offset_list):
     current_file = file_list[index]
     current_offset = offset_list[index]
 
-    for type in aggregate:
-        for key in aggregate[type]['bad_indexes'].keys():
+    for type in aggregates:
+        for key in aggregates[type]['bad_indexes'].keys():
             if key == current_offset:
                 dict[current_file] = list
                 list = []

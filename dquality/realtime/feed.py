@@ -51,14 +51,17 @@ Please make sure the installation :ref:`pre-requisite-reference-label` are met.
 
 This module feeds the data coming from detector to a process using queue. It interracts with a channel access
 plug in of area detector. The read of frame data from channel access happens on event of frame counter change.
-The change is detected with a callback. The data is passed to the consuming process.
+The change is detected with a callback. The data type is determined from PV. The data and the type are passed
+(as object) to the consuming process.
 This module requires configuration file with the following parameters:
 'detector', a string defining the first prefix in area detector, it has to match the area detector configuration
 'detector_basic', a string defining the second prefix in area detector, defining the basic parameters, it has to
 match the area detector configuration
 'detector_image', a string defining the second prefix in area detector, defining the image parameters, it has to
 match the area detector configuration
-'no_frames', number of frames that will be fed
+'no_frames', number of frames that will be fed. If not given, the optional parameter 'sequence' to the feed_data
+method must not be None. It can be either int defining number of frames, or a list of touples, defining data types
+sequence. (i.e. [('data_dark', 4), ('data_white', 14), ('data', 614), ('data_dark', 619))
 'args', optional, list of process specific parameters, they need to be parsed to the desired format in the wrapper
 """
 
@@ -86,33 +89,44 @@ __all__ = ['deliver_data',
 
 class Feed:
     """
-    This class contains the global variables shared between threads.
+    This constructor creates the following queues:
+    process_dataq : a queue used to pass data to the consuming process
+    exitq : a queue used to signal awaiting process the end of processing, so the resources can be closed
+    thread_dataq : this queue delivers counter number on change from call back thread
+    Other fields are initialized.
     """
     def __init__(self):
-         self.process_dataq = Queue()
-         self.exitq = tqueue.Queue()
-         self.thread_dataq = tqueue.Queue()
-         self.sizex = 0
-         self.sizey = 0
-         self.no_frames = 0
-         self.ctr = 0
+        self.process_dataq = Queue()
+        self.exitq = tqueue.Queue()
+        self.thread_dataq = tqueue.Queue()
+        self.sizex = 0
+        self.sizey = 0
+        self.no_frames = 0
+        self.ctr = 0
+        self.sequence = None
+        self.sequence_index = 0
 
 
     def deliver_data(self, data_pv, frame_type_pv, logger):
         """
-        This function is invoked at the beginning of the feed as a distinct thread. It reads data from a queue inside a loop.
-        It loops until all frames are processed, which is marked by 'missing' string, or if an error occurs. The data
-        retrieved from the queue is the frame counter number that was discovered in the callback method.
-        The counter is compared with a previous counter value. If the gap between the two is greater than 1, then frame(s)
-        have been missing. For each missing frame a 'missing' string is enqueued into the inter-process queue. The frame
-        is polled from the channel access and enqueued into the inter-process queue.
-        At the loop exit an 'all_data' string is enqueud into the inter-process queue, and 'exit' string is enqueued
-        into the inter-thread queue, to notify the main thread of an exit event.
+        This function is invoked at the beginning of the feed as a distinct thread. It reads data from a thread_dataq
+        inside a loop that delivers current counter value on change.
+        If the counter is not a consecutive number to the previous reading a 'missing' string is enqueued into
+        process_dataq in place of the data to mark the missing frames.
+        For every received frame data, it reads a data type from PV, and the two elements are delivered to a consuming
+        process via process_dataq as Data instance. If a sequence is defined, then the data type for this frame
+        determined from sequence is compared with the data type read from PV. If they are different, a warning log is
+        recorded.
+        On the loop exit an 'all_data' string is enqueud into the inter-process queue, and 'exit' string is enqueued
+        into the inter-thread queue, to notify the main thread of the exit event.
     
         Parameters
         ----------
         data_pv : str
             a PV string for the area detector data
+
+        frame_type_pv : str
+            a PV string for the area detector data type
     
         logger : Logger
             a Logger instance, typically synchronized with the consuming process logger
@@ -129,12 +143,20 @@ class Feed:
             types[3] = 'data' # it'd double correlation, but leave data for now
             return types
 
+        def verify_sequence(logger, data_type):
+            while frame_index > self.sequence[self.sequence_index][1]:
+                self.sequence_index += 1
+            planned_data_type = self.sequence[self.sequence_index][0]
+            if planned_data_type != data_type:
+                logger.warning('The data type for frame number ' + str(frame_index) + ' is ' + data_type + ' but was planned ' + planned_data_type)
+
         def finish():
             self.process_dataq.put('all_data')
             self.exitq.put('exit')
 
         types =  build_type_map()
         done = False
+        frame_index = 0
         while not done:
             current_counter = self.thread_dataq.get()
             if current_counter < self.no_frames:
@@ -153,6 +175,10 @@ class Feed:
                             for i in range (1, delta):
                                 self.process_dataq.put('missing')
                         self.process_dataq.put(pack_data(data, data_type))
+                        if self.sequence is not None:
+                            frame_index += delta
+                            if frame_index <= self.no_frames:
+                                verify_sequence(logger, data_type)
                 except:
                     finish()
                     done = True
@@ -201,6 +227,9 @@ class Feed:
     
         data_pv : str
             a PV string for the area detector frame data
+
+        frame_type_pv : str
+            a PV string for the area detector data type
     
         logger : Logger
             a Logger instance, typically synchronized with the consuming process logger
@@ -257,6 +286,10 @@ class Feed:
     
         sizey_pv : str
             a PV string representing y size of acquired data
+
+        frame_type_pv : str
+            a PV string for the area detector data type
+
         """
     
         acquire_pv = detector + ':' + detector_basic + ':' + 'Acquire'
@@ -268,7 +301,7 @@ class Feed:
         return acquire_pv, counter_pv, data_pv, sizex_pv, sizey_pv, frame_type_pv
     
     
-    def feed_data(self, config, logger, *args):
+    def feed_data(self, config, logger, sequence=None, *args):
         """
         This function is called by an client to start the process. It parses configuration and gets needed process
         variables. It stores necessary values in the self object.
@@ -282,6 +315,11 @@ class Feed:
     
         logger : Logger
             a Logger instance, recommended to use the same logger for feed and consuming process
+
+        sequence : list or int
+            if int, the number is used to set number of frames to process,
+            if list, take the number of frames from the list, and verify the sequence of data is correct during
+            processing
     
         *args : list
             a list of process specific arguments
@@ -290,10 +328,15 @@ class Feed:
         -------
         None
         """
-    
         no_frames, detector, detector_basic, detector_image = parse_config(config)
         acquire_pv, counter_pv, data_pv, sizex_pv, sizey_pv, frame_type_pv = self.get_pvs(detector, detector_basic, detector_image)
-        self.no_frames = no_frames
+        if sequence is None:
+            self.no_frames = no_frames
+        elif type(sequence) is int:
+            self.no_frames = sequence
+        else:
+            self.sequence = sequence
+            self.no_frames = sequence[len(sequence)-1][1] + 1
         test = True
         while test:
             self.sizex = caget (sizex_pv)

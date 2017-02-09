@@ -416,6 +416,7 @@ def get_quality_checks(dict):
     quality_checks : dict
         A new dictionary with all elements replaced by the actual value the strings represented
     """
+
     quality_checks = {}
     for type in dict.keys():
         type_quality_checks = {}

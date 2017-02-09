@@ -146,20 +146,22 @@ def init(config):
     return logger, limits, quality_checks, feedback, feedback_pv, report_type
 
 
-def verify(config, report_file=None):
+def verify(config, report_file=None, sequence = None):
     """
-    HDF file structure verifier.
+    This function reads configuration and initiates variables accordingly.
+    It creates a Feed instance and starts data_feed and waits to receive results in aggregateq.
+    The results are then written into a report file.
 
     Parameters
     ----------
     conf : str
         configuration file name, including path
 
-    type : str
-        a string characterizung the data type (i.e. data_dark, data_white or data), defaulted to 'data'
-
     report_file : file
         a file where the report will be written, defaulted to None, if no report wanted
+
+    sequence : list or int
+        information about data sequence or number of frames
 
     Returns
     -------
@@ -171,7 +173,7 @@ def verify(config, report_file=None):
     aggregateq = Queue()
     args = limits, aggregateq, quality_checks, feedback, feedback_pv
     feed = Feed()
-    ack = feed.feed_data(config, logger, *args)
+    ack = feed.feed_data(config, logger, sequence, *args)
     if ack == 1:
         bad_indexes = {}
 

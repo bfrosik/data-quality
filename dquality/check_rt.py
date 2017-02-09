@@ -60,7 +60,7 @@ __docformat__ = 'restructuredtext en'
 __all__ = ['realtime']
 
 
-def realtime(conf, type = 'data', report_file = None, report_type = 'REPORT_FULL'):
+def realtime(conf, report_file = None, sequence = None):
     """
     Real time verifier.
 
@@ -69,14 +69,13 @@ def realtime(conf, type = 'data', report_file = None, report_type = 'REPORT_FULL
     conf : str
         configuration file name, including path
 
-    type : str
-        a string characterizung the data type (i.e. data_dark, data_white or data)
-
     report_file : file
         a file where the report will be written, or None, if written to a console
 
-    report_type : int
-        report type, currently supporting REPORT_NONE, REPORT_ERRORS, and REPORT_FULL
+    sequence : list or int
+        if int, the number is used to set number of frames to process,
+        if list, take the number of frames from the list, and verify the sequence of data is correct during
+        processing
 
     Returns
     -------
@@ -84,7 +83,7 @@ def realtime(conf, type = 'data', report_file = None, report_type = 'REPORT_FULL
 
     """
 
-    bad_indexes = real.verify(conf)
+    bad_indexes = real.verify(conf, report_file, sequence)
     print (json.dumps(bad_indexes))
     return bad_indexes
 

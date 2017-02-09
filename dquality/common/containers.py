@@ -18,6 +18,7 @@ class Result:
         self.error = error
         self.data_type = data_type
 
+
 class Data:
     """
     This class is a container of data. One of the members is a 2D arrray. Other members will be added later
@@ -25,6 +26,7 @@ class Data:
     def __init__(self, slice, type):
         self.slice = slice
         self.type = type
+
 
 class Feedback:
     """
@@ -38,6 +40,7 @@ class Feedback:
 
     def set_logger(self, logger):
         self.logger = logger
+
 
 class Aggregate:
     """
@@ -58,7 +61,7 @@ class Aggregate:
             self.feedback_type = feedback_obj.feedback_type
             self.feedbackq = feedbackq
             #TODO check if feedback_pv and save
-            # start process that will update epics Quality PVs
+            # start process that will provide continuous feedback
             p = Process(target=self.quality_feedback, args=(self.feedbackq, feedback_obj,))
             p.start()
         else:

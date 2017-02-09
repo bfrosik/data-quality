@@ -177,6 +177,9 @@ def pack_data(slice, type):
     slice : nparray
         image data
 
+    type : str
+       data type, as 'data', 'data_white', or 'data_dark'
+
     """
     return containers.Data(slice, type)
 

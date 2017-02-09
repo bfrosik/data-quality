@@ -94,6 +94,7 @@ def num_stat_processes_on_result(result, aggregate, resultsq, limits, quality_ch
         a collection of limits as read from configuration
 
     quality_checks : dict
+        a dictionary by data type of quelity check dictionaries:
         keys are ids of the basic quality check methods, and values are lislts of statistical methods ids;
         the statistical methods use result from the "key" basic quality method.
 
@@ -104,7 +105,7 @@ def num_stat_processes_on_result(result, aggregate, resultsq, limits, quality_ch
     """
     ret = 0
     # start statistical processes only when all results for this frame passed quality checks, and if the
-    # result is not of statistical process
+    # result is not a statistical process
     quality_checks = quality_checks[result.data_type]
     if aggregate.all_good_on_result(result) and result.quality_id < const.STAT_START:
         for function_id in quality_checks[result.quality_id]:
@@ -150,6 +151,7 @@ def handle_data(dataq, limits, reportq, quality_checks, feedback_obj=None):
         results queue; used to pass results to the calling process
 
     quality_checks : dict
+        a dictionary by data type of quelity check dictionaries:
         keys are ids of the basic quality check methods, and values are lists of statistical methods ids;
         the statistical methods use result from the "key" basic quality method.
 
