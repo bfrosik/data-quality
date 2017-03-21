@@ -184,7 +184,7 @@ def start_server(arg):
     sequence = parse_seq(args.sequence)
 
     controller = Controller(config, report_file, sequence)
-    manager, p = controller.CreateServer('', int(args.port), args.key)
+    manager, p = controller.CreateServer(int(args.port), args.key)
     # this will start server
     manager.start()
 
