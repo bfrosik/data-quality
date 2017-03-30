@@ -38,8 +38,8 @@ def shared(name):
 
 def check_tostring(qualitycheck):
     qc_map = {1:'mean',
-              2:'standard_deviation',
+              2:'st_dev',
               3:'saturation',
               100:'stat_mean',
-              101:'acc_saturation'}
+              101:'acc_sat'}
     return qc_map[qualitycheck]

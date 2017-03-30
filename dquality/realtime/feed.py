@@ -243,7 +243,7 @@ class Feed:
         """
         data_thread = CAThread(target = self.deliver_data, args=(data_pv, frame_type_pv, logger,))
         data_thread.start()
-    
+
         start_process(self.process_dataq, logger, *args)
         cntr = PV(counter_pv)
         cntr.add_callback(self.on_change, index = 1)
@@ -301,7 +301,7 @@ class Feed:
         return acquire_pv, counter_pv, data_pv, sizex_pv, sizey_pv, frame_type_pv
     
     
-    def feed_data(self, config, logger, sequence=None, *args):
+    def feed_data(self, no_frames, detector, detector_basic, detector_image, logger, sequence=None, *args):
         """
         This function is called by an client to start the process. It parses configuration and gets needed process
         variables. It stores necessary values in the self object.
@@ -328,7 +328,7 @@ class Feed:
         -------
         None
         """
-        no_frames, detector, detector_basic, detector_image = parse_config(config)
+
         acquire_pv, counter_pv, data_pv, sizex_pv, sizey_pv, frame_type_pv = self.get_pvs(detector, detector_basic, detector_image)
         if sequence is None:
             self.no_frames = no_frames

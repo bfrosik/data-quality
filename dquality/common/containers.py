@@ -41,6 +41,9 @@ class Feedback:
     def set_logger(self, logger):
         self.logger = logger
 
+    def set_driver(self, driver):
+        self.driver = driver
+
 
 class Aggregate:
     """

@@ -60,6 +60,7 @@ from dquality.handler import handle_data
 import dquality.common.containers as containers
 import dquality.common.constants as const
 import dquality.common.utilities as utils
+import dquality.realtime.pv_feedback_driver as drv
 
 __author__ = "Barbara Frosik"
 __copyright__ = "Copyright (c) 2016, UChicago Argonne, LLC."
@@ -90,7 +91,6 @@ def start_process(dataq, logger, *args):
     -------
     None
     """
-
     limits = args[0]
     reportq = args[1]
     quality_checks = args[2]
@@ -102,11 +102,14 @@ def start_process(dataq, logger, *args):
 
     if const.FEEDBACK_PV in feedback:
         try:
-            feedback_pv = args[4]
-            feedback_obj.set_feedback_pv(feedback_pv)
+            pass
+            # detector = args[4]
+            # server, driver = drv.init_driver(detector, quality_checks)
+            # feedback_obj.set_driver(driver)
+            # p = Process(target=drv.activate_pv, args=(server))
+            # p.start()
         except:
             feedback.remove(const.FEEDBACK_PV)
-            print ("must provide quality feedback pv name if the feedback is 'pv'")
 
     p = Process(target=handle_data, args=(dataq, limits, reportq, quality_checks, feedback_obj))
     p.start()

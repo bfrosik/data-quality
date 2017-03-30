@@ -106,7 +106,7 @@ class Controller:
 
         """
 
-        def stop_process():
+        def stop_verifier_process():
             self.p.terminate()
 
         class MyManager(SyncManager):
@@ -115,7 +115,7 @@ class Controller:
         self.p = Process(target=real.verify, args=(self.config, self.report_file, self.sequence, ))
         self.p.start()
 
-        MyManager.register('stop_process', callable = stop_process)
+        MyManager.register('stop_verifier_process', callable = stop_verifier_process)
         manager = MyManager(address = ('', port), authkey = key)
         return manager, self.p
 
@@ -184,7 +184,7 @@ def start_server(arg):
     sequence = parse_seq(args.sequence)
 
     controller = Controller(config, report_file, sequence)
-    manager, p = controller.CreateServer('', int(args.port), args.key)
+    manager, p = controller.CreateServer(int(args.port), args.key)
     # this will start server
     manager.start()
 

@@ -69,6 +69,7 @@ import dquality.common.utilities as utils
 import dquality.common.report as report
 from dquality.realtime.feed import Feed
 import dquality.common.constants as const
+import dquality.realtime.adapter as adapter
 
 
 def init(config):
@@ -126,15 +127,8 @@ def init(config):
         dict = json.loads(qc_file.read())
     quality_checks = utils.get_quality_checks(dict)
 
-    feedback_pv = None
     try:
         feedback = conf['feedback_type']
-        if 'pv' in feedback:
-            try:
-                feedback_pv = conf['feedback_pv']
-            except KeyError:
-                feedback.remove('pv')
-
     except KeyError:
         feedback = None
 
@@ -143,7 +137,7 @@ def init(config):
     except KeyError:
         report_type = const.REPORT_FULL
 
-    return logger, limits, quality_checks, feedback, feedback_pv, report_type
+    return logger, limits, quality_checks, feedback, report_type
 
 
 def verify(config, report_file=None, sequence = None):
@@ -168,12 +162,13 @@ def verify(config, report_file=None, sequence = None):
     boolean
 
     """
-    logger, limits, quality_checks, feedback, feedback_pv, report_type = init(config)
+    logger, limits, quality_checks, feedback, report_type = init(config)
+    no_frames, detector, detector_basic, detector_image = adapter.parse_config(config)
 
     aggregateq = Queue()
-    args = limits, aggregateq, quality_checks, feedback, feedback_pv
+    args = limits, aggregateq, quality_checks, feedback, detector
     feed = Feed()
-    ack = feed.feed_data(config, logger, sequence, *args)
+    ack = feed.feed_data(no_frames, detector, detector_basic, detector_image, logger, sequence, *args)
     if ack == 1:
         bad_indexes = {}
 
