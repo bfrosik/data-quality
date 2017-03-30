@@ -66,6 +66,7 @@ __all__ = ['start_verifier',
 # Host and Port should be configured
 HOST = "txmtwo"
 PORT = "5011"
+VER_DIR = "/home/beams/USR32IDC/temp/"
 
 def start_verifier(conf, report_file, variableDict):
     """
@@ -131,7 +132,7 @@ def start_verifier(conf, report_file, variableDict):
 
     json_sequence = json.dumps(sequence)
     key = uuid.uuid4()
-    COMMAND="python /home/beams/USR32IDC/temp/server_verifier.py " + conf + ", " + report_file + ", " + json_sequence + \
+    COMMAND="python " + VER_DIR + "server_verifier.py " + conf + ", " + report_file + ", " + json_sequence + \
             ", " + PORT + ", " + key
 
     ssh = subprocess.Popen(["ssh", "%s" % HOST, COMMAND],
