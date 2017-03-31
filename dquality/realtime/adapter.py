@@ -60,7 +60,7 @@ from dquality.handler import handle_data
 import dquality.common.containers as containers
 import dquality.common.constants as const
 import dquality.common.utilities as utils
-import dquality.realtime.pv_feedback_driver as drv
+#import dquality.realtime.pv_feedback_driver as drv
 
 __author__ = "Barbara Frosik"
 __copyright__ = "Copyright (c) 2016, UChicago Argonne, LLC."
