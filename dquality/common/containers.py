@@ -133,7 +133,6 @@ class Aggregate:
         -------
         None
         """
-        print 'adding result, check:',result,check
         lock = self.locks[check]
         lock.acquire()
         self.results[check].append(result)
