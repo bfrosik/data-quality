@@ -297,7 +297,7 @@ def verify_file_ge(logger, file, limits, quality_checks, report_type, report_dir
     for i in range(0,nframes):
         img = np.fromfile(fp,'uint16', fsize)
         dataq.put(Data(img, type))
-        time.sleep(.5)
+        time.sleep(.1)
     dataq.put('all_data')
 
     # receive the results
