@@ -207,7 +207,7 @@ def verify_file_hdf(logger, file, data_tags, limits, quality_checks, report_type
             dataq.put(Data(dt[i],data_type))
             # add delay to slow down flow up, so the flow down (results)
             # are handled in synch
-            time.sleep(.05)
+            time.sleep(.1)
 
     fp, tags = utils.get_data_hdf(file)
     dataq = Queue()
@@ -297,7 +297,7 @@ def verify_file_ge(logger, file, limits, quality_checks, report_type, report_dir
     for i in range(0,nframes):
         img = np.fromfile(fp,'uint16', fsize)
         dataq.put(Data(img, type))
-        time.sleep(.2)
+        time.sleep(.5)
     dataq.put('all_data')
 
     # receive the results
