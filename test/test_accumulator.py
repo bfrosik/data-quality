@@ -61,12 +61,7 @@ def test_qualitychecks_report_for_file():
     bad_data2 = bad_indexes_type[new_data2]
     assert 0 in bad_data1
     assert 0 in bad_data2
-    assert 1 in bad_data1
-    assert 1 in bad_data2
-    #assert 3 in bad_data1
-    #assert 3 in bad_data2
     assert 4 in bad_data1
-    assert 4 in bad_data2
     assert not res.is_text_in_file(logfile, 'no file extension specified. Monitoring for all files')
     clean(new_data1, new_data2)
 
@@ -85,12 +80,8 @@ def test_qualitychecks_one_report():
     bad_indexes = acc.verify(config, data_path, data_type, 2, False)
     bad_data = bad_indexes[data_type]
     assert 0 in bad_data
-    assert 5 in bad_data
-    assert 1 in bad_data
-    assert 6 in bad_data
-    #assert 3 in bad_data
-    #assert 8 in bad_data
     assert 4 in bad_data
+    assert 5 in bad_data
     assert 9 in bad_data
     assert not res.is_text_in_file(logfile, 'no file extension specified. Monitoring for all files')
     clean(new_data1, new_data2)

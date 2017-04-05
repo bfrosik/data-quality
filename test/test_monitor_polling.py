@@ -53,8 +53,6 @@ def test_qualitychecks():
     bad_data = bad_indexes['data']
     bad_data_dark = bad_indexes['data_dark']
     assert 5 in bad_data_white
-    assert 6 in bad_data_white
-    assert 8 in bad_data_white
     assert 9 in bad_data_white
     assert 10 in bad_data
     assert 13 in bad_data
@@ -67,24 +65,24 @@ def test_qualitychecks():
     clean()
 
 
-# def test_no_extentions_interrupt():
-#     config = init('bb')
-#     data_path = os.path.join(os.getcwd(),"test/data1")
-#     new_data = os.path.join(data_path,"INTERRUPT")
+def test_no_extentions_interrupt():
+    config = init('bb')
+    data_path = os.path.join(os.getcwd(),"test/data1")
+    new_data = os.path.join(data_path,"INTERRUPT")
 
-#     find = 'extensions'
-#     replace = 'extensionsx'
-#     mod.replace_text_in_file(config, find, replace)
+    find = 'extensions'
+    replace = 'extensionsx'
+    mod.replace_text_in_file(config, find, replace)
 
-#     if not os.path.exists(data_path):
-#         os.makedirs(data_path)
-#     p = Process(target=copy_file, args=(interrupt_file, new_data,))
-#     p.start()
+    if not os.path.exists(data_path):
+        os.makedirs(data_path)
+    p = Process(target=copy_file, args=(interrupt_file, new_data,))
+    p.start()
 
-#     bad_indexes = monitor.verify(config, data_path, 2)
-#     assert len(bad_indexes) is 0
-#     assert res.is_text_in_file(logfile, 'no file extension specified. Monitoring for all files')
-#     clean()
+    bad_indexes = monitor.verify(config, data_path, 2)
+    assert len(bad_indexes) is 0
+    assert res.is_text_in_file(logfile, 'no file extension specified. Monitoring for all files')
+    clean()
 
 
 def test_bad_directory():
@@ -188,3 +186,4 @@ def test_ge_corrupted_file():
     assert 3 in bad_data
     assert 4 in bad_data
     clean()
+

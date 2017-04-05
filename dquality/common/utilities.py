@@ -418,15 +418,10 @@ def get_quality_checks(dict):
     """
 
     quality_checks = {}
-    for type in dict.keys():
-        type_quality_checks = {}
-        type_dict = dict[type]
-        for key in type_dict:
-            value = type_dict[key]
-            list = []
-            for item in value:
-                list.append(const.shared(item))
-            type_quality_checks[const.shared(key)] = list
-        quality_checks[type] = type_quality_checks
+    for type in dict:
+        list = []
+        for qc in dict[type]:
+            list.append(const.shared(qc))
+        quality_checks[type] = list
 
     return quality_checks

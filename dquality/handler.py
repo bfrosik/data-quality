@@ -115,6 +115,7 @@ def num_stat_processes_on_result(result, aggregate, resultsq, limits, quality_ch
             ret += 1
     return ret
 
+
 def handle_data(dataq, limits, reportq, quality_checks, feedback_obj=None):
     """
     This function is typically called as a new process. It takes a dataq parameter
@@ -181,8 +182,9 @@ def handle_data(dataq, limits, reportq, quality_checks, feedback_obj=None):
             if data == 'all_data':
                 interrupted = True
                 while num_processes > 0:
-                    result = resultsq.get()
-                    num_processes += (num_stat_processes_on_result(result, aggregates[result.data_type], resultsq, limits, quality_checks) - 1)
+                    results = resultsq.get()
+                    aggregates[results.type].handle_results(results)
+                    num_processes -= 1
                 if feedbackq is not None:
                     for _ in range(len(aggregates)):
                         feedbackq.put('all_data')
@@ -191,19 +193,20 @@ def handle_data(dataq, limits, reportq, quality_checks, feedback_obj=None):
                 index += 1
 
             else:
-                for function_id in quality_checks[data.type].keys():
-                    function = calc.function_mapper[function_id]
-                    p = Process(target=function, args=(data, index, resultsq, limits,))
-                    p.start()
-                    num_processes += 1
+                type = data.type
+                p = Process(target=calc.run_quality_checks,
+                            args=(data, index, resultsq, aggregates[type], limits[type], quality_checks[type]))
+                p.start()
+                num_processes += 1
                 index += 1
 
         except queue.Empty:
             pass
 
         while not resultsq.empty():
-            result = resultsq.get_nowait()
-            num_processes += (num_stat_processes_on_result(result, aggregates[result.data_type], resultsq, limits, quality_checks) - 1)
+            results = resultsq.get_nowait()
+            aggregates[results.type].handle_results(results)
+            num_processes -= 1
 
     if reportq is not None:
         results = {}

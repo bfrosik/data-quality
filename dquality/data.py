@@ -66,6 +66,7 @@ import dquality.handler as handler
 from dquality.common.containers import Data
 import dquality.common.report as report
 import dquality.common.constants as const
+import time
 
 __author__ = "Barbara Frosik"
 __copyright__ = "Copyright (c) 2016, UChicago Argonne, LLC."
@@ -204,6 +205,9 @@ def verify_file_hdf(logger, file, data_tags, limits, quality_checks, report_type
         dt = fp[data_tag]
         for i in range(0,dt.shape[0]):
             dataq.put(Data(dt[i],data_type))
+            # add delay to slow down flow up, so the flow down (results)
+            # are handled in synch
+            time.sleep(.02)
 
     fp, tags = utils.get_data_hdf(file)
     dataq = Queue()
@@ -293,6 +297,7 @@ def verify_file_ge(logger, file, limits, quality_checks, report_type, report_dir
     for i in range(0,nframes):
         img = np.fromfile(fp,'uint16', fsize)
         dataq.put(Data(img, type))
+        time.sleep(.1)
     dataq.put('all_data')
 
     # receive the results

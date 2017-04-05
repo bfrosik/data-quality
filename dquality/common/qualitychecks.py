@@ -53,7 +53,7 @@ This file is a suite of verification functions for scientific data.
 
 import numpy as np
 import dquality.common.constants as const
-from dquality.common.containers import Result
+from dquality.common.containers import Result, Results
 
 __author__ = "Barbara Frosik"
 __copyright__ = "Copyright (c) 2016, UChicago Argonne, LLC."
@@ -64,7 +64,7 @@ __all__ = ['find_result',
            'validate_stat_mean']
 
 
-def find_result(res, index, quality_id, limits, data_type):
+def find_result(res, quality_id, limits):
     """
     This is a helper method. It evaluates given result against limits, and creates
     Result instance.
@@ -93,15 +93,15 @@ def find_result(res, index, quality_id, limits, data_type):
 
     """
     if res < limits['low_limit']:
-        result = Result(res, index, quality_id, const.QUALITYERROR_LOW, data_type)
+        result = Result(res, quality_id, const.QUALITYERROR_LOW)
     elif res > limits['high_limit']:
-        result = Result(res, index, quality_id, const.QUALITYERROR_HIGH, data_type)
+        result = Result(res, quality_id, const.QUALITYERROR_HIGH)
     else:
-        result = Result(res, index, quality_id, const.NO_ERROR, data_type)
+        result = Result(res, quality_id, const.NO_ERROR)
     return result
 
 
-def validate_mean_signal_intensity(data, index, results, all_limits):
+def validate_mean_signal_intensity(data, limits):
     """
     This is one of the validation methods. It has a "quality_id"
     property that identifies this validation step. This function
@@ -131,13 +131,13 @@ def validate_mean_signal_intensity(data, index, results, all_limits):
     None
     """
 
-    limits = all_limits[data.type]['mean']
+    this_limits = limits['mean']
     res = np.mean(data.slice)
-    result = find_result(res, index, const.QUALITYCHECK_MEAN, limits, data.type)
-    results.put(result)
+    result = find_result(res, const.QUALITYCHECK_MEAN, this_limits)
+    return result
 
 
-def validate_signal_intensity_standard_deviation(data, index, results, all_limits):
+def validate_signal_intensity_standard_deviation(data, limits):
     """
     This is one of the validation methods. It has a "quality_id"
     property that identifies this validation step. This function
@@ -167,13 +167,13 @@ def validate_signal_intensity_standard_deviation(data, index, results, all_limit
     None
     """
 
-    limits = all_limits[data.type]['std']
+    this_limits = limits['std']
     res = np.std(data.slice)
-    result = find_result(res, index, const.QUALITYCHECK_STD, limits, data.type)
-    results.put(result)
+    result = find_result(res, const.QUALITYCHECK_STD, this_limits)
+    return result
 
 
-def validate_saturation(data, index, results, all_limits):
+def validate_saturation(data, limits):
     """
     This is one of the validation methods. It has a "quality_id"
     property that identifies this validation step. This function
@@ -207,13 +207,13 @@ def validate_saturation(data, index, results, all_limits):
     # result = find_result(res, index, const.QUALITYCHECK_SAT, limits)
     # results.put(result)
 
-    sat_high = (all_limits[data.type]['sat'])['high_limit']
+    sat_high = (limits['sat'])['high_limit']
     res = (data.slice > sat_high).sum()
-    result = Result(res, index, const.QUALITYCHECK_SAT, const.NO_ERROR, data.type)
-    results.put(result)
+    result = Result(res, const.QUALITYCHECK_SAT, const.NO_ERROR)
+    return result
 
 
-def validate_stat_mean(result, aggregate, results, all_limits):
+def validate_stat_mean(limits, aggregate, results):
     """
     This is one of the statistical validation methods. It has a "quality_id"
     property that identifies this validation step. This function evaluates
@@ -242,22 +242,26 @@ def validate_stat_mean(result, aggregate, results, all_limits):
     -------
     None
     """
-    limits = all_limits[result.data_type]['stat_mean']
+    this_limits = limits['stat_mean']
     length = aggregate.get_results_len(const.QUALITYCHECK_MEAN)
+    if length == 0:
+        return find_result(0, const.STAT_MEAN, this_limits)
+
     stat_data = aggregate.results[const.QUALITYCHECK_MEAN]
     # calculate std od mean values in aggregate
     if length == 1:
         mean_mean = np.mean(stat_data)
     else:
         mean_mean = np.mean(stat_data[0:(length -1)])
+
+    result = results[const.QUALITYCHECK_MEAN]
     delta = result.res - mean_mean
-    index = result.index
 
-    result = find_result(delta, index, const.STAT_MEAN, limits, result.data_type)
-    results.put(result)
+    result = find_result(delta, const.STAT_MEAN, this_limits)
+    return result
 
 
-def validate_accumulated_saturation(result, aggregate, results, all_limits):
+def validate_accumulated_saturation(limits, aggregate, results):
     """
     This is one of the statistical validation methods. It has a "quality_id"
     property that identifies this validation step. This function adds
@@ -286,14 +290,14 @@ def validate_accumulated_saturation(result, aggregate, results, all_limits):
     -------
     None
     """
-    limits = all_limits[result.data_type]['sat_points']
+    this_limits = limits['sat_points']
     stat_data = aggregate.results[const.QUALITYCHECK_SAT]
     # calculate total saturated points
-    total = np.sum(stat_data)
-    index = result.index
+    result = results[const.QUALITYCHECK_SAT]
+    total = np.sum(stat_data) + result.res
 
-    result = find_result(total, index, const.ACC_SAT, limits, result.data_type)
-    results.put(result)
+    result = find_result(total, const.ACC_SAT, this_limits)
+    return result
 
 
 function_mapper = {const.QUALITYCHECK_MEAN : validate_mean_signal_intensity,
@@ -301,4 +305,27 @@ function_mapper = {const.QUALITYCHECK_MEAN : validate_mean_signal_intensity,
                    const.QUALITYCHECK_SAT : validate_saturation,
                    const.STAT_MEAN : validate_stat_mean,
                    const.ACC_SAT : validate_accumulated_saturation}
+
+def run_quality_checks(data, index, resultsq, aggregate, limits, quality_checks):
+    quality_checks.sort()
+    results_dir = {}
+    failed = False
+    for function_id in quality_checks:
+        function = function_mapper[function_id]
+        if function_id < const.STAT_START:
+            result = function(data, limits)
+            results_dir[function_id] = result
+            if result.error != 0:
+                failed = True
+        else:
+            if not failed:
+                result = function(limits, aggregate, results_dir)
+                results_dir[function_id] = result
+                if result.error != 0:
+                    failed = True
+
+    results = Results(data.type, index, failed, results_dir)
+    resultsq.put(results)
+
+
 

@@ -11,12 +11,24 @@ class Result:
     This class is a container of result and parameters linked to the subject of the verification, and the
     verification type.
     """
-    def __init__(self, res, index, quality_id, error, data_type):
+    def __init__(self, res, quality_id, error):
         self.res = res
-        self.index = index
         self.quality_id = quality_id
         self.error = error
-        self.data_type = data_type
+
+
+class Results:
+    """
+    This class is a container of results of all quality checks for a single frame, and a flag indicating if all
+    quality checks passed.
+    """
+    def __init__(self, type, index, failed, results):
+        self.type = type
+        self.index = index
+        self.failed = failed
+        self.results = []
+        for qc in results:
+            self.results.append(results[qc])
 
 
 class Data:
@@ -72,16 +84,11 @@ class Aggregate:
 
         self.bad_indexes = {}
         self.good_indexes = {}
-        methods = []
-        for qc in quality_checks:
-            methods.append(qc)
-            for sqc in quality_checks[qc]:
-                methods.append(sqc)
 
         self.results = {}
         self.locks = {}
         self.lens = {}
-        for qc in methods:
+        for qc in quality_checks:
             self.results[qc] = []
             self.locks[qc] = Lock()
             self.lens[qc] = 0
@@ -126,11 +133,32 @@ class Aggregate:
         -------
         None
         """
+        print 'adding result, check:',result,check
         lock = self.locks[check]
         lock.acquire()
         self.results[check].append(result)
         self.lens[check] += 1
         lock.release()
+
+
+    def handle_results(self, results):
+        def deep_copy(frame_results):
+            res = {}
+            for result in frame_results:
+                res[result.quality_id] = result.res
+            return res
+
+        if results.failed:
+            self.bad_indexes[results.index] = deep_copy(results.results)
+            if self.feedback_type is not None:
+                for result in results.results:
+                    if result.error != 0:
+                        result.index = results.index
+                        self.feedbackq.put(result)
+        else:
+            self.good_indexes[results.index] = deep_copy(results.results)
+            for result in results.results:
+                self.add_result(result.res, result.quality_id)
 
 
     def all_good_on_result(self, result):

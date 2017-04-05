@@ -330,6 +330,7 @@ class Feed:
         """
 
         acquire_pv, counter_pv, data_pv, sizex_pv, sizey_pv, frame_type_pv = self.get_pvs(detector, detector_basic, detector_image)
+        print 'sequence', sequence
         if sequence is None:
             self.no_frames = no_frames
         elif type(sequence) is int:

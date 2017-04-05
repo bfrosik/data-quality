@@ -39,8 +39,6 @@ def test_qualitychecks():
     bad_data = bad_indexes['data']
     bad_data_dark = bad_indexes['data_dark']
     assert 5 in bad_data_white
-    assert 6 in bad_data_white
-    #assert 8 in bad_data_white
     assert 9 in bad_data_white
     assert 10 in bad_data
     assert 13 in bad_data
@@ -106,4 +104,3 @@ def test_ge():
     assert 3 in bad_data
     assert 4 in bad_data
     clean()
-
