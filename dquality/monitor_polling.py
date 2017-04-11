@@ -168,7 +168,14 @@ def init(config):
     except KeyError:
         report_dir = None
 
-    return logger, data_tags, limits, quality_checks, extensions, file_type, report_type, report_dir
+    consumersfile = utils.get_file(conf, 'consumers', logger, False)
+    if consumersfile is None:
+        consumers = None
+    else:
+        with open(consumersfile) as consumers_file:
+            consumers = json.loads(consumers_file.read())
+
+    return logger, data_tags, limits, quality_checks, extensions, file_type, report_type, report_dir, consumers
 
 
 def verify(conf, folder, num_files):
@@ -202,7 +209,7 @@ def verify(conf, folder, num_files):
     -------
     None
     """
-    logger, data_tags, limits, quality_checks, extensions, file_type, report_type, report_dir = init(conf)
+    logger, data_tags, limits, quality_checks, extensions, file_type, report_type, report_dir, consumers = init(conf)
     if not os.path.isdir(folder):
         logger.error('parameter error: directory ' + folder + ' does not exist')
         sys.exit(-1)
@@ -229,9 +236,9 @@ def verify(conf, folder, num_files):
             else:
                 file_count += 1
                 if file_type == const.FILE_TYPE_GE:
-                    bad_indexes[file] = dataver.verify_file_ge(logger, file, limits, quality_checks, report_type, report_dir)
+                    bad_indexes[file] = dataver.verify_file_ge(logger, file, limits, quality_checks, report_type, report_dir, consumers)
                 else:
-                    bad_indexes[file] = dataver.verify_file_hdf(logger, file, data_tags, limits, quality_checks, report_type, report_dir)
+                    bad_indexes[file] = dataver.verify_file_hdf(logger, file, data_tags, limits, quality_checks, report_type, report_dir, consumers)
                 print (file)
                 print ('bad indexes: ', bad_indexes[file])
                 logger.info('monitor evaluated ' + file + ' file')

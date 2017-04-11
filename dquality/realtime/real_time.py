@@ -137,7 +137,14 @@ def init(config):
     except KeyError:
         report_type = const.REPORT_FULL
 
-    return logger, limits, quality_checks, feedback, report_type
+    consumersfile = utils.get_file(conf, 'consumers', logger, False)
+    if consumersfile is None:
+        consumers = None
+    else:
+        with open(consumersfile) as consumers_file:
+            consumers = json.loads(consumers_file.read())
+
+    return logger, limits, quality_checks, feedback, report_type, consumers
 
 
 def verify(config, report_file=None, sequence = None):
@@ -162,11 +169,11 @@ def verify(config, report_file=None, sequence = None):
     boolean
 
     """
-    logger, limits, quality_checks, feedback, report_type = init(config)
+    logger, limits, quality_checks, feedback, report_type, consumers = init(config)
     no_frames, detector, detector_basic, detector_image = adapter.parse_config(config)
 
     aggregateq = Queue()
-    args = limits, aggregateq, quality_checks, feedback, detector
+    args = limits, aggregateq, quality_checks, consumers, feedback
     feed = Feed()
     ack = feed.feed_data(no_frames, detector, detector_basic, detector_image, logger, sequence, *args)
     if ack == 1:

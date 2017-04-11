@@ -151,7 +151,7 @@ class Feed:
                 logger.warning('The data type for frame number ' + str(frame_index) + ' is ' + data_type + ' but was planned ' + planned_data_type)
 
         def finish():
-            self.process_dataq.put('all_data')
+            self.process_dataq.put(pack_data(None, "end"))
             self.exitq.put('exit')
 
         types =  build_type_map()
@@ -173,7 +173,7 @@ class Feed:
                         data.resize(self.sizex, self.sizey)
                         if delta > 1:
                             for i in range (1, delta):
-                                self.process_dataq.put('missing')
+                                self.process_dataq.put(pack_data(None, "missing"))
                         self.process_dataq.put(pack_data(data, data_type))
                         if self.sequence is not None:
                             frame_index += delta
@@ -330,7 +330,6 @@ class Feed:
         """
 
         acquire_pv, counter_pv, data_pv, sizex_pv, sizey_pv, frame_type_pv = self.get_pvs(detector, detector_basic, detector_image)
-        print 'sequence', sequence
         if sequence is None:
             self.no_frames = no_frames
         elif type(sequence) is int:

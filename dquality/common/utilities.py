@@ -261,7 +261,7 @@ def get_logger(name, conf):
     return logger
 
 
-def get_file(conf, config_name, logger):
+def get_file(conf, config_name, logger, log_error=True):
     """
     This function returns a file object. It reads the file from a configuration file.
     If the file is not configured or does not exist a message is logged into a log file,
@@ -290,9 +290,10 @@ def get_file(conf, config_name, logger):
                 file + ' does not exist')
             return None
     except KeyError:
-        logger.error(
-            'configuration error: ' +
-            config_name + ' is not configured')
+        if log_error:
+            logger.error(
+                'configuration error: ' +
+                config_name + ' is not configured')
         return None
     return file
 

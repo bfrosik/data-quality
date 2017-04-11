@@ -243,13 +243,13 @@ def validate_stat_mean(limits, aggregate, results):
     None
     """
     this_limits = limits['stat_mean']
-    length = aggregate.get_results_len(const.QUALITYCHECK_MEAN)
+
+    stat_data = aggregate.get_results(const.QUALITYCHECK_MEAN)
+    length = len(stat_data)
+    # calculate std od mean values in aggregate
     if length == 0:
         return find_result(0, const.STAT_MEAN, this_limits)
-
-    stat_data = aggregate.results[const.QUALITYCHECK_MEAN]
-    # calculate std od mean values in aggregate
-    if length == 1:
+    elif length == 1:
         mean_mean = np.mean(stat_data)
     else:
         mean_mean = np.mean(stat_data[0:(length -1)])
@@ -291,7 +291,7 @@ def validate_accumulated_saturation(limits, aggregate, results):
     None
     """
     this_limits = limits['sat_points']
-    stat_data = aggregate.results[const.QUALITYCHECK_SAT]
+    stat_data = aggregate.get_results(const.QUALITYCHECK_SAT)
     # calculate total saturated points
     result = results[const.QUALITYCHECK_SAT]
     total = np.sum(stat_data) + result.res

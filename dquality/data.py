@@ -160,10 +160,17 @@ def init(config):
     except KeyError:
         report_dir = None
 
-    return logger, data_tags, limits, quality_checks, file_type, report_type, report_dir
+    consumersfile = utils.get_file(conf, 'consumers', logger, False)
+    if consumersfile is None:
+        consumers = None
+    else:
+        with open(consumersfile) as consumers_file:
+            consumers = json.loads(consumers_file.read())
+
+    return logger, data_tags, limits, quality_checks, file_type, report_type, report_dir, consumers
 
 
-def verify_file_hdf(logger, file, data_tags, limits, quality_checks, report_type, report_dir):
+def verify_file_hdf(logger, file, data_tags, limits, quality_checks, report_type, report_dir, consumers):
     """
     This method handles verification of hdf type file.
     This method creates and starts a new handler process. The handler is initialized with data queue,
@@ -204,16 +211,17 @@ def verify_file_hdf(logger, file, data_tags, limits, quality_checks, report_type
         data_tag = data_tags[data_type]
         dt = fp[data_tag]
         for i in range(0,dt.shape[0]):
-            dataq.put(Data(dt[i],data_type))
+            data = Data(const.DATA_STATUS_DATA, dt[i], data_type)
+            dataq.put(data)
             # add delay to slow down flow up, so the flow down (results)
             # are handled in synch
-            time.sleep(.1)
+            #time.sleep(1)
 
     fp, tags = utils.get_data_hdf(file)
     dataq = Queue()
     aggregateq = Queue()
 
-    p = Process(target=handler.handle_data, args=(dataq, limits, aggregateq, quality_checks))
+    p = Process(target=handler.handle_data, args=(dataq, limits, aggregateq, quality_checks, consumers))
     p.start()
 
     # assume a fixed order of data types; this will determine indexes on the data
@@ -224,7 +232,7 @@ def verify_file_hdf(logger, file, data_tags, limits, quality_checks, report_type
     if 'data' in data_tags:
         process_data('data')
 
-    dataq.put('all_data')
+    dataq.put(Data(const.DATA_STATUS_END))
 
 
     if report_type != const.REPORT_NONE:
@@ -247,7 +255,7 @@ def verify_file_hdf(logger, file, data_tags, limits, quality_checks, report_type
     return bad_indexes
 
 
-def verify_file_ge(logger, file, limits, quality_checks, report_type, report_dir):
+def verify_file_ge(logger, file, limits, quality_checks, report_type, report_dir, consumers):
     """
     This method handles verification of ge file type.
     This method creates and starts a new handler process. The handler is initialized with data queue,
@@ -291,14 +299,14 @@ def verify_file_ge(logger, file, limits, quality_checks, report_type, report_dir
     dataq = Queue()
     aggregateq = Queue()
 
-    p = Process(target=handler.handle_data, args=(dataq, limits, aggregateq, quality_checks))
+    p = Process(target=handler.handle_data, args=(dataq, limits, aggregateq, quality_checks, consumers))
     p.start()
 
     for i in range(0,nframes):
         img = np.fromfile(fp,'uint16', fsize)
-        dataq.put(Data(img, type))
+        dataq.put(Data(const.DATA_STATUS_DATA, img, type))
         time.sleep(.1)
-    dataq.put('all_data')
+    dataq.put(Data(const.DATA_STATUS_END))
 
     # receive the results
     bad_indexes = {}
@@ -346,7 +354,7 @@ def verify(conf, file):
         (i.e. data_dark, data_white,data)
     """
 
-    logger, data_tags, limits, quality_checks, file_type, report_type, report_dir = init(conf)
+    logger, data_tags, limits, quality_checks, file_type, report_type, report_dir, consumers  = init(conf)
     if not os.path.isfile(file):
         logger.error(
             'parameter error: file ' +
@@ -354,6 +362,6 @@ def verify(conf, file):
         sys.exit(-1)
 
     if file_type == const.FILE_TYPE_HDF:
-        return verify_file_hdf(logger, file, data_tags, limits, quality_checks, report_type, report_dir)
+        return verify_file_hdf(logger, file, data_tags, limits, quality_checks, report_type, report_dir, consumers)
     elif file_type == const.FILE_TYPE_GE:
-        return verify_file_ge(logger, file, limits, quality_checks, report_type, report_dir)
+        return verify_file_ge(logger, file, limits, quality_checks, report_type, report_dir, consumers)

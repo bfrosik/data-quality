@@ -94,7 +94,8 @@ def start_process(dataq, logger, *args):
     limits = args[0]
     reportq = args[1]
     quality_checks = args[2]
-    feedback = args[3]
+    consumers = args[3]
+    feedback = args[4]
 
     feedback_obj = containers.Feedback(feedback)
     if const.FEEDBACK_LOG in feedback:
@@ -111,7 +112,7 @@ def start_process(dataq, logger, *args):
         except:
             feedback.remove(const.FEEDBACK_PV)
 
-    p = Process(target=handle_data, args=(dataq, limits, reportq, quality_checks, feedback_obj))
+    p = Process(target=handle_data, args=(dataq, limits, reportq, quality_checks, consumers, feedback_obj))
     p.start()
 
 
@@ -184,5 +185,10 @@ def pack_data(slice, type):
        data type, as 'data', 'data_white', or 'data_dark'
 
     """
-    return containers.Data(slice, type)
+    if slice is not None:
+        return containers.Data(const.DATA_STATUS_DATA, slice, type)
+    elif type == 'missing':
+        return containers.Data(const.DATA_STATUS_MISSING)
+    else:
+        return containers.Data(const.DATA_STATUS_END)
 

@@ -144,7 +144,15 @@ def init(config):
     except KeyError:
         report_type = const.REPORT_FULL
 
-    return logger, limits, quality_checks, extensions, report_type
+    consumersfile = utils.get_file(conf, 'consumers', logger, False)
+    if consumersfile is None:
+        consumers = None
+    else:
+        with open(consumersfile) as consumers_file:
+            consumers = json.loads(consumers_file.read())
+
+
+    return logger, limits, quality_checks, extensions, report_type, consumers
 
 
 def directory(directory, patterns):
@@ -232,7 +240,7 @@ def verify(conf, folder, data_type, num_files, report_by_files=True):
         a dictionary or list containing bad indexes
 
     """
-    logger, limits, quality_checks, extensions, report_type = init(conf)
+    logger, limits, quality_checks, extensions, report_type, consumers = init(conf)
     if not os.path.isdir(folder):
         logger.error(
             'parameter error: directory ' +
@@ -246,7 +254,7 @@ def verify(conf, folder, data_type, num_files, report_by_files=True):
     offset_list = []
     dataq = Queue()
     aggregateq = Queue()
-    p = Process(target=datahandler.handle_data, args=(dataq, limits, aggregateq, quality_checks,))
+    p = Process(target=datahandler.handle_data, args=(dataq, limits, aggregateq, quality_checks, consumers))
     p.start()
 
     file_index = 0
@@ -265,7 +273,7 @@ def verify(conf, folder, data_type, num_files, report_by_files=True):
             if file.find('INTERRUPT') >= 0:
                 # the calling function may use a 'interrupt' command to stop the monitoring
                 # and processing.
-                dataq.put('all_data')
+                dataq.put(Data(const.DATA_STATUS_END))
                 notifier.stop()
                 interrupted = True
                 break
@@ -279,10 +287,10 @@ def verify(conf, folder, data_type, num_files, report_by_files=True):
                 file_list.append(file)
                 offset_list.append(slice_index)
                 for i in range(0, data.shape[0]):
-                    dataq.put(Data(data[i], data_type))
+                    dataq.put(Data(const.DATA_STATUS_DATA, data[i], data_type))
                 file_index += 1
                 if file_index == num_files:
-                    dataq.put('all_data')
+                    dataq.put(Data(const.DATA_STATUS_END))
                     notifier.stop()
                     interrupted = True
                     break

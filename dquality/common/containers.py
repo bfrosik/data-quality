@@ -4,6 +4,9 @@ from multiprocessing import Process
 from threading import Timer
 import os
 import stat
+import importlib
+from os import path
+import sys
 
 
 class Result:
@@ -35,9 +38,11 @@ class Data:
     """
     This class is a container of data. One of the members is a 2D arrray. Other members will be added later
     """
-    def __init__(self, slice, type):
-        self.slice = slice
-        self.type = type
+    def __init__(self, status, slice=None, type=None):
+        self.status = status
+        if status == const.DATA_STATUS_DATA:
+            self.slice = slice
+            self.type = type
 
 
 class Feedback:
@@ -86,15 +91,14 @@ class Aggregate:
         self.good_indexes = {}
 
         self.results = {}
-        self.locks = {}
+        self.lock = Lock()
         self.lens = {}
         for qc in quality_checks:
             self.results[qc] = []
-            self.locks[qc] = Lock()
             self.lens[qc] = 0
 
 
-    def get_results_len(self, check):
+    def get_results(self, check):
         """
         This returns current length of the results of a given quality check. This operation uses lock, as other
         process writes new results.
@@ -109,11 +113,10 @@ class Aggregate:
         int
             the length of the results list for the given quality check
         """
-        lock = self.locks[check]
-        lock.acquire()
-        length = self.lens[check]
-        lock.release()
-        return length
+        self.lock.acquire()
+        res = self.results[check]
+        self.lock.release()
+        return res
 
 
     def add_result(self, result, check):
@@ -133,11 +136,10 @@ class Aggregate:
         -------
         None
         """
-        lock = self.locks[check]
-        lock.acquire()
+        self.lock.acquire()
         self.results[check].append(result)
         self.lens[check] += 1
-        lock.release()
+        self.lock.release()
 
 
     def handle_results(self, results):
@@ -158,60 +160,6 @@ class Aggregate:
             self.good_indexes[results.index] = deep_copy(results.results)
             for result in results.results:
                 self.add_result(result.res, result.quality_id)
-
-
-    def all_good_on_result(self, result):
-        """
-        This function take a result instance that contains information about the result and the subject. If the
-        slice did not pass verification for any of the quality check, it will return False. If all quality checks
-        passed it will return True. The function maintains the containers; the slice index will be added to a
-        "good_index" dictionary if all quality checks passed, and to "bad_index" otherwise.
-
-        Parameters
-        ----------
-        result : Result
-            a result instance
-
-        Returns
-        -------
-        boolean
-            True if all quelity checks passed
-            False otherwise
-        """
-        res = False
-        index = result.index
-        if result.error is const.NO_ERROR:
-            bad_index = self.bad_indexes.get(index)
-            if bad_index is None:
-                res = True
-                good_index = self.good_indexes.get(index)
-                if good_index is None:
-                    entry = {result.quality_id : result.res}
-                    self.good_indexes[index] = entry
-                else:
-                    good_index[result.quality_id] = result.res
-                self.add_result(result.res, result.quality_id)
-            else:
-                bad_index[result.quality_id] = result.res
-        else:
-            good_index = self.good_indexes.get(index)
-            if good_index is None:
-                bad_index = self.bad_indexes.get(index)
-                if bad_index is None:
-                    entry = {result.quality_id : result.res}
-                    self.bad_indexes[index] = entry
-                else:
-                    bad_index[result.quality_id] = result.res
-            else:
-                self.good_indexes.pop(index)
-                bad_index = good_index
-                bad_index[result.quality_id] = result.res
-                self.bad_indexes[index] = bad_index
-
-        if not res and self.feedback_type is not None:
-            self.feedbackq.put(result)
-
-        return res
 
 
     def quality_feedback(self, feedbackq, feedback_obj):
@@ -239,7 +187,7 @@ class Aggregate:
         evaluating = True
         while evaluating:
             result = feedbackq.get()
-            if result == 'all_data':
+            if result == const.DATA_STATUS_END:
                 evaluating = False
             else:
                 if const.FEEDBACK_CONSOLE in feedback_obj.feedback_type:
@@ -251,6 +199,40 @@ class Aggregate:
 
     def is_empty(self):
         return len(self.bad_indexes) == 0 and len(self.good_indexes) == 0
+
+
+class Consumer_adapter():
+    """
+    This class provides file discovery functionality. An instance is initialized with parameters.
+    On the start the FileSeek checks for existing files. After that it periodically checks
+    for new files in monitored directory and subdirectories. Upon finding a new or updated file it
+    velidates the file and enqueues into the queue on success.
+    """
+
+    def __init__(self, module_path):
+        """
+        constructor
+
+        Parameters
+        ----------
+        q : Queue
+            a queue used to pass discovered files
+
+        polling_period : int
+            number of second defining polling period
+
+        logger : Logger
+            logger instance
+
+        file_type : int
+            a constant defining type of data file. Supporting FILE_TYPE_GE and FILE_TYPE_HDF
+        """
+        sys.path.append(path.abspath(module_path))
+
+    def start_process(self, q, module, args):
+        mod = importlib.import_module(module)
+        p = Process(target=mod.consume, args=(q, args,))
+        p.start()
 
 
 class FileSeek():

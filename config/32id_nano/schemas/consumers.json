@@ -1,0 +1,14 @@
+{
+  "proj1.analyzer1" : [
+    "/local/bfrosik/temp",
+    {"end_proc" : "all_frames", "config" : "/local/bfrosik/temp/proj1/config.ini"}
+  ],
+  "proj2.analyzer2" : [
+    "/local/bfrosik/temp",
+    {"end_proc" : "all_frames", "arg1" : 1, "arg2" : "test"}
+  ],
+  "proj3.analyzer3" : [
+    "/local/bfrosik/temp",
+    {"end_proc" : "all_frames"}
+  ]
+}
