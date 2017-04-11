@@ -228,7 +228,7 @@ class Consumer_adapter():
 
     def start_process(self, q, module, args):
         mod = importlib.import_module(module)
-        p = Process(target=mod.consume, args=(q, args,))
+        p = Process(target=mod.consume, args=(q, const.DATA_STATUS_END, args,))
         p.start()
 
 

@@ -1,10 +1,10 @@
 {
   "proj1.analyzer1" : [
-    "/local/bfrosik/temp",
-    {"end_proc" : 2, "config" : "/local/bfrosik/temp/proj1/config.ini"}
+    "/local/temp",
+    {"arg1" : 2, "config" : "/local/temp/proj1/an1_config.ini"}
   ],
 
   "proj2.analyzer2" : [
-    "/local/bfrosik/temp",
-    {"end_proc" : 2, "config" : "/local/bfrosik/temp/proj2/config.ini"}
+    "/local/temp",
+    {"something" : "abc", "config" : "/local/temp/proj2/an2_config.ini"}
   ]}
