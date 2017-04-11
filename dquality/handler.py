@@ -78,7 +78,6 @@ def init_consumers(consumers):
     for consumer in consumers:
         path = consumers[consumer][0]
         args = consumers[consumer][1]
-        print 'path, args', path, args
         q = Queue()
         consumers_q.append(q)
         adapter = Consumer_adapter(path)

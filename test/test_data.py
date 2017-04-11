@@ -41,7 +41,7 @@ def test_qualitychecks():
     assert 5 in bad_data_white
     assert 9 in bad_data_white
     assert 10 in bad_data
-    #assert 13 in bad_data
+    assert 13 in bad_data
     assert 14 in bad_data
     assert 0 in bad_data_dark
     assert 1 in bad_data_dark
@@ -99,5 +99,8 @@ def test_ge():
     data_file = os.path.join(os.getcwd(),"test/data/test_data.ge4")
     bad_indexes = data.verify(config, data_file)
     bad_data = bad_indexes['data']
-    #assert 1 in bad_data
+    assert 1 in bad_data
+    assert 2 in bad_data
+    assert 3 in bad_data
+    assert 4 in bad_data
     clean()
