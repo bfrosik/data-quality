@@ -215,7 +215,7 @@ def verify_file_hdf(logger, file, data_tags, limits, quality_checks, report_type
             dataq.put(data)
             # add delay to slow down flow up, so the flow down (results)
             # are handled in synch
-            #time.sleep(1)
+            time.sleep(.1)
 
     fp, tags = utils.get_data_hdf(file)
     dataq = Queue()
