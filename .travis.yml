@@ -21,12 +21,13 @@ before_install:
   - conda update conda
 
 install:
-  - conda install python=$TRAVIS_PYTHON_VERSION numpy h5py nose ConfigObj pytz pcaspy
+  - conda install python=$TRAVIS_PYTHON_VERSION numpy h5py nose ConfigObj pytz
   - pip install pyinotify
   - pip install pytest pytest-cov
   - pip install codecov
   - conda info -a
   - cp test/epics.py epics.py
+  - cp test/epics.py pcaspy.py
   - python setup.py build_ext --inplace
 
 script: 
