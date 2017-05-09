@@ -404,8 +404,10 @@ def key_list(dict):
 
 def get_quality_checks(dict):
     """
+    This function translates the strings into defined numerical values.
+
     This function takes a dictionary with all elements as strings, that are defined as constants in the
-    dquality/common.constants.py file. This function translates the strings into the actual numerical values.
+    dquality/common.constants.py file and replaces the strings with defined numerical values.
 
     Parameters
     ----------
@@ -415,14 +417,40 @@ def get_quality_checks(dict):
     Returns
     -------
     quality_checks : dict
-        A new dictionary with all elements replaced by the actual value the strings represented
+        A new dictionary with all elements replaced by the numerical values the strings represented
     """
 
     quality_checks = {}
     for type in dict:
         list = []
         for qc in dict[type]:
-            list.append(const.shared(qc))
+            list.append(const.get_id(qc))
         quality_checks[type] = list
 
     return quality_checks
+
+
+def get_feedback_pvs(quality_checks):
+    """
+    This function translates numerical values into strings.
+
+    This function takes a dictionary with numerical velues, representing the quality checks that apply to the data type
+    (key). The numerical values are translated here to the string representations in a new dictionary.
+
+    Parameters
+    ----------
+    quality_checks : dictionary
+        a dictionary with numerical elements
+
+    Returns
+    -------
+    feedback_pvs : dict
+        A new dictionary with all elements replaced by the actual value the strings represented
+    """
+    feedback_pvs = []
+    for type in quality_checks:
+        qcs = quality_checks[type]
+        for qc in qcs:
+            qc_str = type + '_' + const.to_string(qc)
+            feedback_pvs.append(qc_str)
+    return feedback_pvs

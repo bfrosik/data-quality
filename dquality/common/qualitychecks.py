@@ -66,25 +66,20 @@ __all__ = ['find_result',
 
 def find_result(res, quality_id, limits):
     """
-    This is a helper method. It evaluates given result against limits, and creates
-    Result instance.
+    This creates and returns Result instance determined by the given parameters.
+
+    It evaluates given result value against limits, and creates Result instance.
 
     Parameters
     ----------
     res : float
         calculated result
 
-    index : int
-        slice index
-
     quality_id : int
         id of the quality check function
 
     limits : dictionary
         a dictionary containing threshold values
-
-    data_type : str
-        a type of data, i.e 'data_white', or 'data_dark' or 'data'
 
     Returns
     -------
@@ -103,32 +98,24 @@ def find_result(res, quality_id, limits):
 
 def validate_mean_signal_intensity(data, limits):
     """
-    This is one of the validation methods. It has a "quality_id"
-    property that identifies this validation step. This function
-    calculates mean signal intensity from the data parameter. The
-    result is compared with threshhold values to determine the
-    quality of the data. The result, comparison result, index, and
-    quality_id values are saved in a new Result object. This object
-    is then enqueued into the "results" queue.
+    This method validates mean value of the frame.
+
+    This function calculates mean signal intensity of the data slice. The result is compared with threshhold
+    values to determine the quality of the data. The result, comparison result, index, and quality_id values are
+    saved in a new Result object.
 
     Parameters
     ----------
     data : Data
         data instance that includes slice 2D data
 
-    index : int
-        slice index
-
-    results : Queue
-        A multiprocessing.Queue instance that is used to pass the
-        results from validating processes to the main
-
-    all_limits : dictionary
-        a dictionary containing threshold values
+    limits : dictionary
+        a dictionary containing threshold values for the evaluated data type
 
     Returns
     -------
-    None
+    result : Result
+        a Result object
     """
 
     this_limits = limits['mean']
@@ -139,32 +126,24 @@ def validate_mean_signal_intensity(data, limits):
 
 def validate_signal_intensity_standard_deviation(data, limits):
     """
-    This is one of the validation methods. It has a "quality_id"
-    property that identifies this validation step. This function
-    calculates standard deviation signal intensity from the data parameter. The
-    result is compared with threshhold values to determine the
-    quality of the data. The result, comparison result, index, and
-    quality_id values are saved in a new Result object. This object
-    is then enqueued into the "results" queue.
+    This method validates standard deviation value of the frame.
+
+    This function calculates standard deviation of the data slice. The result is compared with threshhold
+    values to determine the quality of the data. The result, comparison result, index, and quality_id values are
+    saved in a new Result object.
 
     Parameters
     ----------
     data : Data
         data instance that includes slice 2D data
 
-    index : int
-        slice index
-
-    results : Queue
-        A multiprocessing.Queue instance that is used to pass the
-        results from validating processes to the main
-
-    all_limits : dictionary
-        a dictionary containing threshold values
+    limits : dictionary
+        a dictionary containing threshold values for the evaluated data type
 
     Returns
     -------
-    None
+    result : Result
+        a Result object
     """
 
     this_limits = limits['std']
@@ -175,38 +154,25 @@ def validate_signal_intensity_standard_deviation(data, limits):
 
 def validate_saturation(data, limits):
     """
-    This is one of the validation methods. It has a "quality_id"
-    property that identifies this validation step. This function
-    calculates the number of saturated pixels in the given frame. The
-    result will always pass quality check, as the total number of saturated pixels is relevant.
-    The result, index, and quality_id values are saved in a new Result object. This object
-    is then enqueued into the "results" queue.
+    This method validates saturation value of the frame.
+
+    This function calculates calculates the number of saturated pixels in the given frame. The result is compared with
+    threshhold values to determine the quality of the data. The result, comparison result, index, and quality_id values
+    are saved in a new Result object.
 
     Parameters
     ----------
     data : Data
         data instance that includes slice 2D data
 
-    index : int
-        slice index
-
-    results : Queue
-        A multiprocessing.Queue instance that is used to pass the
-        results from validating processes to the main
-
-    all_limits : dictionary
-        a dictionary containing threshold values
+    limits : dictionary
+        a dictionary containing threshold values for the evaluated data type
 
     Returns
     -------
-    None
+    result : Result
+        a Result object
     """
-    # sat_high = (all_limits['sat'])['high_limit']
-    # res = (data > sat_high).sum()
-    # limits = all_limits['sat_points']
-    # result = find_result(res, index, const.QUALITYCHECK_SAT, limits)
-    # results.put(result)
-
     sat_high = (limits['sat'])['high_limit']
     res = (data.slice > sat_high).sum()
     result = Result(res, const.QUALITYCHECK_SAT, const.NO_ERROR)
@@ -215,32 +181,28 @@ def validate_saturation(data, limits):
 
 def validate_stat_mean(limits, aggregate, results):
     """
-    This is one of the statistical validation methods. It has a "quality_id"
-    property that identifies this validation step. This function evaluates
-    current mean signal intensity with relation to statistical data captured
+    This is one of the statistical validation methods.
+
+    It has a "quality_id"
+    This function evaluates current mean signal intensity with relation to statistical data captured
     in the aggregate object. The delta is compared with threshhold values.
-    The result, comparison result, index, and
-    quality_id values are saved in a new Result object. This object
-    is then enqueued into the "results" queue.
+    The result, comparison result, index, and quality_id values are saved in a new Result object.
 
     Parameters
     ----------
-    result : Result
-        result instance that includes calculated mean value
+    limits : dictionary
+        a dictionary containing threshold values for the evaluated data type
 
     aggregate : Aggregate
-        aggregate instance containing calculated results for previous slices
+        aggregate instance containing calculated results of previous slices
 
-    results : Queue
-        A multiprocessing.Queue instance that is used to pass the
-        results from validating processes to the main
-
-    all_limits : dictionary
-        a dictionary containing threshold values
+    results : dict
+        a dictionary containing all results of quality checks for the evaluated frame, keyed by quality check ID
 
     Returns
     -------
-    None
+    result : Result
+        a Result object
     """
     this_limits = limits['stat_mean']
 
@@ -263,32 +225,28 @@ def validate_stat_mean(limits, aggregate, results):
 
 def validate_accumulated_saturation(limits, aggregate, results):
     """
-    This is one of the statistical validation methods. It has a "quality_id"
-    property that identifies this validation step. This function adds
-    current saturated pixels number to the total kept in the aggregate object.
-    The total compared with threshhold values.
-    The result, comparison result, index, and
-    quality_id values are saved in a new Result object. This object
-    is then enqueued into the "results" queue.
+    This is one of the statistical validation methods.
+
+    It has a "quality_id"
+    This function adds ecurrent saturated pixels number to the total kept in the aggregate object.
+    The total is compared with threshhold values. The result, comparison result, index, and quality_id values are
+    saved in a new Result object.
 
     Parameters
     ----------
-    result : Result
-        total number of saturated pixels in all frames validated so far
+    limits : dictionary
+        a dictionary containing threshold values for the evaluated data type
 
     aggregate : Aggregate
-        aggregate instance containing previous saturation numbers
+        aggregate instance containing calculated results of previous slices
 
-    results : Queue
-        A multiprocessing.Queue instance that is used to pass the
-        results from validating processes to the main
-
-    all_limits : dictionary
-        a dictionary containing threshold values
+    results : dict
+        a dictionary containing all results of quality checks for the evaluated frame, keyed by quality check ID
 
     Returns
     -------
-    None
+    result : Result
+        a Result object
     """
     this_limits = limits['sat_points']
     stat_data = aggregate.get_results(const.QUALITYCHECK_SAT)
@@ -300,6 +258,7 @@ def validate_accumulated_saturation(limits, aggregate, results):
     return result
 
 
+# maps the quality check ID to the function object
 function_mapper = {const.QUALITYCHECK_MEAN : validate_mean_signal_intensity,
                    const.QUALITYCHECK_STD : validate_signal_intensity_standard_deviation,
                    const.QUALITYCHECK_SAT : validate_saturation,
@@ -307,6 +266,36 @@ function_mapper = {const.QUALITYCHECK_MEAN : validate_mean_signal_intensity,
                    const.ACC_SAT : validate_accumulated_saturation}
 
 def run_quality_checks(data, index, resultsq, aggregate, limits, quality_checks):
+    """
+    This function runs validation methods applicable to the frame data type and enqueues results.
+
+    This function calls all the quality checks and creates Results object that holds results of each quality check, and
+    attributes, such data type, index, and status. This object is then enqueued into the "resultsq" queue.
+
+    Parameters
+    ----------
+    data : Data
+        data instance that includes slice 2D data
+
+    index : int
+        frame index
+
+    resultsq : Queue
+         a queue to which the results are enqueued
+
+    aggregate : Aggregate
+        aggregate instance containing calculated results of previous slices
+
+    limits : dictionary
+        a dictionary containing threshold values for the evaluated data type
+
+    quality_checks : list
+        a list of quality checks that apply to the data type
+
+    Returns
+    -------
+    none
+    """
     quality_checks.sort()
     results_dir = {}
     failed = False

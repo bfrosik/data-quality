@@ -69,7 +69,7 @@ from epics import caget, PV
 from epics.ca import CAThread
 from multiprocessing import Queue
 import numpy as np
-from adapter import start_process, parse_config, pack_data
+from adapter import start_process, pack_data
 import sys
 if sys.version[0] == '2':
     import Queue as tqueue
@@ -89,13 +89,18 @@ __all__ = ['deliver_data',
 
 class Feed:
     """
-    This constructor creates the following queues:
-    process_dataq : a queue used to pass data to the consuming process
-    exitq : a queue used to signal awaiting process the end of processing, so the resources can be closed
-    thread_dataq : this queue delivers counter number on change from call back thread
-    Other fields are initialized.
+    This class reads frames in a real time using pyepics, and delivers to consuming process.
     """
     def __init__(self):
+        """
+        Constructor
+
+        This constructor creates the following queues:
+        process_dataq : a queue used to pass data to the consuming process
+        exitq : a queue used to signal awaiting process the end of processing, so the resources can be closed
+        thread_dataq : this queue delivers counter number on change from call back thread
+        Other fields are initialized.
+        """
         self.process_dataq = Queue()
         self.exitq = tqueue.Queue()
         self.thread_dataq = tqueue.Queue()
@@ -109,6 +114,8 @@ class Feed:
 
     def deliver_data(self, data_pv, frame_type_pv, logger):
         """
+        This function receives data, processes it, and delivers to consuming process.
+
         This function is invoked at the beginning of the feed as a distinct thread. It reads data from a thread_dataq
         inside a loop that delivers current counter value on change.
         If the counter is not a consecutive number to the previous reading a 'missing' string is enqueued into
@@ -174,11 +181,9 @@ class Feed:
                         if delta > 1:
                             for i in range (1, delta):
                                 self.process_dataq.put(pack_data(None, "missing"))
-                        self.process_dataq.put(pack_data(data, data_type))
+                        frame_index += delta
                         if self.sequence is not None:
-                            frame_index += delta
-                            if frame_index <= self.no_frames:
-                                verify_sequence(logger, data_type)
+                            verify_sequence(logger, data_type)
                 except:
                     finish()
                     done = True
@@ -191,8 +196,10 @@ class Feed:
     
     def on_change(self, pvname=None, **kws):
         """
-        A callback method that activates when a frame counter of area detector changes. This method reads the counter
-        value and enqueues it into inter-thread queue that will be dequeued by the 'deliver_data' function.
+        A callback method that activates when a frame counter of area detector changes.
+
+        This method reads the counter value and enqueues it into inter-thread queue that will be dequeued by the
+        'deliver_data' function.
         If it is a first read, the function adjusts counter data in the self object.
     
         Parameters
@@ -216,6 +223,8 @@ class Feed:
     
     def start_processes(self, counter_pv, data_pv, frame_type_pv, logger, *args):
         """
+        This function starts processes and callbacks.
+
         This is a main thread that starts thread reacting to the callback, starts the consuming process, and sets a
         callback on the frame counter PV change. The function then awaits for the data in the exit queue that indicates
         that all frames have been processed. The functin cancells the callback on exit.
@@ -303,8 +312,9 @@ class Feed:
     
     def feed_data(self, no_frames, detector, detector_basic, detector_image, logger, sequence=None, *args):
         """
-        This function is called by an client to start the process. It parses configuration and gets needed process
-        variables. It stores necessary values in the self object.
+        This function is called by an client to start the process.
+
+        It parses configuration and gets needed process variables. It stores necessary values in the self object.
         After all initial settings are completed, the method awaits for the area detector to start acquireing by polling
         the PV. When the area detective is active it starts processing.
     

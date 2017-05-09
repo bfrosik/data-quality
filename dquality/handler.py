@@ -74,6 +74,23 @@ __all__ = ['init_consumers',
 
 
 def init_consumers(consumers):
+    """
+    This function starts consumer processes.
+
+    It reads consumer processes parameters from the 'consumers' dictionary, adds installation directory to the path for
+    each consumer process, and starts the processes with retrieved arguments.
+
+    Parameters
+    ----------
+    consumers : dict
+        a dictionary containing consumer processes to run, and their parameters
+
+    Returns
+    -------
+    consumers_q : list
+        a list of Queues that are used to deliver frames to consumers
+    """
+
     consumers_q = []
     for consumer in consumers:
         path = consumers[consumer][0]
@@ -86,6 +103,27 @@ def init_consumers(consumers):
 
 
 def send_to_consumers(waiting_q, consumers_q, results):
+    """
+    This function receives frames in a real time and delivers them to the consumer processes.
+
+    It reads consumer processes parameters from the 'consumers' dictionary, adds installation directory to the path for
+    each consumer process, and starts the processes with retrieved arguments.
+
+    Parameters
+    ----------
+    waiting_q : deque
+        an instance of collection.deque used to pass frames and the results
+
+    consumer_q : list
+        a list of Queues on which the frames are delivered to consumers
+
+    results : Results
+       a Results container that holds results for the frame
+
+    Returns
+    -------
+    none
+    """
     index = results.index
     tempq = deque()
 
@@ -129,6 +167,8 @@ def send_to_consumers(waiting_q, consumers_q, results):
 
 def handle_data(dataq, limits, reportq, quality_checks, consumers = None, feedback_obj=None):
     """
+    This function creates and initializes all variables and handles data received on a 'dataq' queue.
+
     This function is typically called as a new process. It takes a dataq parameter
     that is the queue on which data is received. It takes the dictionary containing limit values
     for the data type being processed, such as data_dark, data_white, or data.
@@ -167,6 +207,9 @@ def handle_data(dataq, limits, reportq, quality_checks, consumers = None, feedba
         keys are ids of the basic quality check methods, and values are lists of statistical methods ids;
         the statistical methods use result from the "key" basic quality method.
 
+    consumers : dict
+        a dictionary containing consumer processes to run, and their parameters
+
     feedback_obj : Feedback
         a Feedback container that contains information for the real-time feedback. Defaulted to None.
 
@@ -174,7 +217,6 @@ def handle_data(dataq, limits, reportq, quality_checks, consumers = None, feedba
     -------
     None
     """
-
     consumers_q = None
     waiting_q = None
     if consumers is not None:
@@ -184,11 +226,13 @@ def handle_data(dataq, limits, reportq, quality_checks, consumers = None, feedba
     feedbackq = None
     if feedback_obj is not None:
         feedbackq = Queue()
+        p = Process(target=feedback_obj.quality_feedback, args=(feedbackq,))
+        p.start()
 
     aggregates = {}
     types = quality_checks.keys()
     for type in types:
-        aggregates[type] = Aggregate(type, quality_checks[type], feedbackq, feedback_obj)
+        aggregates[type] = Aggregate(type, quality_checks[type], feedbackq)
 
     resultsq = Queue()
     interrupted = False

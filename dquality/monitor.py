@@ -83,8 +83,10 @@ INTERRUPT = 'interrupt'
 
 def init(config):
     """
-    This function initializes global variables. It gets values from the configuration file, evaluates and processes
-    the values. If mandatory file or directory is missing, the script logs an error and exits.
+    This function initializes variables according to configuration.
+
+    It gets values from the configuration file, evaluates and processes the values. If mandatory file or directory
+    is missing, the script logs an error and exits.
 
     Parameters
     ----------
@@ -116,6 +118,9 @@ def init(config):
 
     report_dir : str
         a directory where report files will be located
+
+    consumers : dict
+        a dictionary containing consumer processes to run, and their parameters
 
     """
     conf = utils.get_config(config)
@@ -185,6 +190,7 @@ def init(config):
 def directory(directory, patterns):
     """
     This method monitors a directory given by the "*directory*" parameter.
+
     It creates a notifier object. The notifier is registered to await
     the "*CLOSE_WRITE*" event on a new file that matches the "*pattern*"
     parameter. If there is no such event, it yields control on timeout,
@@ -201,7 +207,8 @@ def directory(directory, patterns):
 
     Returns
     -------
-    None
+    notifier : Notifier
+        an instance of Notifier
     """
     class EventHandler(pyinotify.ProcessEvent):
 
@@ -221,6 +228,8 @@ def directory(directory, patterns):
 
 def verify(conf, folder, num_files):
     """
+    This function discovers new files and evaluates data in the files.
+
     This is the main function called when the verifier application starts.
     The configuration and the directory to monitor are passed as parameters,
     as well as number of files that will be accepted. If the files to
@@ -249,7 +258,9 @@ def verify(conf, folder, num_files):
 
     Returns
     -------
-    None
+    bad_indexes : Dict
+        A dictionary containing indexes of slices that did not pass quality check. The key is a file.
+
     """
     logger, data_tags, limits, quality_checks, extensions, file_type, report_type, report_dir, consumers = init(conf)
     if folder.endswith('**'):

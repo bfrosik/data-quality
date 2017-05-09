@@ -60,7 +60,7 @@ from dquality.handler import handle_data
 import dquality.common.containers as containers
 import dquality.common.constants as const
 import dquality.common.utilities as utils
-#import dquality.realtime.pv_feedback_driver as drv
+
 
 __author__ = "Barbara Frosik"
 __copyright__ = "Copyright (c) 2016, UChicago Argonne, LLC."
@@ -73,6 +73,8 @@ __all__ = ['start_process',
 
 def start_process(dataq, logger, *args):
     """
+    This function parses parameters and starts process consuming frames from feed.
+
     This function parses the positional parameters. Then it starts a client process, passing in a queue as first
     parameter, followed by the parsed parameters. The function of the client process must be included in imports.
 
@@ -89,7 +91,7 @@ def start_process(dataq, logger, *args):
 
     Returns
     -------
-    None
+    none
     """
     limits = args[0]
     reportq = args[1]
@@ -102,15 +104,9 @@ def start_process(dataq, logger, *args):
         feedback_obj.set_logger(logger)
 
     if const.FEEDBACK_PV in feedback:
-        try:
-            pass
-            # detector = args[4]
-            # server, driver = drv.init_driver(detector, quality_checks)
-            # feedback_obj.set_driver(driver)
-            # p = Process(target=drv.activate_pv, args=(server))
-            # p.start()
-        except:
-            feedback.remove(const.FEEDBACK_PV)
+        feedback_pvs = utils.get_feedback_pvs(quality_checks)
+        detector = args[5]
+        feedback_obj.set_feedback_pv(feedback_pvs, detector)
 
     p = Process(target=handle_data, args=(dataq, limits, reportq, quality_checks, consumers, feedback_obj))
     p.start()
@@ -118,7 +114,9 @@ def start_process(dataq, logger, *args):
 
 def parse_config(config):
     """
-    This function parses the configuration file. It must return the specified variables.
+    This function parses the configuration file.
+
+    It must return the specified variables.
 
     Parameters
     ----------

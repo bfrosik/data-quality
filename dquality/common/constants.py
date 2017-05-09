@@ -37,10 +37,10 @@ mapper = {
     'NO_ERROR' : 0,
 }
 
-def shared(name):
+def get_id(name):
     return mapper[name]
 
-def check_tostring(qualitycheck):
+def to_string(qualitycheck):
     qc_map = {1:'mean',
               2:'st_dev',
               3:'saturation',

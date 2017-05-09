@@ -74,8 +74,10 @@ import dquality.realtime.adapter as adapter
 
 def init(config):
     """
-    This function initializes global variables. It gets values from the configuration file, evaluates and processes
-    the values. If mandatory parameter is missing, the script logs an error and exits.
+    This function initializes variables according to configuration.
+
+    It gets values from the configuration file, evaluates and processes the values. If mandatory parameter is missing,
+    the script logs an error and exits.
 
     Parameters
     ----------
@@ -97,11 +99,11 @@ def init(config):
         a list of strings defining real time feedback of quality checks errors. Currently supporting 'PV', 'log', and
         'console'
 
-    feedback_pv : str
-        a name of process variable that is used for quality feedback
-
     report_type : int
         report type; currently supporting 'none', 'error', and 'full'
+
+    consumers : dict
+        a dictionary parsed from json file representing consumers
 
     """
 
@@ -149,6 +151,8 @@ def init(config):
 
 def verify(config, report_file=None, sequence = None):
     """
+    This function starts real time verification process according to the given configuration.
+
     This function reads configuration and initiates variables accordingly.
     It creates a Feed instance and starts data_feed and waits to receive results in aggregateq.
     The results are then written into a report file.
@@ -173,7 +177,7 @@ def verify(config, report_file=None, sequence = None):
     no_frames, detector, detector_basic, detector_image = adapter.parse_config(config)
 
     aggregateq = Queue()
-    args = limits, aggregateq, quality_checks, consumers, feedback
+    args = limits, aggregateq, quality_checks, consumers, feedback, detector
     feed = Feed()
     ack = feed.feed_data(no_frames, detector, detector_basic, detector_image, logger, sequence, *args)
     if ack == 1:

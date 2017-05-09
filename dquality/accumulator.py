@@ -84,8 +84,10 @@ INTERRUPT = 'interrupt'
 
 def init(config):
     """
-    This function initializes global variables. It gets values from the configuration file, evaluates and processes
-    the values. If mandatory file or directory is missing, the script logs an error and exits.
+    This function initializes variables according to configuration.
+
+    It gets values from the configuration file, evaluates and processes the values. If mandatory file or directory
+    is missing, the script logs an error and exits.
 
     Parameters
     ----------
@@ -108,6 +110,10 @@ def init(config):
 
     report_type : int
         report type; currently supporting 'none', 'error', and 'full'
+
+    consumers : dict
+        a dictionary containing consumer processes to run, and their parameters
+
     """
     conf = utils.get_config(config)
     if conf is None:
@@ -122,8 +128,6 @@ def init(config):
 
     with open(limitsfile) as limits_file:
         limits = json.loads(limits_file.read())
-
-    report_file = utils.get_file(conf, 'report_file', logger)
 
     try:
         extensions = conf['extensions']
@@ -151,13 +155,13 @@ def init(config):
         with open(consumersfile) as consumers_file:
             consumers = json.loads(consumers_file.read())
 
-
     return logger, limits, quality_checks, extensions, report_type, consumers
 
 
 def directory(directory, patterns):
     """
     This method monitors a directory given by the "*directory*" parameter.
+
     It creates a notifier object. The notifier is registered to await
     the "*CLOSE_WRITE*" event on a new file that matches the "*pattern*"
     parameter. If there is no such event, it yields control on timeout,
@@ -165,7 +169,7 @@ def directory(directory, patterns):
 
     Parameters
     ----------
-    file : str
+    directory : str
         File Name including path
 
     patterns : list
@@ -173,7 +177,8 @@ def directory(directory, patterns):
 
     Returns
     -------
-    None
+    notifier : Notifier
+        a Notifier instance
     """
     class EventHandler(pyinotify.ProcessEvent):
 
@@ -193,6 +198,8 @@ def directory(directory, patterns):
 
 def verify(conf, folder, data_type, num_files, report_by_files=True):
     """
+    This function discovers new files and evaluates data in the files.
+
     This is the main function called when the verifier application starts.
     It reads the configuration for the directory to monitor, for pattern
     that represents a file extension to look for, and for a number of

@@ -4,6 +4,8 @@ from multiprocessing import Process
 import importlib
 from os import path
 import sys
+import dquality.realtime.pv_feedback_driver as drv
+import thread
 
 
 class Result:
@@ -19,8 +21,8 @@ class Result:
 
 class Results:
     """
-    This class is a container of results of all quality checks for a single frame, and a flag indicating if all
-    quality checks passed.
+    This class is a container of results of all quality checks for a single frame, and attributes such as flag
+    indicating if all quality checks passed, dat type, and index.
     """
     def __init__(self, type, index, failed, results):
         self.type = type
@@ -33,7 +35,7 @@ class Results:
 
 class Data:
     """
-    This class is a container of data. One of the members is a 2D arrray. Other members will be added later
+    This class is a container of data.
     """
     def __init__(self, status, slice=None, type=None):
         self.status = status
@@ -47,21 +49,113 @@ class Feedback:
     This class is a container of real-time feedback related information.
     """
     def __init__(self, feedback_type, ):
+        """
+        Constructor
+
+        Parameters
+        ----------
+        feedback_type : list
+            a list of configured feedbac types. Possible options: console, log, and pv
+        """
         self.feedback_type = feedback_type
 
-    def set_feedback_pv(self, feedback_pv):
-        self.feedback_pv = feedback_pv
+    def set_feedback_pv(self, feedback_pvs, detector):
+        """
+        This function sets feedback_pvs, and detector fields.
+
+        Parameters
+        ----------
+        feedback_pvs : list
+            a list of feedback process variables names, for each data type combination with the
+            applicable quality check
+        detector : str
+            a pv name of the detector
+        """
+        self.feedback_pvs = feedback_pvs
+        self.detector = detector
 
     def set_logger(self, logger):
+        """
+        This function sets logger.
+
+        Parameters
+        ----------
+        logger : Logger
+            an instance of Logger
+        """
         self.logger = logger
 
     def set_driver(self, driver):
+        """
+        This function sets driver.
+
+        Parameters
+        ----------
+        driver : FbDriver
+            an instance of FbDriver
+        """
         self.driver = driver
+
+    def write_to_pv(self, pv, index):
+        """
+        This function calls write method on driver field to update pv.
+
+        Parameters
+        ----------
+        pv : str
+            a name of the pv, contains information about the data type and quality check (i.e. data_white_mean)
+        index : int
+            index of failed frame
+        """
+        self.driver.write(pv, index)
+
+    def quality_feedback(self, feedbackq):
+        """
+        This function provides feedback as defined by the feedback_type in a real time.
+
+        If the feedback type contains pv type, this function creates server and initiates driver handling the feedback
+        pvs.It dequeues results from the 'feedbackq' queue and processes all feedback types that have been configured.
+        It will stop processing the queue when it dequeues data indicating end status.
+
+        Parameters
+        ----------
+        feedbackq : Queue
+            a queue that will deliver Result objects of failed quality check
+
+        Returns
+        -------
+        none
+        """
+        if const.FEEDBACK_PV in self.feedback_type:
+            server = drv.FbServer()
+            driver = server.init_driver(self.detector, self.feedback_pvs)
+            thread.start_new_thread(server.activate_pv, ())
+            self.set_driver(driver)
+
+        evaluating = True
+        while evaluating:
+            while not feedbackq.empty():
+                try:
+                    result = feedbackq.get_nowait()
+                    if result == const.DATA_STATUS_END:
+                        evaluating = False
+                    else:
+                        if const.FEEDBACK_CONSOLE in self.feedback_type:
+                            print ('failed frame '+str(result.index)+ ' result of '+const.to_string(result.quality_id)+ ' is '+ str(result.res))
+                        if const.FEEDBACK_LOG in self.feedback_type:
+                            self.logger.info('failed frame '+str(result.index)+ ' result of '+const.to_string(result.quality_id)+ ' is '+ str(result.res))
+                        if const.FEEDBACK_PV in self.feedback_type:
+                            quality_check = const.to_string(result.quality_id)
+                            self.write_to_pv(result.type + '_' + quality_check, result.index)
+                except:
+                    pass
 
 
 class Aggregate:
     """
-    This class is a container of results. The results are organized in three dictionaries.
+    This class is a container of results.
+
+    The results are organized in three dictionaries.
     "bad_indexes": dictionary contains keys that are indexes of slices that not pass one or more quality checks.
     The values are results organized in dictionaries, where the keays are quality check method index.
     "good_indexes" is a similarly organized dictionary that contains indexes for which all quality checks passed.
@@ -72,33 +166,37 @@ class Aggregate:
 
     """
 
-    def __init__(self, data_type, quality_checks, feedbackq, feedback_obj = None):
+    def __init__(self, data_type, quality_checks, feedbackq = None):
+        """
+        Constructor
+
+        Parameters
+        ----------
+        data_type : str
+            data type related to the aggregate
+        quality_checks : list
+            a list of quality checks that apply for this data type
+        feedbackq : Queue
+            optional, if the real time feedback is requested, the queue will be used to pass results to the process
+            responsible for delivering the feedback in areal time
+        """
         self.data_type = data_type
-        if feedback_obj is not None:
-            self.feedback_type = feedback_obj.feedback_type
-            self.feedbackq = feedbackq
-            #TODO check if feedback_pv and save
-            # start process that will provide continuous feedback
-            p = Process(target=self.quality_feedback, args=(self.feedbackq, feedback_obj,))
-            p.start()
-        else:
-            self.feedback_type = None
+        self.feedbackq = feedbackq
 
         self.bad_indexes = {}
         self.good_indexes = {}
 
         self.results = {}
         self.lock = Lock()
-        self.lens = {}
         for qc in quality_checks:
             self.results[qc] = []
-            self.lens[qc] = 0
 
 
     def get_results(self, check):
         """
-        This returns current length of the results of a given quality check. This operation uses lock, as other
-        process writes new results.
+        This returns the results of a given quality check.
+
+        This operation uses lock, as other process writes to results.
 
         Parameters
         ----------
@@ -107,8 +205,8 @@ class Aggregate:
 
         Returns
         -------
-        int
-            the length of the results list for the given quality check
+        res : list
+            a list containing results that passed the given quality check
         """
         self.lock.acquire()
         res = self.results[check]
@@ -118,8 +216,9 @@ class Aggregate:
 
     def add_result(self, result, check):
         """
-        This add a new result for a given quality check to results. This operation uses lock, as other
-        process reads the length.
+        This add a new result for a given quality check to results.
+
+        This operation uses lock, as other process reads the results.
 
         Parameters
         ----------
@@ -131,7 +230,7 @@ class Aggregate:
 
         Returns
         -------
-        None
+        none
         """
         self.lock.acquire()
         self.results[check].append(result)
@@ -140,70 +239,57 @@ class Aggregate:
 
 
     def handle_results(self, results):
-        def deep_copy(frame_results):
-            res = {}
-            for result in frame_results:
-                res[result.quality_id] = result.res
-            return res
+        """
+        This handles all results for one frame.
 
+        If the flag indicates that at least one quality check failed the index will be added into 'bad_indexes'
+        dictionary, otherwise into 'good_indexes'. It also delivers the failed results to the feedback process
+        using the feedbackq, if real time feedback was requasted.
+
+        Parameters
+        ----------
+        result : Result
+            a result instance
+
+        check : int
+            a value indication quality check id
+
+        Returns
+        -------
+        none
+        """
         if results.failed:
-            self.bad_indexes[results.index] = deep_copy(results.results)
-            if self.feedback_type is not None:
+            self.bad_indexes[results.index] = results.results
+            if self.feedbackq is not None:
                 for result in results.results:
                     if result.error != 0:
                         result.index = results.index
+                        result.type = results.type
                         self.feedbackq.put(result)
         else:
-            self.good_indexes[results.index] = deep_copy(results.results)
+            self.good_indexes[results.index] = results.results
             for result in results.results:
                 self.add_result(result.res, result.quality_id)
 
 
-    def quality_feedback(self, feedbackq, feedback_obj):
+    def is_empty(self):
         """
-        This function take a result instance that contains information about the result and the subject. If the
-        slice did not pass verification for any of the quality check, it will return False. If all quality checks
-        passed it will return True. The function maintains the containers; the slice index will be added to a
-        "good_index" dictionary if all quality checks passed, and to "bad_index" otherwise.
+        Returns True if the fields are empty, False otherwise.
 
         Parameters
         ----------
-        feedbackq : Queue
-            a queue that will deliver Result objects of failed quality check
-
-        feedback_obj : Feedback
-            a Feedback instance that contains all information for real-time feedback
+        none
 
         Returns
         -------
-        boolean
-            True if all quelity checks passed
-            False otherwise
+        True if empty, False otherwise
         """
-
-        evaluating = True
-        while evaluating:
-            result = feedbackq.get()
-            if result == const.DATA_STATUS_END:
-                evaluating = False
-            else:
-                if const.FEEDBACK_CONSOLE in feedback_obj.feedback_type:
-                    print ('failed frame '+str(result.index)+ ' result of '+const.check_tostring(result.quality_id)+ ' is '+ str(result.res))
-                if const.FEEDBACK_LOG in feedback_obj.feedback_type:
-                    feedback_obj.logger.info('failed frame '+str(result.index)+ ' result of '+const.check_tostring(result.quality_id)+ ' is '+ str(result.res))
-                if const.FEEDBACK_PV in feedback_obj.feedback_type:
-                    print ('pv feedback not supported yet')
-
-    def is_empty(self):
         return len(self.bad_indexes) == 0 and len(self.good_indexes) == 0
 
 
 class Consumer_adapter():
     """
-    This class provides file discovery functionality. An instance is initialized with parameters.
-    On the start the FileSeek checks for existing files. After that it periodically checks
-    for new files in monitored directory and subdirectories. Upon finding a new or updated file it
-    velidates the file and enqueues into the queue on success.
+    This class is an adapter starting consumer process.
     """
 
     def __init__(self, module_path):
@@ -212,23 +298,29 @@ class Consumer_adapter():
 
         Parameters
         ----------
-        q : Queue
-            a queue used to pass discovered files
-
-        polling_period : int
-            number of second defining polling period
-
-        logger : Logger
-            logger instance
-
-        file_type : int
-            a constant defining type of data file. Supporting FILE_TYPE_GE and FILE_TYPE_HDF
+        module_path : str
+            a path where the consumer module is installed
         """
         sys.path.append(path.abspath(module_path))
 
     def start_process(self, q, module, args):
+        """
+        This function starts the consumer process.
+
+        It first imports the consumer module, and starts consumer process.
+
+        Parameters
+        ----------
+        q : Queue
+            a queue on which the frames will be delivered
+        module : str
+            the module that needs to be imported
+        args : list
+            a list of arguments required by the consumer process
+        """
         mod = importlib.import_module(module)
-        p = Process(target=mod.consume, args=(q, const.DATA_STATUS_END, args,))
+        status_def = [const.DATA_STATUS_DATA, const.DATA_STATUS_MISSING, const.DATA_STATUS_END]
+        p = Process(target=mod.consume, args=(q, status_def, args,))
         p.start()
 
 

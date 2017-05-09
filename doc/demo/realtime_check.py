@@ -68,27 +68,67 @@ import dquality.check_rt as rt
 from os.path import expanduser
 
 def main(arg):
+
     parser = argparse.ArgumentParser()
     parser.add_argument("instrument", help="instrument name, name should have a matching directory in the .dquality folder")
-    parser.add_argument("--type", default="data", help="optional, data type to be verified (i.e. data_dark, data_white or data)")
     parser.add_argument("--report_file", default=None, help="optional, name of report file")
-    parser.add_argument("--report_type", default="REPORT_FULL", help="optional, report type, currently supporting REPORT_NONE, REPORT_ERRORS, and REPORT_FULL")
+    parser.add_argument("--sequence", default=None, help="optional, expected sequence of data types")
 
     args = parser.parse_args()
     instrument = args.instrument
-    type = args.type
     report_file = args.report_file
-    report_type = args.report_type
+    sequence = args.sequence
 
     home = expanduser("~")
     conf = os.path.join(home, ".dquality", instrument)
 
-    bad_indexes = rt.realtime(conf, type, report_file, report_type)
+    bad_indexes = rt.realtime(conf, report_file, sequence)
     return bad_indexes
 
 
 if __name__ == "__main__":
     main(sys.argv[1:])
 
+# sequence example
+# variableDict = {'PreDarkImages': 5,
+#             'PreWhiteImages': 10,
+#             'Projections': 60,
+#             'PostDarkImages': 5,
+#             'PostWhiteImages': 10}
+# sequence = []
+# index = -1
+# try:
+#     images = variableDict['PreDarkImages']
+#     index += images
+#     sequence.append(('data_dark', index))
+# except KeyError:
+#     pass
+# try:
+#     images = variableDict['PreWhiteImages']
+#     index += images
+#     sequence.append(('data_white', index))
+# except KeyError:
+#     pass
+# try:
+#     images = variableDict['Projections']
+#     index += images
+#     sequence.append(('data', index))
+# except KeyError:
+#     pass
+# try:
+#     images = variableDict['PostDarkImages']
+#     index += images
+#     sequence.append(('data_dark', index))
+# except KeyError:
+#     pass
+# try:
+#     images = variableDict['PostWhiteImages']
+#     index += images
+#     sequence.append(('data_white', index))
+# except KeyError:
+#     pass
+#
+# json_sequence = json.dumps(sequence).replace(" ","")
+#
 
 

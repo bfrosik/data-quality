@@ -79,8 +79,10 @@ __all__ = ['init',
 
 def init(config):
     """
-    This function initializes global variables. It gets values from the configuration file, evaluates and processes
-    the values. If mandatory file or directory is missing, the script logs an error and exits.
+    This function initializes variables according to configuration.
+
+    It gets values from the configuration file, evaluates and processes the values. If mandatory file or directory
+    is missing, the script logs an error and exits.
 
     Parameters
     ----------
@@ -109,6 +111,9 @@ def init(config):
 
     report_dir : str
         a directory where report files will be located
+
+    consumers : dict
+        a dictionary containing consumer processes to run, and their parameters
 
     """
 
@@ -172,7 +177,8 @@ def init(config):
 
 def verify_file_hdf(logger, file, data_tags, limits, quality_checks, report_type, report_dir, consumers):
     """
-    This method handles verification of hdf type file.
+    This method handles verification of data in hdf type file.
+
     This method creates and starts a new handler process. The handler is initialized with data queue,
     the data type, and a result queue. The data type can be 'data_dark', 'data_white' or 'data'.
     After starting the process the function enqueues queue slice by slice into data, until all data is
@@ -200,6 +206,9 @@ def verify_file_hdf(logger, file, data_tags, limits, quality_checks, report_type
 
     report_dir : str
         a directory where report files will be located
+
+    consumers : dict
+        a dictionary containing consumer processes to run, and their parameters
 
     Returns
     -------
@@ -257,7 +266,7 @@ def verify_file_hdf(logger, file, data_tags, limits, quality_checks, report_type
 
 def verify_file_ge(logger, file, limits, quality_checks, report_type, report_dir, consumers):
     """
-    This method handles verification of ge file type.
+    This method handles verification of data in a ge file type.
     This method creates and starts a new handler process. The handler is initialized with data queue,
     the data type, which is 'data', and a result queue.
     After starting the process the function enqueues queue slice by slice into data, until all data is
@@ -282,6 +291,9 @@ def verify_file_ge(logger, file, limits, quality_checks, report_type, report_dir
 
     report_dir : str
         a directory where report files will be located
+
+    consumers : dict
+        a dictionary containing consumer processes to run, and their parameters
 
     Returns
     -------
@@ -329,6 +341,8 @@ def verify_file_ge(logger, file, limits, quality_checks, report_type, report_dir
 
 def verify(conf, file):
     """
+    This function verifies data in a given file.
+
     This invokes sequentially data verification processes for data_dark, data_white, and data that is contained
     in configured hd5 file. The calculated values are check against limits, configured in a file.
     Each process gets two queues parameters; one queue to get the data, and second queue to
