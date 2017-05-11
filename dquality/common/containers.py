@@ -5,7 +5,10 @@ import importlib
 from os import path
 import sys
 import dquality.realtime.pv_feedback_driver as drv
-import thread
+if sys.version[0] == '2':
+    import thread as thread
+else:
+    import _thread as thread
 
 
 class Result:
