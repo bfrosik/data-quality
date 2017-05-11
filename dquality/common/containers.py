@@ -237,7 +237,6 @@ class Aggregate:
         """
         self.lock.acquire()
         self.results[check].append(result)
-        self.lens[check] += 1
         self.lock.release()
 
 
