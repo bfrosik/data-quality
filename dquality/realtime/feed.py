@@ -182,6 +182,7 @@ class Feed:
                             for i in range (1, delta):
                                 self.process_dataq.put(pack_data(None, "missing"))
                         frame_index += delta
+                        self.process_dataq.put(pack_data(data, data_type))
                         if self.sequence is not None:
                             verify_sequence(logger, data_type)
                 except:
