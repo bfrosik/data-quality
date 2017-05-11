@@ -27,7 +27,7 @@ install:
   - pip install codecov
   - conda info -a
   - cp test/epics.py epics.py
-  - cp test/epics.py pcaspy.py
+  - cp test/pcaspy.py pcaspy.py
   - python setup.py build_ext --inplace
 
 script: 
