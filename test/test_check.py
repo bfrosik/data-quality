@@ -9,7 +9,7 @@ data_file = "test/data/test_data.h5"
 logfile = "default.log"
 schemas = "test/schemas"
 
-def xtest_setup():
+def test_setup():
     # shutil.copyfile("test/epics.py", "epics.py")
     if not os.path.isdir(schemas):
         shutil.copytree("test/schemas_test", schemas)
@@ -19,7 +19,7 @@ def clean():
     open(logfile, 'w').close()
 
 
-def xtest_check_hdf():
+def test_check_hdf():
     try:
         check.hdf(config, data_file)
     except:
@@ -29,7 +29,7 @@ def xtest_check_hdf():
     clean()
 
 
-def xtest_check_pv():
+def test_check_pv():
     try:
         check.pv(config)
     except:
@@ -41,7 +41,7 @@ def xtest_check_pv():
     clean()
 
 
-def xtest_check_monitor():
+def test_check_monitor():
     try:
         check.monitor(config, "something", 1)
     except:
@@ -51,7 +51,7 @@ def xtest_check_monitor():
     clean()
 
 
-def xtest_check_accumulator():
+def test_check_accumulator():
     try:
         check.accumulator(config, "something", "data_white", 1, True)
     except:
@@ -62,7 +62,7 @@ def xtest_check_accumulator():
     clean()
 
 
-def xtest_check_data():
+def test_check_data():
     try:
         check.data(config, data_file)
     except:
@@ -72,7 +72,7 @@ def xtest_check_data():
     clean()
 
 
-def xtest_check_hdf_dependency():
+def test_check_hdf_dependency():
     try:
         check.hdf_dependency(config, data_file)
     except:
