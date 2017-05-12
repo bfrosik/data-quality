@@ -1,12 +1,12 @@
 
 file {
-	name="/local/bfrosik/data-quality/qualityFeedback.adl"
+	name="/local/data-quality/qualityFeedback.adl"
 	version=030111
 }
 display {
 	object {
-		x=905
-		y=605
+		x=896
+		y=597
 		width=743
 		height=480
 	}
@@ -106,7 +106,7 @@ text {
 		height=20
 	}
 	monitor {
-		chan="BBF1:data_mean_ind"
+		chan="pilatus300:data_mean_ind"
 		clr=24
 		bclr=4
 	}
@@ -184,7 +184,7 @@ text {
 		height=20
 	}
 	monitor {
-		chan="BBF1:data_st_dev_ind"
+		chan="pilatus300:data_st_dev_ind"
 		clr=24
 		bclr=4
 	}
@@ -200,7 +200,7 @@ text {
 		height=20
 	}
 	monitor {
-		chan="BBF1:data_stat_mean_ind"
+		chan="pilatus300:data_stat_mean_ind"
 		clr=24
 		bclr=4
 	}
@@ -229,7 +229,7 @@ text {
 		height=20
 	}
 	monitor {
-		chan="BBF1:data_mean_ctr"
+		chan="pilatus300:data_mean_ctr"
 		clr=24
 		bclr=4
 	}
@@ -247,7 +247,7 @@ text {
 		height=20
 	}
 	monitor {
-		chan="BBF1:data_st_dev_ctr"
+		chan="pilatus300:data_st_dev_ctr"
 		clr=24
 		bclr=4
 	}
@@ -265,7 +265,7 @@ text {
 		height=20
 	}
 	monitor {
-		chan="BBF1:data_stat_mean_ctr"
+		chan="pilatus300:data_stat_mean_ctr"
 		clr=24
 		bclr=4
 	}
@@ -294,7 +294,7 @@ text {
 		height=20
 	}
 	monitor {
-		chan="BBF1:data_white_mean_ind"
+		chan="pilatus300:data_white_mean_ind"
 		clr=24
 		bclr=4
 	}
@@ -339,7 +339,7 @@ text {
 		height=20
 	}
 	monitor {
-		chan="BBF1:data_white_st_dev_ind"
+		chan="pilatus300:data_white_st_dev_ind"
 		clr=24
 		bclr=4
 	}
@@ -355,7 +355,7 @@ text {
 		height=20
 	}
 	monitor {
-		chan="BBF1:data_white_stat_mean_ind"
+		chan="pilatus300:data_white_stat_mean_ind"
 		clr=24
 		bclr=4
 	}
@@ -383,7 +383,7 @@ text {
 		height=20
 	}
 	monitor {
-		chan="BBF1:data_white_mean_ctr"
+		chan="pilatus300:data_white_mean_ctr"
 		clr=24
 		bclr=4
 	}
@@ -401,7 +401,7 @@ text {
 		height=20
 	}
 	monitor {
-		chan="BBF1:data_white_st_dev_ctr"
+		chan="pilatus300:data_white_st_dev_ctr"
 		clr=24
 		bclr=4
 	}
@@ -419,7 +419,7 @@ text {
 		height=20
 	}
 	monitor {
-		chan="BBF1:data_white_stat_mean_ctr"
+		chan="pilatus300:data_white_stat_mean_ctr"
 		clr=24
 		bclr=4
 	}
@@ -448,7 +448,7 @@ text {
 		height=20
 	}
 	monitor {
-		chan="BBF1:data_dark_mean_ind"
+		chan="pilatus300:data_dark_mean_ind"
 		clr=24
 		bclr=4
 	}
@@ -493,7 +493,7 @@ text {
 		height=20
 	}
 	monitor {
-		chan="BBF1:data_dark_st_dev_ind"
+		chan="pilatus300:data_dark_st_dev_ind"
 		clr=24
 		bclr=4
 	}
@@ -521,7 +521,7 @@ text {
 		height=20
 	}
 	monitor {
-		chan="BBF1:data_dark_mean_ctr"
+		chan="pilatus300:data_dark_mean_ctr"
 		clr=24
 		bclr=4
 	}
@@ -539,7 +539,7 @@ text {
 		height=20
 	}
 	monitor {
-		chan="BBF1:data_dark_st_dev_ctr"
+		chan="pilatus300:data_dark_st_dev_ctr"
 		clr=24
 		bclr=4
 	}
