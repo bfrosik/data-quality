@@ -149,46 +149,57 @@ def init(config):
     return logger, limits, quality_checks, feedback, report_type, consumers
 
 
-def verify(config, report_file=None, sequence = None):
-    """
-    This function starts real time verification process according to the given configuration.
+class RT:
+    def __init__(self):
+        """
+        Constructor
+        """
+        self.feed = Feed()
 
-    This function reads configuration and initiates variables accordingly.
-    It creates a Feed instance and starts data_feed and waits to receive results in aggregateq.
-    The results are then written into a report file.
 
-    Parameters
-    ----------
-    conf : str
-        configuration file name, including path
+    def verify(self, config, report_file=None, sequence = None):
+        """
+        This function starts real time verification process according to the given configuration.
 
-    report_file : file
-        a file where the report will be written, defaulted to None, if no report wanted
+        This function reads configuration and initiates variables accordingly.
+        It creates a Feed instance and starts data_feed and waits to receive results in aggregateq.
+        The results are then written into a report file.
 
-    sequence : list or int
-        information about data sequence or number of frames
+        Parameters
+        ----------
+        conf : str
+            configuration file name, including path
 
-    Returns
-    -------
-    boolean
+        report_file : file
+            a file where the report will be written, defaulted to None, if no report wanted
 
-    """
-    logger, limits, quality_checks, feedback, report_type, consumers = init(config)
-    no_frames, detector, detector_basic, detector_image = adapter.parse_config(config)
+        sequence : list or int
+            information about data sequence or number of frames
 
-    aggregateq = Queue()
-    args = limits, aggregateq, quality_checks, consumers, feedback, detector
-    feed = Feed()
-    ack = feed.feed_data(no_frames, detector, detector_basic, detector_image, logger, sequence, *args)
-    if ack == 1:
-        bad_indexes = {}
+        Returns
+        -------
+        boolean
 
-        aggregate = aggregateq.get()
+        """
+        logger, limits, quality_checks, feedback, report_type, consumers = init(config)
+        no_frames, detector, detector_basic, detector_image = adapter.parse_config(config)
 
-        if report_file is not None:
-            report.report_results(logger, aggregate, None, report_file, report_type)
-        report.add_bad_indexes(aggregate, bad_indexes)
+        aggregateq = Queue()
+        args = limits, aggregateq, quality_checks, consumers, feedback, detector
+        #self.feed = Feed()
+        ack = self.feed.feed_data(no_frames, detector, detector_basic, detector_image, logger, sequence, *args)
+        if ack == 1:
+            bad_indexes = {}
 
-        return bad_indexes
+            aggregate = aggregateq.get()
 
+            if report_file is not None:
+                report.report_results(logger, aggregate, None, report_file, report_type)
+            report.add_bad_indexes(aggregate, bad_indexes)
+
+            return bad_indexes
+
+
+    def finish(self):
+        self.feed.finish()
 

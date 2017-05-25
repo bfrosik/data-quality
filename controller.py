@@ -64,9 +64,12 @@ __all__ = ['start_verifier',
 
 
 # Host and Port should be configured
-HOST = "txmtwo"
-PORT = "5011"
-VER_DIR = "/home/beams/USR32IDC/temp/"
+# HOST = "txmtwo"
+# PORT = "5011"
+# VER_DIR = "/home/beams/USR32IDC/temp/"
+HOST = ""
+PORT = 5011
+VER_DIR = "/local/bfrosik/data-quality"
 
 def start_verifier(conf, report_file, variableDict):
     """
@@ -166,12 +169,12 @@ def stop_verifier(key):
         def QueueServerClient(self, HOST, PORT, AUTHKEY):
             class QueueManager(SyncManager):
                 pass
-            QueueManager.register('stop_process')
+            QueueManager.register('stop_verifier_process')
             self.manager = QueueManager(address = (HOST, PORT), authkey = AUTHKEY)
             self.manager.connect()
 
         def stop_remote_process(self):
-            self.manager.stop_process()
+            self.manager.stop_verifier_process()
             try:
                 conn = self.manager._Client(address = (HOST, PORT), authkey = key)
                 conn.close()
@@ -185,4 +188,6 @@ def stop_verifier(key):
 
     # this will execute command on the server
     remote_controller.stop_remote_process()
+
+stop_verifier('abc')
 

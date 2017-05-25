@@ -55,6 +55,7 @@ all frames are collected or can be stopped by a remote connection.
 
 from multiprocessing import Process
 from multiprocessing.managers import SyncManager
+import multiprocessing as mp
 import dquality.realtime.real_time as real
 import argparse
 import json
@@ -107,12 +108,15 @@ class Controller:
         """
 
         def stop_verifier_process():
-            self.p.terminate()
+            #self.p.terminate()
+            self.rt.finish()
 
         class MyManager(SyncManager):
             pass
 
-        self.p = Process(target=real.verify, args=(self.config, self.report_file, self.sequence, ))
+        self.rt = real.RT()
+
+        self.p = Process(target=self.rt.verify, args=(self.config, self.report_file, self.sequence, ))
         self.p.start()
 
         MyManager.register('stop_verifier_process', callable = stop_verifier_process)
@@ -137,10 +141,13 @@ def parse_seq(sequence):
 
     """
 
-    if sequence == '' or sequence is None:
-        return None
-    else:
-        return json.loads(sequence)
+    try:
+        seq = json.loads(sequence)
+    except:
+        seq = sequence
+        if seq == 'None':
+            seq = None
+    return seq
 
 
 def start_server(arg):
@@ -182,9 +189,11 @@ def start_server(arg):
     config = args.config
     report_file = args.report_file
     sequence = parse_seq(args.sequence)
+    key = args.key
+
 
     controller = Controller(config, report_file, sequence)
-    manager, p = controller.CreateServer(int(args.port), args.key)
+    manager, p = controller.CreateServer(int(args.port), key)
     # this will start server
     manager.start()
 

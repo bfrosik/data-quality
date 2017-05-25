@@ -110,6 +110,7 @@ class Feed:
         self.ctr = 0
         self.sequence = None
         self.sequence_index = 0
+        self.cntr_pv = None
 
 
     def deliver_data(self, data_pv, frame_type_pv, logger):
@@ -157,21 +158,21 @@ class Feed:
             if planned_data_type != data_type:
                 logger.warning('The data type for frame number ' + str(frame_index) + ' is ' + data_type + ' but was planned ' + planned_data_type)
 
-        def finish():
-            self.process_dataq.put(pack_data(None, "end"))
-            self.exitq.put('exit')
+        # def finish():
+        #     self.process_dataq.put(pack_data(None, "end"))
+        #     self.exitq.put('exit')
 
         types =  build_type_map()
         done = False
         frame_index = 0
         while not done:
             current_counter = self.thread_dataq.get()
-            if current_counter < self.no_frames:
+            if self.no_frames < 0 or current_counter < self.no_frames:
                 try:
                     data = np.array(caget(data_pv))
                     data_type = types[caget(frame_type_pv)]
                     if data is None:
-                        finish()
+                        self.finish()
                         done = True
                         logger.error('reading image times out, possibly the detector exposure time is too small')
                     else:
@@ -186,13 +187,13 @@ class Feed:
                         if self.sequence is not None:
                             verify_sequence(logger, data_type)
                 except:
-                    finish()
+                    self.finish()
                     done = True
                     logger.error('reading image raises exception, possibly the detector exposure time is too small')
             else:
                 done = True
 
-        finish()
+        self.finish()
 
     
     def on_change(self, pvname=None, **kws):
@@ -216,9 +217,10 @@ class Feed:
         current_ctr = kws['value']
         #on first callback adjust the values
         if self.ctr == 0:
-            self.no_frames += current_ctr
             self.ctr = current_ctr
-    
+            if self.no_frames >= 0:
+                self.no_frames += current_ctr
+
         self.thread_dataq.put(current_ctr)
     
     
@@ -255,11 +257,12 @@ class Feed:
         data_thread.start()
 
         start_process(self.process_dataq, logger, *args)
-        cntr = PV(counter_pv)
-        cntr.add_callback(self.on_change, index = 1)
+        self.cntr_pv = PV(counter_pv)
+        self.cntr_pv.add_callback(self.on_change, index = 1)
     
-        self.exitq.get()
-        cntr.clear_callbacks()
+        # self.exitq.get()
+        # print 'got Exit in exitq stopping callback'
+        # self.cntr.clear_callbacks()
     
     
     def get_pvs(self, detector, detector_basic, detector_image):
@@ -358,3 +361,9 @@ class Feed:
                 self.start_processes(counter_pv, data_pv, frame_type_pv, logger, *args)
 
         return caget(acquire_pv)
+
+
+    def finish(self):
+        self.process_dataq.put(pack_data(None, "end"))
+        self.cntr_pv.clear_callbacks()
+

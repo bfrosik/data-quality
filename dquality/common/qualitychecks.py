@@ -152,6 +152,33 @@ def validate_signal_intensity_standard_deviation(data, limits):
     return result
 
 
+def validate_intensity_sum(data, limits):
+    """
+    This method validates a sum of all intensities value of the frame.
+
+    This function calculates sums the pixels intensity in the given frame. The result is compared with
+    threshhold values to determine the quality of the data. The result, comparison result, index, and quality_id values
+    are saved in a new Result object.
+
+    Parameters
+    ----------
+    data : Data
+        data instance that includes slice 2D data
+
+    limits : dictionary
+        a dictionary containing threshold values for the evaluated data type
+
+    Returns
+    -------
+    result : Result
+        a Result object
+    """
+    this_limits = limits['sum']
+    res = data.slice.sum()
+    result = find_result(res, const.QUALITYCHECK_SUM, this_limits)
+    return result
+
+
 def validate_saturation(data, limits):
     """
     This method validates saturation value of the frame.
@@ -262,6 +289,7 @@ def validate_accumulated_saturation(limits, aggregate, results):
 function_mapper = {const.QUALITYCHECK_MEAN : validate_mean_signal_intensity,
                    const.QUALITYCHECK_STD : validate_signal_intensity_standard_deviation,
                    const.QUALITYCHECK_SAT : validate_saturation,
+                   const.QUALITYCHECK_SUM : validate_intensity_sum,
                    const.STAT_MEAN : validate_stat_mean,
                    const.ACC_SAT : validate_accumulated_saturation}
 
