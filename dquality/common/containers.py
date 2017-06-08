@@ -40,11 +40,13 @@ class Data:
     """
     This class is a container of data.
     """
-    def __init__(self, status, slice=None, type=None):
+    def __init__(self, status, slice=None, type=None, acq_time = None):
         self.status = status
         if status == const.DATA_STATUS_DATA:
             self.slice = slice
             self.type = type
+            if acq_time is not None:
+                self.acq_time = acq_time
 
 
 class Feedback:

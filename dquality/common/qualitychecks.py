@@ -179,6 +179,62 @@ def validate_intensity_sum(data, limits):
     return result
 
 
+def validate_cnt_rate_sat(data, limits):
+    """
+    This method validates a sum of all intensities value of the frame.
+
+    This function calculates sums the pixels intensity in the given frame. The result is compared with
+    threshhold values to determine the quality of the data. The result, comparison result, index, and quality_id values
+    are saved in a new Result object.
+
+    Parameters
+    ----------
+    data : Data
+        data instance that includes slice 2D data
+
+    limits : dictionary
+        a dictionary containing threshold values for the evaluated data type
+
+    Returns
+    -------
+    result : Result
+        a Result object
+    """
+    this_limits = limits['rate_sat']
+    acq_time = data.acq_time
+    res = data.slice.sum()/acq_time
+    result = find_result(res, const.QUALITYCHECK_RATE_SAT, this_limits)
+    return result
+
+
+def validate_frame_saturation(data, limits):
+    """
+    This method validates saturation value of the frame.
+
+    This function calculates calculates the number of saturated pixels in the given frame. The result is compared with
+    threshhold values to determine the quality of the data. The result, comparison result, index, and quality_id values
+    are saved in a new Result object.
+
+    Parameters
+    ----------
+    data : Data
+        data instance that includes slice 2D data
+
+    limits : dictionary
+        a dictionary containing threshold values for the evaluated data type
+
+    Returns
+    -------
+    result : Result
+        a Result object
+    """
+    this_limits = limits['frame_sat']
+    sat_high = (limits['sat'])['high_limit']
+    res = (data.slice > sat_high).sum()
+    result = Result(res, const.QUALITYCHECK_FRAME_SAT, this_limits)
+    return result
+
+
 def validate_saturation(data, limits):
     """
     This method validates saturation value of the frame.
@@ -289,7 +345,9 @@ def validate_accumulated_saturation(limits, aggregate, results):
 function_mapper = {const.QUALITYCHECK_MEAN : validate_mean_signal_intensity,
                    const.QUALITYCHECK_STD : validate_signal_intensity_standard_deviation,
                    const.QUALITYCHECK_SAT : validate_saturation,
-                   const.QUALITYCHECK_SUM : validate_intensity_sum,
+                   const.QUALITYCHECK_FRAME_SAT : validate_frame_saturation,
+                   const.QUALITYCHECK_RATE_SAT: validate_cnt_rate_sat,
+                   const.QUALITYCHECK_SUM: validate_intensity_sum,
                    const.STAT_MEAN : validate_stat_mean,
                    const.ACC_SAT : validate_accumulated_saturation}
 
@@ -343,6 +401,3 @@ def run_quality_checks(data, index, resultsq, aggregate, limits, quality_checks)
 
     results = Results(data.type, index, failed, results_dir)
     resultsq.put(results)
-
-
-

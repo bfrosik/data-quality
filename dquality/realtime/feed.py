@@ -69,7 +69,7 @@ from epics import caget, PV
 from epics.ca import CAThread
 from multiprocessing import Queue
 import numpy as np
-from adapter import start_process, pack_data
+import dquality.realtime.adapter as adapter
 import sys
 if sys.version[0] == '2':
     import Queue as tqueue
@@ -181,9 +181,10 @@ class Feed:
                         data.resize(self.sizex, self.sizey)
                         if delta > 1:
                             for i in range (1, delta):
-                                self.process_dataq.put(pack_data(None, "missing"))
+                                self.process_dataq.put(adapter.pack_data(None, "missing"))
                         frame_index += delta
-                        self.process_dataq.put(pack_data(data, data_type))
+                        packed_data = self.get_packed_data(data, data_type)
+                        self.process_dataq.put(packed_data)
                         if self.sequence is not None:
                             verify_sequence(logger, data_type)
                 except:
@@ -195,6 +196,8 @@ class Feed:
 
         self.finish()
 
+    def get_packed_data(self, data, data_type):
+        return adapter.pack_data(data, data_type)
     
     def on_change(self, pvname=None, **kws):
         """
@@ -256,7 +259,7 @@ class Feed:
         data_thread = CAThread(target = self.deliver_data, args=(data_pv, frame_type_pv, logger,))
         data_thread.start()
 
-        start_process(self.process_dataq, logger, *args)
+        adapter.start_process(self.process_dataq, logger, *args)
         self.cntr_pv = PV(counter_pv)
         self.cntr_pv.add_callback(self.on_change, index = 1)
     
@@ -364,6 +367,6 @@ class Feed:
 
 
     def finish(self):
-        self.process_dataq.put(pack_data(None, "end"))
+        self.process_dataq.put(adapter.pack_data(None, "end"))
         self.cntr_pv.clear_callbacks()
 

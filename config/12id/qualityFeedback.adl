@@ -5,10 +5,10 @@ file {
 }
 display {
 	object {
-		x=1241
-		y=477
-		width=469
-		height=184
+		x=381
+		y=717
+		width=772
+		height=209
 	}
 	clr=14
 	bclr=4
@@ -106,7 +106,7 @@ text {
 		height=20
 	}
 	monitor {
-		chan="pilatus300:data_sum_ind"
+		chan="BBF1:data_sum_ind"
 		clr=24
 		bclr=4
 	}
@@ -132,13 +132,13 @@ text {
 	object {
 		x=230
 		y=49
-		width=150
+		width=550
 		height=18
 	}
 	"basic attribute" {
 		clr=49
 	}
-	textix="Intensity sum:"
+	textix="Intensity sum:    Cntr Rate Sat:     Saturated point    "
 }
 text {
 	object {
@@ -172,7 +172,79 @@ text {
 		height=20
 	}
 	monitor {
-		chan="pilatus300:data_sum_ctr"
+		chan="BBF1:data_sum_ctr"
+		clr=24
+		bclr=4
+	}
+	clrmod="alarm"
+	align="horiz. centered"
+	limits {
+		precSrc="default"
+	}
+}
+"text update" {
+	object {
+		x=373
+		y=89
+		width=100
+		height=20
+	}
+	monitor {
+		chan="BBF1:data_rate_sat_ind"
+		clr=24
+		bclr=4
+	}
+	align="horiz. centered"
+	format="string"
+	limits {
+		precSrc="default"
+	}
+}
+"text update" {
+	object {
+		x=373
+		y=117
+		width=100
+		height=20
+	}
+	monitor {
+		chan="BBF1:data_rate_sat_ctr"
+		clr=24
+		bclr=4
+	}
+	clrmod="alarm"
+	align="horiz. centered"
+	limits {
+		precSrc="default"
+	}
+}
+"text update" {
+	object {
+		x=525
+		y=89
+		width=98
+		height=20
+	}
+	monitor {
+		chan="BBF1:data_frame_sat_ind"
+		clr=24
+		bclr=4
+	}
+	align="horiz. centered"
+	format="string"
+	limits {
+		precSrc="default"
+	}
+}
+"text update" {
+	object {
+		x=525
+		y=117
+		width=98
+		height=20
+	}
+	monitor {
+		chan="BBF1:data_frame_sat_ctr"
 		clr=24
 		bclr=4
 	}

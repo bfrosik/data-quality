@@ -70,6 +70,7 @@ import dquality.common.report as report
 from dquality.realtime.feed import Feed
 import dquality.common.constants as const
 import dquality.realtime.adapter as adapter
+from dquality.realtime.feed_decorator import FeedDecorator
 
 
 def init(config):
@@ -150,12 +151,6 @@ def init(config):
 
 
 class RT:
-    def __init__(self):
-        """
-        Constructor
-        """
-        self.feed = Feed()
-
 
     def verify(self, config, report_file=None, sequence = None):
         """
@@ -181,12 +176,26 @@ class RT:
         boolean
 
         """
+        def get_decor(qc):
+            decor = {}
+            qc = [6]
+            if const.QUALITYCHECK_RATE_SAT in qc:
+                decor[const.QUALITYCHECK_RATE_SAT] = detector + ":" + detector_basic +":AcquireTime"
+            return decor
+
         logger, limits, quality_checks, feedback, report_type, consumers = init(config)
         no_frames, detector, detector_basic, detector_image = adapter.parse_config(config)
 
         aggregateq = Queue()
+
+        # address the special cases of quality checks when additional arguments are required
+        decor = get_decor(quality_checks)
+        if len(decor) is 0:
+            self.feed = Feed()
+        else:
+            self.feed = FeedDecorator(decor)
+
         args = limits, aggregateq, quality_checks, consumers, feedback, detector
-        #self.feed = Feed()
         ack = self.feed.feed_data(no_frames, detector, detector_basic, detector_image, logger, sequence, *args)
         if ack == 1:
             bad_indexes = {}

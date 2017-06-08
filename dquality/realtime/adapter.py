@@ -190,3 +190,23 @@ def pack_data(slice, type):
     else:
         return containers.Data(const.DATA_STATUS_END)
 
+def pack_data_with_decor(slice, type, acq_time):
+    """
+    This function packs a single image data into a specific container.
+
+    Parameters
+    ----------
+    slice : nparray
+        image data
+
+    type : str
+       data type, as 'data', 'data_white', or 'data_dark'
+
+    """
+    if slice is not None:
+        return containers.Data(const.DATA_STATUS_DATA, slice, type, acq_time)
+    elif type == 'missing':
+        return containers.Data(const.DATA_STATUS_MISSING)
+    else:
+        return containers.Data(const.DATA_STATUS_END)
+

@@ -2,6 +2,8 @@ QUALITYCHECK_MEAN = 1
 QUALITYCHECK_STD = 2
 QUALITYCHECK_SAT = 3
 QUALITYCHECK_SUM = 4
+QUALITYCHECK_FRAME_SAT = 5
+QUALITYCHECK_RATE_SAT = 6
 STAT_START = 100
 STAT_MEAN = 100
 ACC_SAT = 101
@@ -30,6 +32,8 @@ mapper = {
     'QUALITYCHECK_STD' : 2,
     'QUALITYCHECK_SAT' : 3,
     'QUALITYCHECK_SUM' : 4,
+    'QUALITYCHECK_FRAME_SAT' : 5,
+    'QUALITYCHECK_RATE_SAT' : 6,
     'STAT_START' : 100,
     'STAT_MEAN' : 100,
     'ACC_SAT' : 101,
@@ -47,6 +51,8 @@ def to_string(qualitycheck):
               2:'st_dev',
               3:'saturation',
               4:'sum',
+              5:'frame_sat',
+              6:'rate_sat',
               100:'stat_mean',
               101:'acc_sat'}
     return qc_map[qualitycheck]

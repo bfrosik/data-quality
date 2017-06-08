@@ -165,7 +165,7 @@ def send_to_consumers(waiting_q, consumers_q, results):
 
 
 
-def handle_data(dataq, limits, reportq, quality_checks, consumers = None, feedback_obj=None):
+def handle_data(dataq, limits, reportq, quality_checks, consumers=None, feedback_obj=None):
     """
     This function creates and initializes all variables and handles data received on a 'dataq' queue.
 
