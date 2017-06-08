@@ -345,16 +345,18 @@ class Feed:
         -------
         None
         """
-
         acquire_pv, counter_pv, data_pv, sizex_pv, sizey_pv, frame_type_pv = self.get_pvs(detector, detector_basic, detector_image)
-        if sequence is None:
-            self.no_frames = no_frames
-        elif type(sequence) is int:
-            self.no_frames = sequence
-        else:
-            self.sequence = sequence
-            self.no_frames = sequence[len(sequence)-1][1] + 1
+        self.no_frames = no_frames
+        # if sequence is None:
+        #     self.no_frames = no_frames
+        # elif type(sequence) is int:
+        #     self.no_frames = sequence
+        # else:
+        #     self.sequence = sequence
+        #     self.no_frames = sequence[len(sequence)-1][1] + 1
+
         test = True
+
         while test:
             self.sizex = caget (sizex_pv)
             self.sizey = caget (sizey_pv)

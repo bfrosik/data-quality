@@ -184,7 +184,7 @@ class RT:
             return decor
 
         logger, limits, quality_checks, feedback, report_type, consumers = init(config)
-        no_frames, detector, detector_basic, detector_image = adapter.parse_config(config)
+        no_frames, aggregate_limit, detector, detector_basic, detector_image = adapter.parse_config(config)
 
         aggregateq = Queue()
 
@@ -195,7 +195,8 @@ class RT:
         else:
             self.feed = FeedDecorator(decor)
 
-        args = limits, aggregateq, quality_checks, consumers, feedback, detector
+        aggregate_limit = no_frames
+        args = limits, aggregateq, quality_checks, aggregate_limit, consumers, feedback, detector
         ack = self.feed.feed_data(no_frames, detector, detector_basic, detector_image, logger, sequence, *args)
         if ack == 1:
             bad_indexes = {}

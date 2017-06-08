@@ -165,7 +165,7 @@ def send_to_consumers(waiting_q, consumers_q, results):
 
 
 
-def handle_data(dataq, limits, reportq, quality_checks, consumers=None, feedback_obj=None):
+def handle_data(dataq, limits, reportq, quality_checks, aggregate_limit, consumers=None, feedback_obj=None):
     """
     This function creates and initializes all variables and handles data received on a 'dataq' queue.
 
@@ -232,7 +232,7 @@ def handle_data(dataq, limits, reportq, quality_checks, consumers=None, feedback
     aggregates = {}
     types = quality_checks.keys()
     for type in types:
-        aggregates[type] = Aggregate(type, quality_checks[type], feedbackq)
+        aggregates[type] = Aggregate(type, quality_checks[type], aggregate_limit, feedbackq)
 
     resultsq = Queue()
     interrupted = False

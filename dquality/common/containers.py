@@ -171,7 +171,7 @@ class Aggregate:
 
     """
 
-    def __init__(self, data_type, quality_checks, feedbackq = None):
+    def __init__(self, data_type, quality_checks, aggregate_limit, feedbackq = None):
         """
         Constructor
 
@@ -187,6 +187,7 @@ class Aggregate:
         """
         self.data_type = data_type
         self.feedbackq = feedbackq
+        self.aggregate_limit = aggregate_limit
 
         self.bad_indexes = {}
         self.good_indexes = {}
@@ -262,18 +263,25 @@ class Aggregate:
         -------
         none
         """
-        if results.failed:
-            self.bad_indexes[results.index] = results.results
+        def send_feedback():
             if self.feedbackq is not None:
                 for result in results.results:
                     if result.error != 0:
                         result.index = results.index
                         result.type = results.type
                         self.feedbackq.put(result)
+
+        if self.aggregate_limit == -1:
+            if results.failed:
+                send_feedback()
         else:
-            self.good_indexes[results.index] = results.results
-            for result in results.results:
-                self.add_result(result.res, result.quality_id)
+            if results.failed:
+                self.bad_indexes[results.index] = results.results
+                send_feedback()
+            else:
+                self.good_indexes[results.index] = results.results
+                for result in results.results:
+                    self.add_result(result.res, result.quality_id)
 
 
     def is_empty(self):

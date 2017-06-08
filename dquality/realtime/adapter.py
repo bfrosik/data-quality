@@ -96,8 +96,9 @@ def start_process(dataq, logger, *args):
     limits = args[0]
     reportq = args[1]
     quality_checks = args[2]
-    consumers = args[3]
-    feedback = args[4]
+    aggregate_limit = args[3]
+    consumers = args[4]
+    feedback = args[5]
 
     feedback_obj = containers.Feedback(feedback)
     if const.FEEDBACK_LOG in feedback:
@@ -105,10 +106,10 @@ def start_process(dataq, logger, *args):
 
     if const.FEEDBACK_PV in feedback:
         feedback_pvs = utils.get_feedback_pvs(quality_checks)
-        detector = args[5]
+        detector = args[6]
         feedback_obj.set_feedback_pv(feedback_pvs, detector)
 
-    p = Process(target=handle_data, args=(dataq, limits, reportq, quality_checks, consumers, feedback_obj))
+    p = Process(target=handle_data, args=(dataq, limits, reportq, quality_checks, aggregate_limit, consumers, feedback_obj))
     p.start()
 
 
@@ -152,6 +153,11 @@ def parse_config(config):
         print ('no_frames parameter not configured.')
         return None
     try:
+        aggregate_limit = conf['aggregate_limit']
+    except KeyError:
+        #print ('aggregate_limit parameter not configured.')
+        aggregate_limit = no_frames
+    try:
         detector = conf['detector']
     except KeyError:
         print ('configuration error: detector parameter not configured.')
@@ -167,7 +173,7 @@ def parse_config(config):
         print ('configuration error: detector_image parameter not configured.')
         return None
 
-    return int(no_frames), detector, detector_basic, detector_image
+    return int(no_frames), aggregate_limit, detector, detector_basic, detector_image
 
 
 def pack_data(slice, type):
