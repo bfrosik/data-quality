@@ -1,0 +1,20 @@
+{
+  "data" : {
+      "sum" : {
+           "low_limit" : 100,
+           "high_limit" : 2300
+           },
+      "sat" : {
+           "low_limit" : 0,
+           "high_limit" : 2300
+           },
+      "frame_sat" : {
+           "low_limit" : 0,
+           "high_limit" : 4000
+           },
+      "rate_sat" : {
+           "low_limit" : 100,
+           "high_limit" : 2300
+           }
+      }
+}
