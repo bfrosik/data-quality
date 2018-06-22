@@ -54,10 +54,10 @@ and handles results of the checks.
 
 """
 
-from multiprocessing import Queue, Process
 import dquality.common.constants as const
 import dquality.common.qualitychecks as calc
-from dquality.common.containers import Aggregate, Consumer_adapter
+from dquality.common.containers import Aggregate
+import dquality.clients.zmq_client as cons
 import sys
 from collections import deque
 if sys.version[0] == '2':
@@ -91,18 +91,15 @@ def init_consumers(consumers):
         a list of Queues that are used to deliver frames to consumers
     """
 
-    consumers_q = []
-    for consumer in consumers:
-        path = consumers[consumer][0]
-        args = consumers[consumer][1]
-        q = Queue()
-        consumers_q.append(q)
-        adapter = Consumer_adapter(path)
-        adapter.start_process(q, consumer, args)
-    return consumers_q
+    consumer_zmq = []
+    # connect to one consumer, may be extended to many later
+    zmq_sender = cons.zmq_sen(str(consumers))
+    consumer_zmq.append(zmq_sender)
+
+    return consumer_zmq
 
 
-def send_to_consumers(waiting_q, consumers_q, results):
+def send_to_consumers(consumer_zmq, data, results):
     """
     This function receives frames in a real time and delivers them to the consumer processes.
 
@@ -124,48 +121,17 @@ def send_to_consumers(waiting_q, consumers_q, results):
     -------
     none
     """
-    index = results.index
-    tempq = deque()
-
-    def send_data(data):
+    if not consumer_zmq is None:
+        # for consumer in consumer_zmq:
+        #     consumer.send_to_zmq(data, results)
         if data.status == const.DATA_STATUS_DATA:
-            data.failed = results.failed
-        for consumerq in consumers_q:
-            consumerq.put(data)
-
-    search = True
-    while search:
-        data = waiting_q.pop()
-        if data.status == const.DATA_STATUS_END:
-            if len(tempq) == 0:
-                if len(waiting_q) == 0:
-                    send_data(data)
-                else:
-                    waiting_q.append_left(data)
-            else:
-                waiting_q.append_left(data)
-                while len(tempq) > 0:
-                    waiting_q.append(tempq.popleft())
-            search = False
-        elif data.status == const.DATA_STATUS_MISSING:
-            # send missing frames
-            if data.index < index:
-                send_data(data)
-            else:
-                tempq.appendleft(data)
-        else:
-            if data.index == results.index:
-                send_data(data)
-                search = False
-            else:
-                #put on temp queue
-                tempq.appendleft(data)
-    while len(tempq) > 0:
-        waiting_q.append(tempq.popleft())
+            data.ver = not results.failed
+            data.image_number = results.index
+            for consumer in consumer_zmq:
+                consumer.send_to_zmq(data)
 
 
-
-def handle_data(dataq, limits, reportq, quality_checks, aggregate_limit, consumers=None, feedback_obj=None):
+def handle_data(dataq, reportq, args, kwargs):
     """
     This function creates and initializes all variables and handles data received on a 'dataq' queue.
 
@@ -217,69 +183,50 @@ def handle_data(dataq, limits, reportq, quality_checks, aggregate_limit, consume
     -------
     None
     """
-    consumers_q = None
-    waiting_q = None
-    if consumers is not None:
-        consumers_q = init_consumers(consumers)
-        waiting_q = deque()
+    try:
+        consumers = kwargs['consumers']
+        consumer_zmq = init_consumers(consumers)
+    except KeyError:
+        consumer_zmq = None
 
-    feedbackq = None
-    if feedback_obj is not None:
-        feedbackq = Queue()
-        p = Process(target=feedback_obj.quality_feedback, args=(feedbackq,))
-        p.start()
-
+    limits = args[0]
+    quality_checks = args[1]
     aggregates = {}
     types = quality_checks.keys()
     for type in types:
-        aggregates[type] = Aggregate(type, quality_checks[type], aggregate_limit, feedbackq)
+        aggregates[type] = Aggregate(type, quality_checks[type], **kwargs)
 
-    resultsq = Queue()
     interrupted = False
     index = 0
-    num_processes = 0
     while not interrupted:
         try:
             data = dataq.get(timeout=0.005)
             if data.status == const.DATA_STATUS_END:
                 interrupted = True
-                while num_processes > 0:
-                    results = resultsq.get()
-                    aggregates[results.type].handle_results(results)
-                    num_processes -= 1
-                if feedbackq is not None:
+                send_to_consumers(consumer_zmq, data, const.DATA_STATUS_END)
+                try:
+                    feedbackq = kwargs['feedbackq']
                     for _ in range(len(aggregates)):
                         feedbackq.put(const.DATA_STATUS_END)
-                if waiting_q is not None:
-                    waiting_q.appendleft(data)
-                    send_to_consumers(waiting_q, consumers_q, results)
+                except KeyError:
+                    pass
 
             elif data.status == const.DATA_STATUS_MISSING:
-                if waiting_q is not None:
-                    data.index = index
-                    waiting_q.appendleft(data)
                 index += 1
 
-            else:
-                if waiting_q is not None:
-                    data.index = index
-                    waiting_q.appendleft(data)
+            elif data.status == const.DATA_STATUS_DATA:
                 type = data.type
-                p = Process(target=calc.run_quality_checks,
-                            args=(data, index, resultsq, aggregates[type], limits[type], quality_checks[type]))
-                p.start()
-                num_processes += 1
+                results = calc.run_quality_checks(data, index, aggregates[type], limits[type], quality_checks[type])
+                send_to_consumers(consumer_zmq, data, results)
+                try:
+                    results.file_name = data.file_name
+                except:
+                    pass
+                aggregates[results.type].handle_results(results)
                 index += 1
 
         except queue.Empty:
             pass
-
-        while not resultsq.empty():
-            results = resultsq.get_nowait()
-            aggregates[results.type].handle_results(results)
-            num_processes -= 1
-            if consumers is not None:
-                send_to_consumers(waiting_q, consumers_q, results)
 
     if reportq is not None:
         results = {}

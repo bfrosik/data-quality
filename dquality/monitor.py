@@ -163,7 +163,8 @@ def init(config):
 
     with open(qcfile) as qc_file:
         dict = json.loads(qc_file.read())
-    quality_checks = utils.get_quality_checks(dict)
+    #quality_checks = utils.get_quality_checks(dict)
+    quality_checks = dict
 
     try:
         report_type = conf['report_type']

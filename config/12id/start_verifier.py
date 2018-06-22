@@ -57,9 +57,8 @@ from multiprocessing import Process
 from multiprocessing.managers import SyncManager
 import os
 from os.path import expanduser
-import dquality.realtime.real_time as real
+import dquality.real_time_pv as real
 import argparse
-import json
 import sys
 import time
 
@@ -168,7 +167,7 @@ def start_server(arg):
         #key = 'test'
         #os.system("medm -x /local/bfrosik/data-quality/config/12id/test/qualityFeedbackTest.adl &")
     else:
-        print 'not supported instrument'
+        print ('not supported instrument')
 
     home = expanduser("~")
     conf = os.path.join(home, ".dquality", instrument)

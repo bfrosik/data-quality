@@ -151,7 +151,7 @@ def init(config):
 
     with open(qcfile) as qc_file:
         dict = json.loads(qc_file.read())
-    quality_checks = utils.get_quality_checks(dict)
+    quality_checks = dict
 
     try:
         report_type = conf['report_type']
@@ -222,15 +222,18 @@ def verify_file_hdf(logger, file, data_tags, limits, quality_checks, report_type
         for i in range(0,dt.shape[0]):
             data = Data(const.DATA_STATUS_DATA, dt[i], data_type)
             dataq.put(data)
-            # add delay to slow down flow up, so the flow down (results)
-            # are handled in synch
-            time.sleep(.1)
+
+    def get_no_frames():
+        return fp[data_tags['data']].shape[0] + fp[data_tags['data_white']].shape[0] +fp[data_tags['data_dark']].shape[0]
 
     fp, tags = utils.get_data_hdf(file)
     dataq = Queue()
     aggregateq = Queue()
 
-    p = Process(target=handler.handle_data, args=(dataq, limits, aggregateq, quality_checks, consumers))
+    args = [limits, quality_checks, get_no_frames()]
+    kwargs = {}
+    kwargs['consumers'] = consumers
+    p = Process(target=handler.handle_data, args=(dataq, aggregateq, args, kwargs))
     p.start()
 
     # assume a fixed order of data types; this will determine indexes on the data

@@ -52,7 +52,9 @@ To use Please make sure the installation :ref:`pre-requisite-reference-label` ar
 """
 
 import json
-import dquality.realtime.real_time as real
+import dquality.real_time_pv as real
+import dquality.feeds.zmq_receiver as rec
+
 
 __author__ = "Barbara Frosik"
 __copyright__ = "Copyright (c) 2016, UChicago Argonne, LLC."
@@ -83,7 +85,14 @@ def realtime(conf, report_file = None, sequence = None):
 
     """
 
-    bad_indexes = real.verify(conf, report_file, sequence)
+    rt = real.RT()
+    bad_indexes = rt.verify(conf, report_file, sequence)
     print (json.dumps(bad_indexes))
     return bad_indexes
 
+
+def run_recev(config):
+    rec.verify(config)
+
+# if __name__ == "__main__":
+#     run_recev('test/dqconfig.ini')

@@ -52,16 +52,46 @@ Please make sure the installation :ref:`pre-requisite-reference-label` are met.
 This module contains classes handling real time feedback of the quality results via process variables.
 
 """
+import time
+import dquality.clients.fb_client.pv_feedback as pvfb
+import sys
+if sys.version[0] == '2':
+    import thread as thread
+else:
+    import _thread as thread
 
-from pcaspy import SimpleServer, Driver
+
+class PV_FB_12(pvfb.PV_FB):
+    def __init__(self, **kwargs):
+        super(PV_FB_12, self).__init__(**kwargs)
 
 
-class FbDriver(Driver):
+    def start_driver(self):
+        server = FbServer_12()
+        driver = server.init_driver(self.detector, self.feedback_pvs)
+        thread.start_new_thread(server.activate_pv, ())
+        self.driver = driver
+
+
+    def write_to_pv(self, results):
+        text = results.file_name
+        if results.failed:
+            msg = text + ' failed'
+            for result in results.results:
+                if result.error != 0:
+                    qc = result.quality_id
+                    msg =  msg + ' ' + qc + ' with result ' + str(result.res)
+        else:
+            msg = text + ' verification pass'
+        self.driver.write(msg)
+
+
+class FbDriver_12(pvfb.FbDriver):
     """
-    This class is a driver that overrites write method and has a field counters.
+    This class is a driver that overrites write method.
 
     """
-    def __init__(self, counters):
+    def __init__(self, **kwargs):
         """
         Constructor
 
@@ -72,12 +102,12 @@ class FbDriver(Driver):
             failed frames
 
         """
-        super(FbDriver, self).__init__()
-        self.counters = counters
+        super(FbDriver_12, self).__init__()
 
-    def write(self, pv, index):
+
+    def write(self, msg):
         """
-        This function override write method fro Driver.
+        This function override write method from Driver.
 
         It sets the 'index' pv to the index value, increments count of failing frames for the data type and quality
         check indicated by pv, and sets the 'counter' pv to the new counter value.
@@ -96,24 +126,20 @@ class FbDriver(Driver):
 
         """
         status = True
-        self.setParam(pv+'_ind', index)
-        self.counters[pv] += 1
-        # this method is called on failed quality check, increase counter for this pv
-        self.setParam(pv+'_ctr', self.counters[pv])
+        self.setParam('STAT', msg)
         self.updatePVs()
         return status
 
-class FbServer:
+
+class FbServer_12(pvfb.FbServer):
     """
     This class is a server that controls the FbDriver.
 
     """
-    def __init__(self):
-        """
-        Constructor
 
-        """
-        self.server = SimpleServer()
+    def __init__(self):
+        super(FbServer_12, self).__init__()
+
 
     def init_driver(self, detector, feedback_pvs):
         """
@@ -139,36 +165,14 @@ class FbServer:
         """
         prefix = detector + ':'
         pvdb = {}
-        counters = {}
-        for pv in feedback_pvs:
-            pvdb[pv+'_ind'] = { 'prec' : 0,}
-            pvdb[pv+'_ctr'] = { 'prec' : 0,
-                                'hihi' : 1, }
-            counters[pv] = 0
 
-        self.server = SimpleServer()
+        pvdb['STAT'] = {
+                            'type': 'char',
+                            'count' : 300,
+                            'value' : 'status'
+                        }
+
         self.server.createPV(prefix, pvdb)
 
-        driver = FbDriver(counters)
+        driver = FbDriver_12()
         return driver
-
-    def activate_pv(self):
-        """
-        Infinite loop processing the pvs defined in server; exits when parent process exits.
-
-        """
-        while True:
-            self.server.process(.1)
-
-#if __name__ == '__main__':
-    # args = sys.argv[1:]
-    # parser = argparse.ArgumentParser()
-    # parser.add_argument("instrument", help="instrument name, name should have a matching directory in the .dquality folder")
-    # parser.add_argument("quality_checks", help="a list of quality check methods")
-    # args = parser.parse_args()
-    # instrument = args.instrument
-    # quality_checks = args.quality_checks
-
-    # feedback_pvs = ['mean', 'st_dev', 'stat_mean']
-    # server, driver = init_driver('BBF1', feedback_pvs)
-    # activate_pv()

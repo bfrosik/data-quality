@@ -49,118 +49,104 @@
 """
 Please make sure the installation :ref:`pre-requisite-reference-label` are met.
 
-This module is an adapter connecting feed with a consuming process.
-The functions in this module are customized for the consuming process. All functions must be implemented, as they
-are called by the feed module.
-
+This module feeds the data coming from detector to a process using queue.
 """
 
-from multiprocessing import Process
-#from test_process import print_slices
-import dquality.commom.containers as containers
-from configobj import ConfigObj
+import dquality.common.qualitychecks as ver
+import dquality.clients.fb_client.simple_feedback as fb
+import dquality.clients.zmq_client as zmq_client
+import dquality.common.containers as containers
+import dquality.common.constants as const
+import pvaccess
+
 
 __author__ = "Barbara Frosik"
 __copyright__ = "Copyright (c) 2016, UChicago Argonne, LLC."
 __docformat__ = 'restructuredtext en'
-__all__ = ['start_process',
-           'parse_config']
+__all__ = ['start_feed',
+           'stop_feed'
+           'on_change']
 
 
-
-def start_process(dataq, *args):
+class Feed:
     """
-    This function parses the positional parameters. Then it starts a client process, passing in a queue as first
-    parameter, followed by the parsed parameters. The function of the process must be included in imports.
-
-    Parameters
-    ----------
-    dataq : multiprocessing.Queue
-        a queue used to transfer data from feed to client process
-
-    *args : list
-        a list of posisional parameters required by the client process
-
-    Returns
-    -------
-    None
+    This class reads frames in a real time, and delivers to consumers.
     """
 
-    # This is an exmple code
-    # a = args[0]
-    # b = args[1]
-    # p = Process(target=print_slices, args=(dataq, a, b,))
-    # p.start()
+    def __init__(self, logger, limits, quality_checks, feedback, zmq_snd_port, pva_name, detector):
+        """
+        Constructor
+        """
+        # for communication with pvaccess - receiving data
+        self.data_type = 'data'
+        self.pva_name = pva_name
+        self.logger = logger
+        self.limits = limits
+        self.qc = quality_checks
+        self.feedback = feedback
+        self.zmq_snd_port = zmq_snd_port
+        self.detector = detector
+        if not self.feedback is None:
+            self.feedback_obj = fb.Feedback(self.feedback, self.detector, self.quality_checks, self.logger)
+        if not self.zmq_snd_port is None:
+            self.cons = zmq_client.zmq_sen(self.zmq_snd_port)
+        self.aggregate = containers.Aggregate(self.data_type, self.quality_checks)
+
+        self.chan = None
+
+    def feed_data(self):
+        self.chan = pvaccess.Channel(self.pva_name)
+
+        x, y = self.chan.get('field()')['dimension']
+        self.dims = (y['size'], x['size'])
+        print(self.dims)
+        #send the dimensions to client
+        data = containers.Data(const.DATA_STATUS_DIM)
+        data.dim_x = x
+        data.dim_y = y
+        self.cons.send_to_zmq(data)
+
+        labels = [item['name'] for item in self.chan.get('field()')['attribute']]
+        self.theta_key = labels.index("SampleRotary")
+        self.scan_delta_key = labels.index("ScanDelta")
+        self.start_position_key = labels.index("StartPos")
+
+        self.chan.subscribe('update', self.on_change)
+        self.chan.startMonitor("value,attribute,uniqueId")
 
 
-def parse_config(config):
-    """
-    This function parses the configuration file. It must return the specified variables.
+    def on_change(self, v):
+        uniqueId = v['uniqueId']
+        print('uniqueId: ', uniqueId)
 
-    Parameters
-    ----------
-    config : str
-        a configuration file
+        img = v['value'][0]['ushortValue']
+        scan_delta = v["attribute"][self.scan_delta_key]["value"][0]["value"]
+        start_position = v["attribute"][self.start_position_key]["value"][0]["value"]
+        theta = (start_position + uniqueId * scan_delta) % 360.0
 
-    Returns
-    -------
-    no_frames : int
-        number of frames that will be processed
+        img = img.reshape(self.dims)
 
-    detector : str
-        a string defining the first prefix in area detector, it has to match the area detector configuration
+        data = containers.Data(const.DATA_STATUS_DATA, img, self.data_type)
+        frame_results = ver.run_quality_checks(data, uniqueId, self.aggregate, self.limits, self.quality_checks)
 
-    detector_basic : str
-        a string defining the second prefix in area detector, defining the basic parameters, it has to
-        match the area detector configuration
+        if not self.feedback is None:
+            self.feedback_obj.deliver(frame_results)
 
-    detector_image : str
-        a string defining the second prefix in area detector, defining the image parameters, it has to
-        match the area detector configuration
-
-    """
-
-    # This is an exmple code
-    # if os.path.isfile(config):
-    #     conf = ConfigObj(config)
-    # else:
-    #     print ('configuration file ' + config + ' not found')
-    #     return None
-    #
-    # try:
-    #     no_frames = conf['no_frames']
-    # except KeyError:
-    #     print ('no_frames parameter not configured.')
-    #     return None
-    # try:
-    #     detector = conf['detector']
-    # except KeyError:
-    #     print ('configuration error: detector parameter not configured.')
-    #     return None
-    # try:
-    #     detector_basic = conf['detector_basic']
-    # except KeyError:
-    #     print ('configuration error: detector_basic parameter not configured.')
-    #     return None
-    # try:
-    #     detector_image = conf['detector_image']
-    # except KeyError:
-    #     print ('configuration error: detector_image parameter not configured.')
-    #     return None
-    #
-    # return int(no_frames), detector, detector_basic, detector_image
+        if not self.zmq_snd_port is None:
+            data.theta = theta
+            data.image_number = uniqueId
+            data.ver = not frame_results.failed
+            self.cons.send_to_zmq(data)
 
 
-def pack_data(slice):
-    """
-    This function packs a single image data into a specific container.
+    def stop_feed(self):
+        # stop getting data
+        self.chan.stopMonitor()
+        self.chan.unsubscribe('update')
 
-    Parameters
-    ----------
-    slice : nparray
-        image data
+        # nothing to do to terminate updating of feedback pvs (maybe zero them?)
 
-    """
-    # This in an example code
-    # return containers.Data(slice)
+        # terminate zmq connection
+        data = containers.Data(const.DATA_STATUS_END)
+        self.cons.send_to_zmq(data)
 

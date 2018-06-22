@@ -1,3 +1,3 @@
-{"data" : [ "QUALITYCHECK_MEAN", "QUALITYCHECK_STD", "STAT_MEAN"],
-  "data_dark": [ "QUALITYCHECK_MEAN", "QUALITYCHECK_STD", "STAT_MEAN"],
-  "data_white": [ "QUALITYCHECK_MEAN", "QUALITYCHECK_STD", "STAT_MEAN"]}
+{"data" : [ "mean", "st_dev", "stat_mean"],
+  "data_dark": [ "mean", "st_dev", "stat_mean"],
+  "data_white": [ "mean", "st_dev", "stat_mean"]}

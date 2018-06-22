@@ -1,14 +1,8 @@
-from multiprocessing import Lock
 import dquality.common.constants as const
 from multiprocessing import Process
 import importlib
 from os import path
 import sys
-import dquality.realtime.pv_feedback_driver as drv
-if sys.version[0] == '2':
-    import thread as thread
-else:
-    import _thread as thread
 
 
 class Result:
@@ -27,7 +21,8 @@ class Results:
     This class is a container of results of all quality checks for a single frame, and attributes such as flag
     indicating if all quality checks passed, dat type, and index.
     """
-    def __init__(self, type, index, failed, results):
+    def __init__(self, type, index, failed, results, text=None):
+        self.text = text
         self.type = type
         self.index = index
         self.failed = failed
@@ -40,120 +35,13 @@ class Data:
     """
     This class is a container of data.
     """
-    def __init__(self, status, slice=None, type=None, acq_time = None):
+    def __init__(self, status, slice=None, type=None, **kwargs):
         self.status = status
         if status == const.DATA_STATUS_DATA:
             self.slice = slice
             self.type = type
-            if acq_time is not None:
-                self.acq_time = acq_time
-
-
-class Feedback:
-    """
-    This class is a container of real-time feedback related information.
-    """
-    def __init__(self, feedback_type, ):
-        """
-        Constructor
-
-        Parameters
-        ----------
-        feedback_type : list
-            a list of configured feedbac types. Possible options: console, log, and pv
-        """
-        self.feedback_type = feedback_type
-
-    def set_feedback_pv(self, feedback_pvs, detector):
-        """
-        This function sets feedback_pvs, and detector fields.
-
-        Parameters
-        ----------
-        feedback_pvs : list
-            a list of feedback process variables names, for each data type combination with the
-            applicable quality check
-        detector : str
-            a pv name of the detector
-        """
-        self.feedback_pvs = feedback_pvs
-        self.detector = detector
-
-    def set_logger(self, logger):
-        """
-        This function sets logger.
-
-        Parameters
-        ----------
-        logger : Logger
-            an instance of Logger
-        """
-        self.logger = logger
-
-    def set_driver(self, driver):
-        """
-        This function sets driver.
-
-        Parameters
-        ----------
-        driver : FbDriver
-            an instance of FbDriver
-        """
-        self.driver = driver
-
-    def write_to_pv(self, pv, index):
-        """
-        This function calls write method on driver field to update pv.
-
-        Parameters
-        ----------
-        pv : str
-            a name of the pv, contains information about the data type and quality check (i.e. data_white_mean)
-        index : int
-            index of failed frame
-        """
-        self.driver.write(pv, index)
-
-    def quality_feedback(self, feedbackq):
-        """
-        This function provides feedback as defined by the feedback_type in a real time.
-
-        If the feedback type contains pv type, this function creates server and initiates driver handling the feedback
-        pvs.It dequeues results from the 'feedbackq' queue and processes all feedback types that have been configured.
-        It will stop processing the queue when it dequeues data indicating end status.
-
-        Parameters
-        ----------
-        feedbackq : Queue
-            a queue that will deliver Result objects of failed quality check
-
-        Returns
-        -------
-        none
-        """
-        if const.FEEDBACK_PV in self.feedback_type:
-            server = drv.FbServer()
-            driver = server.init_driver(self.detector, self.feedback_pvs)
-            thread.start_new_thread(server.activate_pv, ())
-            self.set_driver(driver)
-
-        evaluating = True
-        while evaluating:
-            while not feedbackq.empty():
-                try:
-                    result = feedbackq.get_nowait()
-                    if result == const.DATA_STATUS_END:
-                        evaluating = False
-                    else:
-                        if const.FEEDBACK_CONSOLE in self.feedback_type:
-                            print ('failed frame '+str(result.index)+ ' result of '+const.to_string(result.quality_id)+ ' is '+ str(result.res))
-                        if const.FEEDBACK_LOG in self.feedback_type:
-                            self.logger.info('failed frame '+str(result.index)+ ' result of '+const.to_string(result.quality_id)+ ' is '+ str(result.res))
-                        if const.FEEDBACK_PV in self.feedback_type:
-                            quality_check = const.to_string(result.quality_id)
-                            self.write_to_pv(result.type + '_' + quality_check, result.index)
-                except:
-                    pass
+            for key in kwargs:  # styles is a regular dictionary
+                setattr(self, key, kwargs[key])
 
 
 class Aggregate:
@@ -171,7 +59,7 @@ class Aggregate:
 
     """
 
-    def __init__(self, data_type, quality_checks, aggregate_limit, feedbackq = None):
+    def __init__(self, data_type, quality_checks, **kwargs): #data_type, quality_checks, aggregate_limit=0, feedbackq = None):
         """
         Constructor
 
@@ -186,14 +74,20 @@ class Aggregate:
             responsible for delivering the feedback in areal time
         """
         self.data_type = data_type
-        self.feedbackq = feedbackq
-        self.aggregate_limit = aggregate_limit
+        try:
+            self.feedbackq = kwargs['feedbackq']
+        except KeyError:
+            self.feedbackq = None
+
+        try:
+            self.aggregate_limit = kwargs['aggregate_limit']
+        except KeyError:
+            self.aggregate_limit = -1
 
         self.bad_indexes = {}
         self.good_indexes = {}
 
         self.results = {}
-        self.lock = Lock()
         for qc in quality_checks:
             self.results[qc] = []
 
@@ -201,8 +95,6 @@ class Aggregate:
     def get_results(self, check):
         """
         This returns the results of a given quality check.
-
-        This operation uses lock, as other process writes to results.
 
         Parameters
         ----------
@@ -214,33 +106,8 @@ class Aggregate:
         res : list
             a list containing results that passed the given quality check
         """
-        self.lock.acquire()
         res = self.results[check]
-        self.lock.release()
         return res
-
-
-    def add_result(self, result, check):
-        """
-        This add a new result for a given quality check to results.
-
-        This operation uses lock, as other process reads the results.
-
-        Parameters
-        ----------
-        result : Result
-            a result instance
-
-        check : int
-            a value indication quality check id
-
-        Returns
-        -------
-        none
-        """
-        self.lock.acquire()
-        self.results[check].append(result)
-        self.lock.release()
 
 
     def handle_results(self, results):
@@ -263,25 +130,18 @@ class Aggregate:
         -------
         none
         """
-        def send_feedback():
-            if self.feedbackq is not None:
-                for result in results.results:
-                    if result.error != 0:
-                        result.index = results.index
-                        result.type = results.type
-                        self.feedbackq.put(result)
-
         if self.aggregate_limit == -1:
-            if results.failed:
-                send_feedback()
+            if self.feedbackq is not None:
+                self.feedbackq.put(results)
         else:
             if results.failed:
                 self.bad_indexes[results.index] = results.results
-                send_feedback()
+                if self.feedbackq is not None:
+                    self.feedbackq.put(results)
             else:
                 self.good_indexes[results.index] = results.results
                 for result in results.results:
-                    self.add_result(result.res, result.quality_id)
+                    self.results[result.quality_id].append(result)
 
 
     def is_empty(self):

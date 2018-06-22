@@ -53,24 +53,24 @@ This module feeds the data coming from detector to a process using queue. It int
 plug in of area detector. The read of frame data from channel access happens on event of frame counter change.
 The change is detected with a callback. The data is passed to the consuming process.
 This module requires configuration file with the following parameters:
-'detector', a string defining the first prefix in area detector, it has to match the area detector configuration
-'detector_basic', a string defining the second prefix in area detector, defining the basic parameters, it has to
-match the area detector configuration
-'detector_image', a string defining the second prefix in area detector, defining the image parameters, it has to
-match the area detector configuration
+'detector', a string defining the first prefix in area detector.
 'no_frames', number of frames that will be fed
 'args', optional, list of process specific parameters, they need to be parsed to the desired format in the wrapper
 """
 
-from multiprocessing import Queue
 import json
+import signal
 import sys
 import dquality.common.utilities as utils
-import dquality.common.report as report
-from dquality.realtime.feed import Feed
-import dquality.common.constants as const
-import dquality.realtime.adapter as adapter
-from dquality.realtime.feed_decorator import FeedDecorator
+from dquality.feeds.pva_feed import Feed
+
+
+__author__ = "Barbara Frosik"
+__copyright__ = "Copyright (c) 2016, UChicago Argonne, LLC."
+__docformat__ = 'restructuredtext en'
+__all__ = ['init',
+           'RT.verify',
+           'RT.finish']
 
 
 def init(config):
@@ -100,17 +100,25 @@ def init(config):
         a list of strings defining real time feedback of quality checks errors. Currently supporting 'PV', 'log', and
         'console'
 
-    report_type : int
-        report type; currently supporting 'none', 'error', and 'full'
+    zmq_snd_port : int
+        a port used to send the verified data out
 
-    consumers : dict
-        a dictionary parsed from json file representing consumers
+    pva_name : str
+        pvaccess name
+
+    detector : str
+        detector name
 
     """
-
     conf = utils.get_config(config)
     if conf is None:
         print ('configuration file is missing')
+        exit(-1)
+
+    try:
+        pva_name = conf['pva_name']
+    except KeyError:
+        print ('pva_name not configured')
         exit(-1)
 
     logger = utils.get_logger(__name__, conf)
@@ -128,88 +136,65 @@ def init(config):
 
     with open(qcfile) as qc_file:
         dict = json.loads(qc_file.read())
-    quality_checks = utils.get_quality_checks(dict)
+    quality_checks = dict
 
     try:
         feedback = conf['feedback_type']
+        if len(feedback) == 0:
+            feedback = None
     except KeyError:
         feedback = None
 
     try:
-        report_type = conf['report_type']
+        zmq_snd_port = conf['zmq_snd_port']
     except KeyError:
-        report_type = const.REPORT_FULL
+        zmq_snd_port = None
 
-    consumersfile = utils.get_file(conf, 'consumers', logger, False)
-    if consumersfile is None:
-        consumers = None
-    else:
-        with open(consumersfile) as consumers_file:
-            consumers = json.loads(consumers_file.read())
+    try:
+        detector = conf['detector']
+    except KeyError:
+        print ('detector parameter not configured.')
+        detector = None
 
-    return logger, limits, quality_checks, feedback, report_type, consumers
+    return logger, limits, quality_checks, feedback, zmq_snd_port, pva_name, detector
 
 
 class RT:
 
-    def verify(self, config, report_file=None, sequence = None):
+    def verify(self, config):
         """
         This function starts real time verification process according to the given configuration.
-
-        This function reads configuration and initiates variables accordingly.
-        It creates a Feed instance and starts data_feed and waits to receive results in aggregateq.
-        The results are then written into a report file.
 
         Parameters
         ----------
         conf : str
             configuration file name, including path
 
-        report_file : file
-            a file where the report will be written, defaulted to None, if no report wanted
-
-        sequence : list or int
-            information about data sequence or number of frames
-
         Returns
         -------
-        boolean
+        none
 
         """
-        def get_decor(qc):
-            decor = {}
-            qc = [6]
-            if const.QUALITYCHECK_RATE_SAT in qc:
-                decor[const.QUALITYCHECK_RATE_SAT] = detector + ":" + detector_basic +":AcquireTime"
-            return decor
+        logger, limits, quality_checks, feedback, zmq_snd_port, pva_name, detector = init(config)
 
-        logger, limits, quality_checks, feedback, report_type, consumers = init(config)
-        no_frames, aggregate_limit, detector, detector_basic, detector_image = adapter.parse_config(config)
-
-        aggregateq = Queue()
-
-        # address the special cases of quality checks when additional arguments are required
-        decor = get_decor(quality_checks)
-        if len(decor) is 0:
-            self.feed = Feed()
-        else:
-            self.feed = FeedDecorator(decor)
-
-        aggregate_limit = no_frames
-        args = limits, aggregateq, quality_checks, aggregate_limit, consumers, feedback, detector
-        ack = self.feed.feed_data(no_frames, detector, detector_basic, detector_image, logger, sequence, *args)
-        if ack == 1:
-            bad_indexes = {}
-
-            aggregate = aggregateq.get()
-
-            if report_file is not None:
-                report.report_results(logger, aggregate, None, report_file, report_type)
-            report.add_bad_indexes(aggregate, bad_indexes)
-
-            return bad_indexes
+        self.feed = Feed(logger, limits, quality_checks, feedback, zmq_snd_port, pva_name, detector)
+        self.feed.feed_data()
 
 
     def finish(self):
-        self.feed.finish()
+        """
+        This function gracefully terminates the pvaccess feed and it's clients
 
+        """
+        print ('finish')
+        self.feed.stop_feed()
+
+
+def signal_handler(signal, frame):
+    rt.finish()
+
+rt = RT()
+signal.signal(signal.SIGINT, signal_handler)
+signal.signal(signal.SIGTERM, signal_handler)
+
+rt.verify('/home/phoebus/BFROSIK/.dquality/BBF1/dqconfig.ini')

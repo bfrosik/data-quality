@@ -451,6 +451,7 @@ def get_feedback_pvs(quality_checks):
     for type in quality_checks:
         qcs = quality_checks[type]
         for qc in qcs:
-            qc_str = type + '_' + const.to_string(qc)
+            #qc_str = type + '_' + const.to_string(qc)
+            qc_str = type + '_' + qc
             feedback_pvs.append(qc_str)
     return feedback_pvs

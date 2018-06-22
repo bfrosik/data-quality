@@ -1,20 +1,20 @@
 {
-  "data" : {
-      "sum" : {
-           "low_limit" : 100,
-           "high_limit" : 2300
-           },
-      "sat" : {
-           "low_limit" : 0,
-           "high_limit" : 2300
-           },
-      "frame_sat" : {
-           "low_limit" : 0,
-           "high_limit" : 4000
-           },
-      "rate_sat" : {
-           "low_limit" : 100,
-           "high_limit" : 2300
-           }
-      }
+  "data": {
+    "frame_sat_cnt_rate": {
+      "high_limit": 2300
+    },
+    "sum": {
+      "high_limit": 100000,
+      "low_limit": -10000000
+    },
+    "point_sat_rate": {
+      "high_limit": 230000
+    },
+    "point_sat": {
+      "high_limit": 100000
+    },
+    "frame_sat_pts": {
+      "high_limit": 10000
+    }
+  }
 }
